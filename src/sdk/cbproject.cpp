@@ -466,14 +466,14 @@ void cbProject::CalculateCommonTopLevelPath()
         wxString tmpbase = m_BasePath;
 
         size_t pos = 0;
-        while (   (pos < tmp.Length())
+        while (   (pos < tmp.length())
                && (   (tmp.GetChar(pos) == _T('.'))
                    || (tmp.GetChar(pos) == _T('/'))
                    || (tmp.GetChar(pos) == _T('\\')) ) )
         {
             ++pos;
         }
-        if ( (pos > 0) && (pos < tmp.Length()) )
+        if ( (pos > 0) && (pos < tmp.length()) )
             tmpbase << sep << tmp.Left(pos) << sep;
 
         wxFileName tmpbaseF(tmpbase); tmpbaseF.Normalize(wxPATH_NORM_DOTS);
@@ -867,7 +867,7 @@ ProjectFile* cbProject::AddFile(int targetIndex, const wxString& filename, bool 
 
 #ifdef __WXMSW__
     // for Windows, make sure the filename is not on another drive...
-    if (   (local_filename.Length() > 1)
+    if (   (local_filename.length() > 1)
         && (local_filename.GetChar(1) == _T(':'))
         && (fname.GetVolume() != wxFileName(m_Filename).GetVolume()) )
         // (this is a quick test to avoid the costly wxFileName ctor below)
@@ -927,7 +927,7 @@ ProjectFile* cbProject::AddFile(int targetIndex, const wxString& filename, bool 
         else
         {
             // set f->relativeToCommonTopLevelPath
-            pf->relativeToCommonTopLevelPath = fullFilename.Right(fullFilename.Length() - m_CommonTopLevelPath.Length());
+            pf->relativeToCommonTopLevelPath = fullFilename.Right(fullFilename.length() - m_CommonTopLevelPath.length());
         }
     }
     SetModified(true);
@@ -1810,14 +1810,14 @@ void cbProject::AddToExtensions(const wxString& stringDesc)
     while (true)
     {
         // ignore consecutive slashes
-        while (pos < stringDesc.Length() && stringDesc.GetChar(pos) == _T('/'))
+        while (pos < stringDesc.length() && stringDesc.GetChar(pos) == _T('/'))
         {
             ++pos;
         }
 
         // find next slash or colon
         size_t nextPos = pos;
-        while (nextPos < stringDesc.Length() && stringDesc.GetChar(++nextPos) != _T('/') && stringDesc.GetChar(nextPos) != _T(':'))
+        while (nextPos < stringDesc.length() && stringDesc.GetChar(++nextPos) != _T('/') && stringDesc.GetChar(nextPos) != _T(':'))
             ;
 
         wxString current = stringDesc.Mid(pos, nextPos - pos);
@@ -1842,16 +1842,16 @@ void cbProject::AddToExtensions(const wxString& stringDesc)
             // yes, just parse the attribute now
             pos = nextPos + 1; // skip the colon
             nextPos = pos;
-            while (nextPos < stringDesc.Length() && stringDesc.GetChar(++nextPos) != _T('='))
+            while (nextPos < stringDesc.length() && stringDesc.GetChar(++nextPos) != _T('='))
                 ;
-            if (pos == nextPos || nextPos == stringDesc.Length())
+            if (pos == nextPos || nextPos == stringDesc.length())
             {
                 // invalid attribute
             }
             else
             {
                 wxString key = stringDesc.Mid(pos, nextPos - pos);
-                wxString val = stringDesc.Mid(nextPos + 1, stringDesc.Length() - nextPos - 1);
+                wxString val = stringDesc.Mid(nextPos + 1, stringDesc.length() - nextPos - 1);
                 sub->SetAttribute(cbU2C(key), cbU2C(val));
                 SetModified(true);
             }
@@ -1902,8 +1902,8 @@ wxString cbGetDynamicLinkerPathForTarget(cbProject *project, ProjectBuildTarget*
         const wxString libPathSep = platform::windows ? _T(";") : _T(":");
         libPath << _T(".") << libPathSep;
         libPath << GetStringFromArray(generator->GetLinkerSearchDirs(target), libPathSep);
-        if (!libPath.IsEmpty() && libPath.Mid(libPath.Length() - 1, 1) == libPathSep)
-            libPath.Truncate(libPath.Length() - 1);
+        if (!libPath.IsEmpty() && libPath.Mid(libPath.length() - 1, 1) == libPathSep)
+            libPath.Truncate(libPath.length() - 1);
 
         delete generator;
         return libPath;
@@ -1915,7 +1915,7 @@ wxString cbMergeLibPaths(const wxString &oldPath, const wxString &newPath)
 {
     wxString result = newPath;
     const wxString libPathSep = platform::windows ? _T(";") : _T(":");
-    if (!newPath.IsEmpty() && newPath.Mid(newPath.Length() - 1, 1) != libPathSep)
+    if (!newPath.IsEmpty() && newPath.Mid(newPath.length() - 1, 1) != libPathSep)
         result << libPathSep;
     result << oldPath;
     return result;

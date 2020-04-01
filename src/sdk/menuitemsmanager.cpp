@@ -110,20 +110,20 @@ int MenuItemsManager::CreateFromString(const wxString& menuPath, int id)
     while (true)
     {
         // ignore consecutive slashes
-        while (pos < menuPath.Length() && menuPath.GetChar(pos) == _T('/'))
+        while (pos < menuPath.length() && menuPath.GetChar(pos) == _T('/'))
         {
             ++pos;
         }
 
         // find next slash
         size_t nextPos = pos;
-        while (nextPos < menuPath.Length() && menuPath.GetChar(++nextPos) != _T('/'))
+        while (nextPos < menuPath.length() && menuPath.GetChar(++nextPos) != _T('/'))
             ;
 
         wxString current = menuPath.Mid(pos, nextPos - pos);
         if (current.IsEmpty())
             break;
-        bool isLast = nextPos >= menuPath.Length();
+        bool isLast = nextPos >= menuPath.length();
 
         bool insert = false;
         unsigned long insertIndex = 0;
@@ -133,7 +133,7 @@ int MenuItemsManager::CreateFromString(const wxString& menuPath, int id)
             wxString indexS = reInsert.GetMatch(current, 1);
             if (indexS.ToULong(&insertIndex, 10))
             {
-                current.Remove(0, indexS.Length() + 1); // +1 to remove the ":" too
+                current.Remove(0, indexS.length() + 1); // +1 to remove the ":" too
                 insert = true;
             }
         }

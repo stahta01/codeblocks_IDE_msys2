@@ -136,7 +136,7 @@ wxArrayString GetArrayFromString(const wxString& text, const wxString& separator
 {
     wxArrayString out;
     wxString search = text;
-    int seplen = separator.Length();
+    int seplen = separator.length();
     while (true)
     {
         int idx = search.Find(separator);
@@ -168,7 +168,7 @@ wxStringVec GetVectorFromString(const wxString& text, const wxString& separator,
 {
     wxStringVec out;
     wxString search = text;
-    int seplen = separator.Length();
+    int seplen = separator.length();
     while (true)
     {
         int idx = search.Find(separator);
@@ -470,12 +470,12 @@ void DoSelectRememberedNode(wxTreeCtrl* tree, const wxTreeItemId& parent, wxStri
         int pos = tmpPath.Find(_T('/'));
         while (pos == 0)
         {
-            tmpPath = tmpPath.Right(tmpPath.Length() - pos - 1);
+            tmpPath = tmpPath.Right(tmpPath.length() - pos - 1);
             pos = tmpPath.Find(_T('/'));
         }
 
         folder = tmpPath.Left(pos);
-        tmpPath = tmpPath.Right(tmpPath.Length() - pos - 1);
+        tmpPath = tmpPath.Right(tmpPath.length() - pos - 1);
         wxTreeItemId item = parent;
         wxTreeItemIdValue cookie = nullptr;
 
@@ -539,7 +539,7 @@ void DoExpandRememberedNode(wxTreeCtrl* tree, const wxTreeItemId& parent, const 
         int pos = tmpPath.Find(_T('/'));
         while (pos == 0)
         {
-            tmpPath = tmpPath.Right(tmpPath.Length() - pos - 1);
+            tmpPath = tmpPath.Right(tmpPath.length() - pos - 1);
             pos = tmpPath.Find(_T('/'));
         }
 
@@ -551,7 +551,7 @@ void DoExpandRememberedNode(wxTreeCtrl* tree, const wxTreeItemId& parent, const 
         else
         {
             folder = tmpPath.Left(pos);
-            tmpPath = tmpPath.Right(tmpPath.Length() - pos - 1);
+            tmpPath = tmpPath.Right(tmpPath.length() - pos - 1);
         }
 
         //Manager::Get()->GetLogManager()->Log(mltDevDebug, "%s, %s", folder.c_str(), tmpPath.c_str());
@@ -772,7 +772,7 @@ wxFontEncoding DetectEncodingAndConvert(const char* strIn, wxString& strOut, wxF
             wxCSConv conv(possibleEncoding);
             strOut = wxString(strIn, conv);
 
-            if (strOut.Length() == 0)
+            if (strOut.length() == 0)
             {
                 // oops! wrong encoding...
 
@@ -784,7 +784,7 @@ wxFontEncoding DetectEncodingAndConvert(const char* strIn, wxString& strOut, wxF
                 }
 
                 // check again: if still not right, try system encoding, default encoding and then iso8859-1 to iso8859-15
-                if (strOut.Length() == 0)
+                if (strOut.length() == 0)
                 {
                     for (int i = wxFONTENCODING_SYSTEM; i < wxFONTENCODING_ISO8859_MAX; ++i)
                     {
@@ -793,7 +793,7 @@ wxFontEncoding DetectEncodingAndConvert(const char* strIn, wxString& strOut, wxF
                             continue; // skip if same as what was asked
                         wxCSConv csconv(encoding);
                         strOut = wxString(strIn, csconv);
-                        if (strOut.Length() != 0)
+                        if (strOut.length() != 0)
                             break; // got it!
                     }
                 }

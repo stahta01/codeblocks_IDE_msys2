@@ -135,7 +135,7 @@ cbProject* TemplateManager::NewProjectFromUserTemplate(NewFromTemplateDlg& dlg, 
                         path, _T(""), false, true);
     if (path.IsEmpty())
         return NULL;
-    else if (path.Mid(path.Length() - 1) == wxFILE_SEP_PATH)
+    else if (path.Mid(path.length() - 1) == wxFILE_SEP_PATH)
         path.RemoveLast();
 
     // check for existing files; if found, notify about overwriting them
@@ -268,7 +268,7 @@ void TemplateManager::SaveUserTemplate(cbProject* prj)
     // filter title, removing all illegal filename characters
     wxFileName titleFileName(title) ;
     wxString forbidden = titleFileName.GetForbiddenChars();
-    for (size_t i=0; i<forbidden.Length(); ++i)
+    for (size_t i=0; i<forbidden.length(); ++i)
         title.Replace(wxString(forbidden[i]), wxT(""), true);
 
     // check if it exists and ask a different title

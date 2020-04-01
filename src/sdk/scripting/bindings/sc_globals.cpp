@@ -102,18 +102,18 @@ namespace ScriptBindings
         while (true)
         {
             // ignore consecutive slashes
-            while (pos < menuPath.Length() && menuPath.GetChar(pos) == _T('/'))
+            while (pos < menuPath.length() && menuPath.GetChar(pos) == _T('/'))
                 ++pos;
 
             // find next slash
             size_t nextPos = pos;
-            while (nextPos < menuPath.Length() && menuPath.GetChar(++nextPos) != _T('/'))
+            while (nextPos < menuPath.length() && menuPath.GetChar(++nextPos) != _T('/'))
                 ;
 
             wxString current = menuPath.Mid(pos, nextPos - pos);
             if (current.IsEmpty())
                 break;
-            bool isLast = nextPos >= menuPath.Length();
+            bool isLast = nextPos >= menuPath.length();
             // current holds the current search string
 
             if (!menu) // no menu yet? look in menubar

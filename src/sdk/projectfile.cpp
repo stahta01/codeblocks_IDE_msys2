@@ -414,7 +414,7 @@ void pfDetails::Update(ProjectBuildTarget* target, ProjectFile* pf)
                 // (that's right: a directory)
                 wxString new_gch = target->GetTitle() + _T('_') + pf->GetObjName();
                 // make sure we 're not generating subdirs
-                size_t len = new_gch.Length();
+                size_t len = new_gch.length();
                 for (size_t i = 0; i < len; ++i)
                 {
                     wxChar c = new_gch[i];

@@ -449,10 +449,10 @@ namespace ScriptBindings
                 staticFuncVarArgs(&wxString_AddChar, "AddChar", "n").
                 staticFuncVarArgs(&wxString_GetChar, "GetChar", "n").
                 func(&wxString::IsEmpty, "IsEmpty").
-                func(&wxString::Length, "Length").
-                func(&wxString::Length, "length").
-                func(&wxString::Length, "len").
-                func(&wxString::Length, "size").
+                func(&wxString::length, "Length").
+                func(&wxString::length, "length").
+                func(&wxString::length, "len").
+                func(&wxString::length, "size").
                 func(&wxString::Lower, "Lower").
                 func(&wxString::LowerCase, "LowerCase").
                 func(&wxString::MakeLower, "MakeLower").

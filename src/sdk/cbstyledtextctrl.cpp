@@ -391,7 +391,7 @@ bool cbStyledTextCtrl::DoSelectionBraceCompletion(const wxChar& ch)
     const int braceAIdx = braces.Find(ch, true); // from end (so caret is placed after quotes)
     if (braceAIdx == wxNOT_FOUND)
         return false; // nothing changed
-    const int braceBIdx = (braceAIdx + (braces.Length() / 2)) % braces.Length();
+    const int braceBIdx = (braceAIdx + (braces.length() / 2)) % braces.length();
     BeginUndoAction();
     DeleteBack();
     if (braceAIdx < braceBIdx)

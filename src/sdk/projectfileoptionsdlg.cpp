@@ -60,13 +60,13 @@ inline void AnalyseLine(const CommentToken &language, wxString line, bool &comme
         return;
 
     // Searching for single and multi-lines comment signs
-    if (language.lineComment.Length() > 0)
+    if (language.lineComment.length() > 0)
         first_single_line_comment = line.Find(language.lineComment);
     else first_single_line_comment = -1;
-    if (language.streamCommentStart.Length() > 0)
+    if (language.streamCommentStart.length() > 0)
         first_multi_line_comment_begin = line.Find(language.streamCommentStart);
     else first_multi_line_comment_begin = -1;
-    if (language.streamCommentEnd.Length() > 0)
+    if (language.streamCommentEnd.length() > 0)
         first_multi_line_comment_end = line.Find(language.streamCommentEnd);
     else first_multi_line_comment_end = -1;
 
@@ -77,8 +77,8 @@ inline void AnalyseLine(const CommentToken &language, wxString line, bool &comme
         if (first_multi_line_comment_end > -1)
         {
             multi_line_comment = false;
-            if (first_multi_line_comment_end+language.streamCommentEnd.Length() < line.Length())
-                AnalyseLine(language, line.Mid(first_multi_line_comment_end+language.streamCommentEnd.Length()), comment, code, multi_line_comment);
+            if (first_multi_line_comment_end+language.streamCommentEnd.length() < line.length())
+                AnalyseLine(language, line.Mid(first_multi_line_comment_end+language.streamCommentEnd.length()), comment, code, multi_line_comment);
         }
     }
     // We are not in a multiple line comment
@@ -99,8 +99,8 @@ inline void AnalyseLine(const CommentToken &language, wxString line, bool &comme
             comment = true;
             if (first_multi_line_comment_begin > 0)
                 code = true;
-            if (first_multi_line_comment_begin+language.streamCommentStart.Length() < line.Length())
-                AnalyseLine(language, line.Mid(first_multi_line_comment_begin+language.streamCommentStart.Length()), comment, code, multi_line_comment);
+            if (first_multi_line_comment_begin+language.streamCommentStart.length() < line.length())
+                AnalyseLine(language, line.Mid(first_multi_line_comment_begin+language.streamCommentStart.length()), comment, code, multi_line_comment);
         }
         else
         {

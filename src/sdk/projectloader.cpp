@@ -296,7 +296,7 @@ void ProjectLoader::ConvertLibraries(CompileTargetBase* object)
         return;
     wxString linkLib = compiler->GetSwitches().linkLibs;
     wxString libExt = compiler->GetSwitches().libExtension;
-    size_t libExtLen = libExt.Length();
+    size_t libExtLen = libExt.length();
 
     size_t i = 0;
     while (i < linkerOpts.GetCount())
@@ -311,7 +311,7 @@ void ProjectLoader::ConvertLibraries(CompileTargetBase* object)
             linkLibs.Add(compiler->GetSwitches().libPrefix + opt + ext);
             linkerOpts.RemoveAt(i, 1);
         }
-        else if (opt.Length() > libExtLen && opt.Right(libExtLen) == libExt)
+        else if (opt.length() > libExtLen && opt.Right(libExtLen) == libExt)
         {
             linkLibs.Add(opt);
             linkerOpts.RemoveAt(i, 1);

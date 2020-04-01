@@ -70,7 +70,7 @@ namespace CCManagerHelper
     // used in m_CallTipChoiceDict and m_CallTipFuzzyChoiceDict
     static int CallTipToInt(const wxString& firstTip, int numPages)
     {
-        int val = 33 * firstTip.Length() ^ numPages;
+        int val = 33 * firstTip.length() ^ numPages;
         for (wxString::const_iterator itr = firstTip.begin();
              itr != firstTip.end(); ++itr)
         {
@@ -722,7 +722,7 @@ void CCManager::OnEditorTooltip(CodeBlocksEvent& event)
         const int tknEnd   = stc->WordEndPosition(pos,   true);
         if (tknEnd - tknStart > 2)
         {
-            for (size_t i = 0; i < tips[0].Length(); ++i)
+            for (size_t i = 0; i < tips[0].length(); ++i)
             {
                 size_t hlLoc = tips[0].find(stc->GetTextRange(tknStart, tknEnd), i);
                 if (hlLoc == wxString::npos)
@@ -730,7 +730,7 @@ void CCManager::OnEditorTooltip(CodeBlocksEvent& event)
                 hlStart = hlLoc;
                 hlEnd = hlStart + tknEnd - tknStart;
                 if (   (hlStart > 0 && (tips[0][hlStart - 1] == wxT('_') || wxIsalpha(tips[0][hlStart - 1])))
-                    || (hlEnd < static_cast<int>(tips[0].Length()) - 1 && (tips[0][hlEnd] == wxT('_') || wxIsalpha(tips[0][hlEnd]))) )
+                    || (hlEnd < static_cast<int>(tips[0].length()) - 1 && (tips[0][hlEnd] == wxT('_') || wxIsalpha(tips[0][hlEnd]))) )
                 {
                     i = hlEnd;
                     hlStart = hlEnd = wxSCI_INVALID_POSITION;
@@ -747,7 +747,7 @@ void CCManager::OnEditorTooltip(CodeBlocksEvent& event)
                   || stc->IsPreprocessor(style) ) )
     {
         const int line = stc->LineFromPosition(pos);
-        if (pos + 4 > stc->PositionFromLine(line) + (int)ed->GetLineIndentString(line).Length())
+        if (pos + 4 > stc->PositionFromLine(line) + (int)ed->GetLineIndentString(line).length())
         {
             const CallTipVec& cTips = ccPlugin->GetCallTips(pos, style, ed, argsPos);
             for (size_t i = 0; i < cTips.size(); ++i)
@@ -973,8 +973,8 @@ void CCManager::OnShowCallTip(CodeBlocksEvent& event)
             {
                 if (hlStart == hlEnd && itr->hlStart != itr->hlEnd)
                 {
-                    hlStart = tip.Length() + itr->hlStart;
-                    hlEnd   = tip.Length() + itr->hlEnd;
+                    hlStart = tip.length() + itr->hlStart;
+                    hlEnd   = tip.length() + itr->hlEnd;
                 }
                 tip += itr->tip + wxT('\n');
             }
@@ -1304,7 +1304,7 @@ void CCManager::DoUpdateCallTip(cbEditor* ed)
         sRange = eRange + 1;
         eRange = m_CurCallTip->tip.find(wxT('\n'), sRange);
     }
-    if (sRange < m_CurCallTip->tip.Length())
+    if (sRange < m_CurCallTip->tip.length())
         tips.push_back(m_CurCallTip->tip.Mid(sRange));
     // for multiple tips (such as tips for some overload functions)
     // some more text were added to the single tip, such as the up/down arrows, the x/y indicator.
@@ -1352,13 +1352,13 @@ void CCManager::DoShowTips(const wxStringVec& tips, cbStyledTextCtrl* stc, int p
     {
         // indent line break as needed, if tip prefixed with up/down arrows
         lineBreak += wxT(' ');
-        if (tips.front().Length() > 1 && tips.front()[1] <= wxT('\002'))
+        if (tips.front().length() > 1 && tips.front()[1] <= wxT('\002'))
             lineBreak += wxT("  ");
     }
 
     for (size_t i = 0; i < tips.size() && lineCount < maxLines; ++i)
     {
-        if (tips[i].Length() > (size_t)maxWidth + 6) // line is too long, try breaking it
+        if (tips[i].length() > (size_t)maxWidth + 6) // line is too long, try breaking it
         {
             wxString tipLn = tips[i];
             while (!tipLn.IsEmpty())
@@ -1381,13 +1381,13 @@ void CCManager::DoShowTips(const wxStringVec& tips, cbStyledTextCtrl* stc, int p
                 if (index < 20 || segment == tipLn) // end of string, or cannot split
                 {
                     tip += tipLn + lineBreak;
-                    CCManagerHelper::RipplePts(hlStart, hlEnd, tip.Length(), lineBreak.Length());
+                    CCManagerHelper::RipplePts(hlStart, hlEnd, tip.length(), lineBreak.length());
                     tipLn.Clear();
                 }
                 else // continue splitting
                 {
                     tip += segment.Mid(0, index) + lineBreak + wxT(' ');
-                    CCManagerHelper::RipplePts(hlStart, hlEnd, tip.Length(), lineBreak.Length() + 1);
+                    CCManagerHelper::RipplePts(hlStart, hlEnd, tip.length(), lineBreak.length() + 1);
                     // already starts with a space, so all subsequent lines are prefixed by two spaces
                     tipLn = tipLn.Mid(index);
                 }
@@ -1397,7 +1397,7 @@ void CCManager::DoShowTips(const wxStringVec& tips, cbStyledTextCtrl* stc, int p
         else // just add the line
         {
             tip += tips[i] + lineBreak;
-            CCManagerHelper::RipplePts(hlStart, hlEnd, tip.Length(), lineBreak.Length());
+            CCManagerHelper::RipplePts(hlStart, hlEnd, tip.length(), lineBreak.length());
             ++lineCount;
         }
     }

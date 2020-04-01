@@ -189,7 +189,7 @@ HighlightLanguage EditorColourSet::AddHighlightLanguage(int lexer, const wxStrin
     // fix name to be XML compliant
     wxString newID;
     size_t pos = 0;
-    while (pos < name.Length())
+    while (pos < name.length())
     {
         wxChar ch = name[pos];
         if      (wxIsalnum(ch) || ch == _T('_'))

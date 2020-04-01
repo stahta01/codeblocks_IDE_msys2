@@ -32,7 +32,7 @@ inline wxString UnquoteStringIfNeeded(const wxString& str)
 {
     wxString s = str;
     if (!str.IsEmpty() && str.GetChar(0) == _T('"') && str.Last() == _T('"'))
-        s = str.Mid(1, str.Length() - 2);
+        s = str.Mid(1, str.length() - 2);
     return s;
 }
 
@@ -632,10 +632,10 @@ void CompilerCommandGenerator::FixPathSeparators(Compiler* compiler, wxString& i
         return;
 
     size_t i = 0;
-    while (i < inAndOut.Length())
+    while (i < inAndOut.length())
     {
         if (inAndOut.GetChar(i) == _T('\\') &&
-            (i == inAndOut.Length() - 1 || inAndOut.GetChar(i + 1) != _T(' ')))
+            (i == inAndOut.length() - 1 || inAndOut.GetChar(i + 1) != _T(' ')))
         {
             inAndOut.SetChar(i, _T('/'));
         }
@@ -1075,23 +1075,23 @@ wxString CompilerCommandGenerator::FixupLinkLibraries(Compiler* compiler, const 
             !libPrefix.IsEmpty() &&
             result.StartsWith(libPrefix))
         {
-            result.Remove(0, libPrefix.Length());
+            result.Remove(0, libPrefix.length());
             hadLibPrefix = true;
         }
         // extension
         if (!compiler->GetSwitches().linkerNeedsLibExtension &&
-            result.Length() > libExt.Length() &&
-            result.Right(libExt.Length() + 1) == _T(".") + libExt)
+            result.length() > libExt.length() &&
+            result.Right(libExt.length() + 1) == _T(".") + libExt)
         {
             // remove the extension only if we had a result prefix
             if (hadLibPrefix)
-                result.RemoveLast(libExt.Length() + 1);
+                result.RemoveLast(libExt.length() + 1);
         }
         else if (compiler->GetSwitches().linkerNeedsLibExtension &&
                 !libExt.IsEmpty())
         {
-            if (result.Length() <= libExt.Length() ||
-                result.Right(libExt.Length() + 1) != _T(".") + libExt)
+            if (result.length() <= libExt.length() ||
+                result.Right(libExt.length() + 1) != _T(".") + libExt)
             {
                 result << _T(".") << libExt;
             }
@@ -1300,12 +1300,12 @@ void CompilerCommandGenerator::SearchDirsFromBackticks(Compiler* compiler, Proje
         if (pos == wxString::npos)
             break;
 
-        pos += compiler->GetSwitches().includeDirs.Length();
+        pos += compiler->GetSwitches().includeDirs.length();
         size_t pos2 = btOutput.find(_T(' '), pos);
         if (pos2 != pos)
         {
             if (pos2 == wxString::npos) // whole remaining string
-                m_CompilerSearchDirs[target].Add(btOutput.Mid(pos, btOutput.Length() - pos));
+                m_CompilerSearchDirs[target].Add(btOutput.Mid(pos, btOutput.length() - pos));
             else
                 m_CompilerSearchDirs[target].Add(btOutput.Mid(pos, pos2 - pos));
         }
@@ -1320,14 +1320,14 @@ void CompilerCommandGenerator::SearchDirsFromBackticks(Compiler* compiler, Proje
         if (pos == wxString::npos)
             break;
 
-        pos += compiler->GetSwitches().libDirs.Length();
+        pos += compiler->GetSwitches().libDirs.length();
         size_t pos2 = btOutput.find(_T(' '), pos);
         if (pos2 != pos)
         {
             // note that backtick'd expressions always return full paths so no need to
             // re-normalize it here
             if (pos2 == wxString::npos) // whole remaining string
-                m_LinkerSearchDirs[target].Add(btOutput.Mid(pos, btOutput.Length() - pos));
+                m_LinkerSearchDirs[target].Add(btOutput.Mid(pos, btOutput.length() - pos));
             else
                 m_LinkerSearchDirs[target].Add(btOutput.Mid(pos, pos2 - pos));
         }

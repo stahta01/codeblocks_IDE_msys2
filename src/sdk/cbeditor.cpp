@@ -440,7 +440,7 @@ struct cbEditorInternalData
         {
             wxString match = reUrl.GetMatch(url);
             if (   (url.Find(match) + startPos                       < control->GetCurrentPos())
-                && (url.Find(match) + startPos + (int)match.Length() > control->GetCurrentPos()) )
+                && (url.Find(match) + startPos + (int)match.length() > control->GetCurrentPos()) )
             {
                 url = match(0, match.find_last_not_of(wxT(",.")) + 1); // trim trailing
             }
@@ -459,7 +459,7 @@ struct cbEditorInternalData
                         ? stc->LineFromPosition(stc->GetCurrentPos())
                         : line;
         wxString text = stc->GetLine(currLine);
-        unsigned int len = text.Length();
+        unsigned int len = text.length();
         wxString indent;
         for (unsigned int i = 0; i < len; ++i)
         {
@@ -500,7 +500,7 @@ struct cbEditorInternalData
                 ++lineCount[1];
                 for (int i = 2; i < 9; ++i)
                 {
-                    if (indent.Length() % i == 0)
+                    if (indent.length() % i == 0)
                         ++lineCount[i];
                 }
             }
@@ -2729,7 +2729,7 @@ void cbEditor::GotoMatchingBrace()
                 if (depth == 0)
                 {
                     pp.Matches(control->GetLine(i));
-                    matchingBrace = control->PositionFromLine(i) + pp.GetMatch(control->GetLine(i)).Length();
+                    matchingBrace = control->PositionFromLine(i) + pp.GetMatch(control->GetLine(i)).length();
                     break;
                 }
             }
@@ -2749,7 +2749,7 @@ void cbEditor::GotoMatchingBrace()
                 if (depth == 0)
                 {
                     pp.Matches(control->GetLine(i));
-                    matchingBrace = control->PositionFromLine(i) + pp.GetMatch(control->GetLine(i)).Length();
+                    matchingBrace = control->PositionFromLine(i) + pp.GetMatch(control->GetLine(i)).length();
                     break;
                 }
             }
@@ -2809,7 +2809,7 @@ int cbEditor::GetLineIndentInSpaces(int line) const
                     ? control->LineFromPosition(control->GetCurrentPos())
                     : line;
     wxString text = control->GetLine(currLine);
-    unsigned int len = text.Length();
+    unsigned int len = text.length();
     int spaceCount = 0;
     for (unsigned int i = 0; i < len; ++i)
     {
@@ -3348,7 +3348,7 @@ void cbEditor::OnEditorCharAdded(wxScintillaEvent& event)
                     control->BeginUndoAction();
 
                     control->InsertText(pos, indent);
-                    control->GotoPos(pos + indent.Length());
+                    control->GotoPos(pos + indent.length());
                     control->ChooseCaretX();
 
                     control->EndUndoAction();

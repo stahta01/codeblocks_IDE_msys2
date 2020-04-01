@@ -271,7 +271,7 @@ void Compiler::MakeValidID()
         m_ID = m_Name;
 
     size_t pos = 0;
-    while (pos < m_ID.Length())
+    while (pos < m_ID.length())
     {
         wxChar ch = m_ID[pos];
         if (wxIsalnum(ch) || ch == _T('_') || ch == _T('-')) // valid character

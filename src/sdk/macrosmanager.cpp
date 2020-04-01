@@ -609,24 +609,24 @@ void MacrosManager::ReplaceMacros(wxString& buffer, const ProjectBuildTarget* ta
     int index = wxNOT_FOUND;
     while ((index = buffer.Index(toNativePath.wx_str())) != wxNOT_FOUND)
     {
-        int end = MatchBrace(buffer, index + toNativePath.Length() - 1);
-        wxString content = buffer.Mid(index + toNativePath.Length(), end - index - toNativePath.Length());
+        int end = MatchBrace(buffer, index + toNativePath.length() - 1);
+        wxString content = buffer.Mid(index + toNativePath.length(), end - index - toNativePath.length());
         ReplaceMacros(content, target, true);
         buffer.Replace(buffer.Mid(index, end - index + 1), UnixFilename(content), false);
     }
 
     while ((index = buffer.Index(toUnixPath.wx_str())) != wxNOT_FOUND)
     {
-        int end = MatchBrace(buffer, index + toUnixPath.Length() - 1);
-        wxString content = buffer.Mid(index + toUnixPath.Length(), end - index - toUnixPath.Length());
+        int end = MatchBrace(buffer, index + toUnixPath.length() - 1);
+        wxString content = buffer.Mid(index + toUnixPath.length(), end - index - toUnixPath.length());
         ReplaceMacros(content, target, true);
         buffer.Replace(buffer.Mid(index, end - index + 1), UnixFilename(content, wxPATH_UNIX), false);
     }
 
     while ((index = buffer.Index(toWindowsPath.wx_str())) != wxNOT_FOUND)
     {
-        int end = MatchBrace(buffer, index + toWindowsPath.Length() - 1);
-        wxString content = buffer.Mid(index + toWindowsPath.Length(), end - index - toWindowsPath.Length());
+        int end = MatchBrace(buffer, index + toWindowsPath.length() - 1);
+        wxString content = buffer.Mid(index + toWindowsPath.length(), end - index - toWindowsPath.length());
         ReplaceMacros(content, target, true);
         buffer.Replace(buffer.Mid(index, end - index + 1), UnixFilename(content, wxPATH_WIN), false);
     }
@@ -768,7 +768,7 @@ wxString MacrosManager::EvalCondition(const wxString& in_cond, const wxString& t
 int MacrosManager::MatchBrace(const wxString& buffer, int index)
 {
     int depth = 0;
-    while (index < (int)buffer.Length())
+    while (index < (int)buffer.length())
     {
         if (buffer[index] == wxT('{'))
             ++depth;
