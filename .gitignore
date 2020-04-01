@@ -1,1 +1,33 @@
 /.svn
+
+# Debian
+/debian
+
+# Code::Blocks files and folders
+/src/.objs*
+/src/devel*
+/src/output*
+*.layout
+*.depend
+*.bmarks
+*build_log.html
+*.cbTemp
+*cscope_file_list
+autorevision.h
+/.last_revision
+
+# Automake files
+Makefile.in
+/configure
+/aclocal.m4
+/m4
+Makefile.am
+/configure.ac
+/config.guess
+/config.sub
+/autom4te.cache
+/install-sh
+/ltmain.sh
+/missing
+/revision.m4
+/depcomp
