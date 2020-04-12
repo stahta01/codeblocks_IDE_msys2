@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11906 $
- * $Id: projectloader.cpp 11906 2019-11-09 12:05:35Z fuscated $
+ * $Revision: 12178 $
+ * $Id: projectloader.cpp 12178 2020-06-23 21:29:49Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/projectloader.cpp $
  */
 
@@ -134,14 +134,14 @@ bool ProjectLoader::Open(const wxString& filename, TiXmlElement** ppExtensions)
                 msg << _("  * only saves values that differ from defaults (i.e. project files are smaller now).\n");
                 msg << _("  * added object names generation mode setting (normal/extended).\n");
                 msg << _("  * added project notes.\n");
-                msg << _("\n");
+                msg << _T("\n");
 
                 warn_msg << _("* Project file updated to version 1.6:\n");
                 warn_msg << _("   When a project file is saved as version 1.6, it will NO LONGER be read correctly\n");
                 warn_msg << _("   by earlier Code::Blocks versions!\n");
                 warn_msg << _("   So, if you plan on using this project with an earlier Code::Blocks version, you\n");
                 warn_msg << _("   should probably NOT save this project as version 1.6...\n");
-                warn_msg << _("\n");
+                warn_msg << _T("\n");
             }
 
             // 1.4 -> 1.5: updated custom build command per-project file
@@ -149,7 +149,7 @@ bool ProjectLoader::Open(const wxString& filename, TiXmlElement** ppExtensions)
             {
                 msg << _("1.4 to 1.5:\n");
                 msg << _("  * added virtual build targets.\n");
-                msg << _("\n");
+                msg << _T("\n");
             }
 
             // 1.3 -> 1.4: updated custom build command per-project file
@@ -157,7 +157,7 @@ bool ProjectLoader::Open(const wxString& filename, TiXmlElement** ppExtensions)
             {
                 msg << _("1.3 to 1.4:\n");
                 msg << _("  * changed the way custom file build commands are stored (no auto-conversion).\n");
-                msg << _("\n");
+                msg << _T("\n");
             }
 
             if (!msg.IsEmpty())

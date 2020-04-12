@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12017 $
- * $Id: manager.cpp 12017 2020-04-01 15:14:56Z mortenmacfly $
+ * $Revision: 12178 $
+ * $Id: manager.cpp 12178 2020-06-23 21:29:49Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/manager.cpp $
  */
 
@@ -520,7 +520,8 @@ bool Manager::LoadResource(const wxString& file)
 
     if (wxFile::Access(resourceFile, wxFile::read) == false)
     {
-        Get()->GetLogManager()->LogError(_("Manager failed to access XRC resource '") + resourceFile + _("'."));
+        Get()->GetLogManager()->LogError(wxString::Format(_("Manager failed to access XRC resource '%s'."),
+                                                          resourceFile.wx_str()));
         return false;
     }
 
@@ -547,15 +548,19 @@ bool Manager::LoadResource(const wxString& file)
             wxMemoryFSHandler::AddFile(file, buf, len);
         }
         wxLogNull ln; // avoid warnings about missing xrc files o wx31+ with verbose messages enabled
-        if ( !wxXmlResource::Get()->Load(memoryFile) )
-            Get()->GetLogManager()->LogError(_("Manager failed to load XRC resource '") + resourceFile + _("'."));
+        if (!wxXmlResource::Get()->Load(memoryFile))
+        {
+            Get()->GetLogManager()->LogError(wxString::Format(_("Manager failed to load XRC resource '%s'."),
+                                                              resourceFile.wx_str()));
+        }
         delete[] buf;
         return true;
     }
     catch (...)
     {
         delete[] buf;
-        Get()->GetLogManager()->LogError(_("Manager hardly failed to load XRC resource '") + resourceFile + _("'."));
+        Get()->GetLogManager()->LogError(wxString::Format(_("Manager hardly failed to load XRC resource '%s'."),
+                                                          resourceFile.wx_str()));
         return false;
     }
 }

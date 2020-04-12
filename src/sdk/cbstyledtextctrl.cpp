@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11870 $
- * $Id: cbstyledtextctrl.cpp 11870 2019-10-01 22:16:21Z pecanh $
+ * $Revision: 12133 $
+ * $Id: cbstyledtextctrl.cpp 12133 2020-05-31 15:54:07Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbstyledtextctrl.cpp $
  */
 
@@ -106,7 +106,7 @@ void cbStyledTextCtrl::OnContextMenu(wxContextMenuEvent& event)
 
             const bool is_right_click = event.GetPosition() != wxDefaultPosition;
             const wxPoint mp(is_right_click ? event.GetPosition() : wxDefaultPosition);
-            pParent->DisplayContextMenu(mp, mtEditorManager);
+            pParent->DisplayContextMenu(mp, mtEditorManager, this);
         }
         else
             event.Skip();

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11439 $
- * $Id: sc_wxtypes.cpp 11439 2018-08-07 07:13:55Z fuscated $
+ * $Revision: 12180 $
+ * $Id: sc_wxtypes.cpp 12180 2020-06-23 21:29:56Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/scripting/bindings/sc_wxtypes.cpp $
  */
 
@@ -403,6 +403,7 @@ namespace ScriptBindings
                 emptyCtor().
                 staticFuncVarArgs(&wxString_OpAdd, "_add", "*").
                 staticFuncVarArgs(&wxString_OpCmp, "_cmp", "*").
+                staticFuncVarArgs(&wxString_OpCmp, "Compare", "*").
                 staticFuncVarArgs(&wxString_OpToString, "_tostring", "").
                 func<WXSTR_FIRST_STR>(&wxString::First, "Find").
                 staticFuncVarArgs(&wxString_Matches, "Matches", "*").

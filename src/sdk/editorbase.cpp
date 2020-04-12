@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11313 $
- * $Id: editorbase.cpp 11313 2018-03-10 11:00:49Z fuscated $
+ * $Revision: 12202 $
+ * $Id: editorbase.cpp 12202 2020-09-26 14:23:23Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editorbase.cpp $
  */
 
@@ -268,7 +268,7 @@ void EditorBase::BasicAddToContextMenu(wxMenu* popup, ModuleType type)
     }
 }
 
-void EditorBase::DisplayContextMenu(const wxPoint& position, ModuleType type)
+void EditorBase::DisplayContextMenu(const wxPoint& position, ModuleType type, wxWindow *menuParent)
 {
     bool noeditor = (type != mtEditorManager);
     // noeditor:
@@ -340,7 +340,10 @@ void EditorBase::DisplayContextMenu(const wxPoint& position, ModuleType type)
     {
         wxMenuItem *last = popupItems[popupItems.GetCount() - 1];
         if (last && last->IsSeparator())
-            popup->Remove(last);
+        {
+            wxMenuItem *removed = popup->Remove(last);
+            delete removed;
+        }
     }
 
     // Insert a separator at the end of the "Find XXX" menu group of items.
@@ -362,11 +365,17 @@ void EditorBase::DisplayContextMenu(const wxPoint& position, ModuleType type)
     }
     else
     {
-        clientpos = ScreenToClient(position);
+        if (menuParent)
+            clientpos = menuParent->ScreenToClient(position);
+        else
+            clientpos = ScreenToClient(position);
     }
 
     m_pData->m_DisplayingPopupMenu = true;
-    PopupMenu(popup, clientpos);
+    if (menuParent)
+        menuParent->PopupMenu(popup, clientpos);
+    else
+        PopupMenu(popup, clientpos);
     delete popup;
     m_pData->m_DisplayingPopupMenu = false;
 

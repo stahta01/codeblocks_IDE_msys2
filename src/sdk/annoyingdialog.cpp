@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 10907 $
- * $Id: annoyingdialog.cpp 10907 2016-09-25 16:09:48Z fuscated $
+ * $Revision: 12206 $
+ * $Id: annoyingdialog.cpp 12206 2020-09-26 14:23:34Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/annoyingdialog.cpp $
  */
 
@@ -211,7 +211,7 @@ void AnnoyingDialog::Init(const wxString &caption, const wxString &id, const wxS
     }
 
     outerSizer->Add( mainArea, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
-    outerSizer->Add( buttonSizer, 0, wxALIGN_CENTER_HORIZONTAL);
+    outerSizer->Add( buttonSizer, 0, wxEXPAND);
 
     m_CheckBox = new wxCheckBox(this, wxID_ANY, _("Don't annoy me again!"), wxDefaultPosition, wxDefaultSize, 0);
     outerSizer->Add(m_CheckBox, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxBOTTOM, 5);

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11771 $
- * $Id: editormanager.cpp 11771 2019-07-04 22:18:03Z fuscated $
+ * $Revision: 12092 $
+ * $Id: editormanager.cpp 12092 2020-05-25 22:44:34Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editormanager.cpp $
  */
 
@@ -317,8 +317,14 @@ cbEditor* EditorManager::GetBuiltinEditor(EditorBase* eb)
 
 EditorBase* EditorManager::IsOpen(const wxString& filename)
 {
+    // Fast path it there are no open editors. This is useful, because UnixFilename and realpath are
+    // rather expensive when called many times.
+    const size_t pageCount = m_pNotebook->GetPageCount();
+    if (pageCount == 0)
+        return nullptr;
+
     wxString uFilename = UnixFilename(realpath(filename));
-    for (size_t i = 0; i < m_pNotebook->GetPageCount(); ++i)
+    for (size_t i = 0; i < pageCount; ++i)
     {
         EditorBase* eb = InternalGetEditorBase(i);
         if (!eb)
@@ -330,7 +336,7 @@ EditorBase* EditorManager::IsOpen(const wxString& filename)
             return eb;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 EditorBase* EditorManager::GetEditor(int index)

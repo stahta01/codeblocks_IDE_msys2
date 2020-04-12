@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 10769 $
- * $Id: sc_globals.cpp 10769 2016-02-06 14:26:58Z mortenmacfly $
+ * $Revision: 12179 $
+ * $Id: sc_globals.cpp 12179 2020-06-23 21:29:53Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/scripting/bindings/sc_globals.cpp $
  */
 
@@ -88,7 +88,7 @@ namespace ScriptBindings
     {
         return Manager::Get()->GetPluginManager()->ExecutePlugin(pluginName);
     }
-    int ConfigurePlugin(const wxString& pluginName)
+    int ConfigurePlugin(cb_unused const wxString& pluginName)
     {
         return 0; /* leaving script binding intact for compatibility, but this is factually not implemented at all */
     }

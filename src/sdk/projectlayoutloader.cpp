@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 10874 $
- * $Id: projectlayoutloader.cpp 10874 2016-07-16 20:00:28Z jenslody $
+ * $Revision: 12178 $
+ * $Id: projectlayoutloader.cpp 12178 2020-06-23 21:29:49Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/projectlayoutloader.cpp $
  */
 
@@ -101,7 +101,7 @@ bool ProjectLayoutLoader::Open(const wxString& filename)
             {
                 msg << _("0.0 (unversioned) to 1.0:\n");
                 msg << _("  * save editor-pane layout and order.\n");
-                msg << _("\n");
+                msg << _T("\n");
             }
 
             if (!msg.IsEmpty())

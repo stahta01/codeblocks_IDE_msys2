@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11354 $
- * $Id: pluginmanager.cpp 11354 2018-03-31 21:50:05Z fuscated $
+ * $Revision: 12025 $
+ * $Id: pluginmanager.cpp 12025 2020-04-04 16:32:45Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/pluginmanager.cpp $
  */
 
@@ -1266,7 +1266,9 @@ inline int SortByConfigurationPriority(cbPlugin** first, cbPlugin** second)
     return (*first)->GetConfigurationPriority() - (*second)->GetConfigurationPriority();
 }
 
-void PluginManager::GetConfigurationPanels(int group, wxWindow* parent, ConfigurationPanelsArray& arrayToFill)
+void PluginManager::GetConfigurationPanels(int group, wxWindow* parent,
+                                           ConfigurationPanelsArray& arrayToFill,
+                                           cbConfigurationPanelColoursInterface *coloursInterface)
 {
     // build an array of Plugins* because we need to order it by configuration priority
     PluginsArray arr;
@@ -1286,7 +1288,7 @@ void PluginManager::GetConfigurationPanels(int group, wxWindow* parent, Configur
     for (unsigned int i = 0; i < arr.GetCount(); ++i)
     {
         cbPlugin* plug = arr[i];
-        cbConfigurationPanel* pnl = plug->GetConfigurationPanel(parent);
+        cbConfigurationPanel* pnl = plug->GetConfigurationPanelEx(parent, coloursInterface);
         if (pnl)
             arrayToFill.Add(pnl);
     }

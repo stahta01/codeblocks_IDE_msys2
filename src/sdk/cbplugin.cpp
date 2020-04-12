@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11638 $
- * $Id: cbplugin.cpp 11638 2019-04-20 16:57:54Z fuscated $
+ * $Revision: 12205 $
+ * $Id: cbplugin.cpp 12205 2020-09-26 14:23:32Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbplugin.cpp $
  */
 
@@ -578,6 +578,9 @@ void cbDebuggerPlugin::SwitchToDebuggingLayout()
     case cbDebuggerCommonConfig::OnePerDebuggerConfig:
         perspectiveName = GetGUIName() + wxT(":") + config.GetName();
         break;
+    case cbDebuggerCommonConfig::UseCurrent:
+        m_PreviousLayout = wxString();
+        return;
     case cbDebuggerCommonConfig::OnlyOne:
     default:
         perspectiveName = _("Debugging");
@@ -599,6 +602,9 @@ void cbDebuggerPlugin::SwitchToDebuggingLayout()
 
 void cbDebuggerPlugin::SwitchToPreviousLayout()
 {
+    if (m_PreviousLayout.empty())
+        return;
+
     CodeBlocksLayoutEvent switchEvent(cbEVT_SWITCH_VIEW_LAYOUT, m_PreviousLayout);
 
     wxString const &name = !switchEvent.layout.IsEmpty() ? switchEvent.layout : wxString(_("Code::Blocks default"));
@@ -719,8 +725,10 @@ void cbDebuggerPlugin::OnCompilerFinished(cb_unused CodeBlocksEvent& event)
         // only proceed if build succeeded
         if (m_pCompiler && m_pCompiler->GetExitCode() != 0)
         {
-            AnnoyingDialog dlg(_("Debug anyway?"), _("Build failed, do you want to debug the program?"),
-                               wxART_QUESTION, AnnoyingDialog::YES_NO, AnnoyingDialog::rtNO);
+            AnnoyingDialog dlg(_("Debug anyway?"),
+                               _("Build failed, do you want to debug the program?"),
+                               wxART_QUESTION, AnnoyingDialog::YES_NO, AnnoyingDialog::rtNO,
+                               _("&Debug anyway"));
             if (dlg.ShowModal() != AnnoyingDialog::rtYES)
             {
                 ProjectManager *manager = Manager::Get()->GetProjectManager();

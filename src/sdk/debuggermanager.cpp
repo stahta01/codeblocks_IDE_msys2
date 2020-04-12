@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11770 $
- * $Id: debuggermanager.cpp 11770 2019-07-04 22:15:32Z fuscated $
+ * $Revision: 12182 $
+ * $Id: debuggermanager.cpp 12182 2020-07-05 10:48:47Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/debuggermanager.cpp $
  */
 
@@ -438,17 +438,18 @@ void cbDebuggerCommonConfig::SetValueTooltipFont(const wxString &font)
 cbDebuggerCommonConfig::Perspective cbDebuggerCommonConfig::GetPerspective()
 {
     ConfigManager *c = Manager::Get()->GetConfigManager(wxT("debugger_common"));
-    int v = c->ReadInt(wxT("/common/perspective"), static_cast<int>(OnePerDebuggerConfig));
-    if (v < OnlyOne || v > OnePerDebuggerConfig)
-        return OnePerDebuggerConfig;
+    int v = c->ReadInt(wxT("/common/perspective"),
+                       static_cast<int>(Perspective::OnePerDebuggerConfig));
+    if (v < Perspective::OnlyOne || v > Perspective::UseCurrent)
+        return Perspective::OnePerDebuggerConfig;
     return static_cast<Perspective>(v);
 }
 
 void cbDebuggerCommonConfig::SetPerspective(int perspective)
 {
     ConfigManager *c = Manager::Get()->GetConfigManager(wxT("debugger_common"));
-    if (perspective < OnlyOne || perspective > OnePerDebuggerConfig)
-        perspective = OnePerDebuggerConfig;
+    if (perspective < Perspective::OnlyOne || perspective > Perspective::UseCurrent)
+        perspective = Perspective::OnePerDebuggerConfig;
     c->Write(wxT("/common/perspective"), perspective);
 }
 

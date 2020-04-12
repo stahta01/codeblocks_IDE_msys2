@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11969 $
- * $Id: cbeditor.cpp 11969 2020-02-23 13:33:14Z fuscated $
+ * $Revision: 12116 $
+ * $Id: cbeditor.cpp 12116 2020-05-31 15:52:39Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbeditor.cpp $
  */
 
@@ -48,6 +48,7 @@
 #include "cbeditorprintout.h"
 #include "cbdebugger_interfaces.h"
 #include "editor_hooks.h"
+#include "editor_utils.h"
 #include "encodingdetector.h"
 #include "filefilters.h"
 #include "projectfileoptionsdlg.h"
@@ -1074,9 +1075,9 @@ void cbEditor::SetMarkerStyle(int marker, int markerType, wxColor fore, wxColor 
 
 void cbEditor::UnderlineFoldedLines(bool underline)
 {
-    m_pControl->SetFoldFlags(underline ? wxSCI_FOLDFLAG_LINEAFTER_CONTRACTED : 0);
+    cb::UnderlineFoldedLines(m_pControl, underline);
     if (m_pControl2)
-        m_pControl2->SetFoldFlags(underline ? wxSCI_FOLDFLAG_LINEAFTER_CONTRACTED : 0);
+        cb::UnderlineFoldedLines(m_pControl2, underline);
 }
 
 cbStyledTextCtrl* cbEditor::CreateEditor()
@@ -1682,7 +1683,6 @@ void cbEditor::InternalSetEditorStyleAfterFileOpen(cbStyledTextCtrl* control)
         control->SetProperty(_T("fold.compact"),      _T("0"));
         control->SetProperty(_T("fold.preprocessor"), mgr->ReadBool(_T("/folding/fold_preprocessor"), false) ? _T("1") : _T("0"));
 
-        control->SetFoldFlags(wxSCI_FOLDFLAG_LINEAFTER_CONTRACTED);
         control->SetMarginType(C_FOLDING_MARGIN, wxSCI_MARGIN_SYMBOL);
         control->SetMarginWidth(C_FOLDING_MARGIN, foldingMarginBaseWidth);
         // use "|" here or we might break plugins that use the margin (none at the moment)
@@ -2248,52 +2248,9 @@ void cbEditor::ToggleAllFolds()
 
 void cbEditor::SetFoldingIndicator(int id)
 {
-    wxColor f(0xff, 0xff, 0xff); // foreground colour
-    wxColor b(0x80, 0x80, 0x80); // background colour
-    // Arrow
-    if (id == 0)
-    {
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEROPEN,    wxSCI_MARK_ARROWDOWN,  f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDER,        wxSCI_MARK_ARROW,      f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERSUB,     wxSCI_MARK_BACKGROUND, f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERTAIL,    wxSCI_MARK_BACKGROUND, f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEREND,     wxSCI_MARK_ARROW,      f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEROPENMID, wxSCI_MARK_ARROWDOWN,  f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERMIDTAIL, wxSCI_MARK_BACKGROUND, f, b);
-    }
-    // Circle
-    else if (id == 1)
-    {
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEROPEN,    wxSCI_MARK_CIRCLEMINUS,          f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDER,        wxSCI_MARK_CIRCLEPLUS,           f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERSUB,     wxSCI_MARK_VLINE,                f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERTAIL,    wxSCI_MARK_LCORNERCURVE,         f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEREND,     wxSCI_MARK_CIRCLEPLUSCONNECTED,  f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEROPENMID, wxSCI_MARK_CIRCLEMINUSCONNECTED, f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERMIDTAIL, wxSCI_MARK_TCORNER,              f, b);
-    }
-    // Square
-    else if (id == 2)
-    {
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEROPEN,    wxSCI_MARK_BOXMINUS,          f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDER,        wxSCI_MARK_BOXPLUS,           f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERSUB,     wxSCI_MARK_VLINE,             f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERTAIL,    wxSCI_MARK_LCORNER,           f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEREND,     wxSCI_MARK_BOXPLUSCONNECTED,  f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEROPENMID, wxSCI_MARK_BOXMINUSCONNECTED, f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERMIDTAIL, wxSCI_MARK_TCORNER,           f, b);
-    }
-    // Simple
-    else if (id == 3)
-    {
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEROPEN,    wxSCI_MARK_MINUS,      f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDER,        wxSCI_MARK_PLUS,       f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERSUB,     wxSCI_MARK_BACKGROUND, f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERTAIL,    wxSCI_MARK_BACKGROUND, f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEREND,     wxSCI_MARK_PLUS,       f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDEROPENMID, wxSCI_MARK_MINUS,      f, b);
-        SetMarkerStyle(wxSCI_MARKNUM_FOLDERMIDTAIL, wxSCI_MARK_BACKGROUND, f, b);
-    }
+    cb::SetFoldingMarkers(m_pControl, id);
+    if (m_pControl2)
+        cb::SetFoldingMarkers(m_pControl2, id);
 }
 
 void cbEditor::FoldBlockFromLine(int line)
@@ -3477,10 +3434,9 @@ void cbEditor::OnEditorModified(wxScintillaEvent& event)
 
     // whenever event.GetLinesAdded() != 0, we must re-set breakpoints for lines greater
     // than LineFromPosition(event.GetPosition())
-    int linesAdded = event.GetLinesAdded();
-    bool isAdd = event.GetModificationType() & wxSCI_MOD_INSERTTEXT;
-    bool isDel = event.GetModificationType() & wxSCI_MOD_DELETETEXT;
-    if ((isAdd || isDel) && linesAdded != 0)
+    const int linesAdded = event.GetLinesAdded();
+    const bool isAddOrDel = (event.GetModificationType() & (wxSCI_MOD_INSERTTEXT | wxSCI_MOD_DELETETEXT));
+    if (isAddOrDel && linesAdded != 0)
     {
         // whether to show line-numbers or not is handled in SetLineNumberColWidth() now
         m_pData->SetLineNumberColWidth();
@@ -3491,12 +3447,15 @@ void cbEditor::OnEditorModified(wxScintillaEvent& event)
         // well, scintilla events happen regularly
         // although we only reach this part of the code only if a line has been added/removed
         // so, yes, it might not be that bad after all
-        int startline = m_pControl->LineFromPosition(event.GetPosition());
         if (m_pControl == event.GetEventObject())
         {
-            const DebuggerManager::RegisteredPlugins &plugins = Manager::Get()->GetDebuggerManager()->GetAllDebuggers();
-            cbDebuggerPlugin *active = Manager::Get()->GetDebuggerManager()->GetActiveDebugger();
-            for (DebuggerManager::RegisteredPlugins::const_iterator it = plugins.begin(); it != plugins.end(); ++it)
+            const int startline = m_pControl->LineFromPosition(event.GetPosition());
+            DebuggerManager *debuggerManager = Manager::Get()->GetDebuggerManager();
+            const DebuggerManager::RegisteredPlugins &plugins = debuggerManager->GetAllDebuggers();
+            cbDebuggerPlugin *active = debuggerManager->GetActiveDebugger();
+            for (DebuggerManager::RegisteredPlugins::const_iterator it = plugins.begin();
+                 it != plugins.end();
+                 ++it)
             {
                 if (it->first != active)
                     it->first->EditorLinesAddedOrRemoved(this, startline + 1, linesAdded);
@@ -3510,6 +3469,7 @@ void cbEditor::OnEditorModified(wxScintillaEvent& event)
             RefreshBreakpointMarkers();
         }
     }
+
     // If we remove the folding-point (the brace or whatever) from a folded block,
     // we have to make the hidden lines visible, otherwise, they
     // will no longer be reachable, until the editor is closed and reopened again

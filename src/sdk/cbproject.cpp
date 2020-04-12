@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11905 $
- * $Id: cbproject.cpp 11905 2019-11-09 12:05:32Z fuscated $
+ * $Revision: 12046 $
+ * $Id: cbproject.cpp 12046 2020-04-12 16:36:27Z bluehazzard $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbproject.cpp $
  */
 
@@ -504,7 +504,7 @@ void cbProject::CalculateCommonTopLevelPath()
         if (   (prjHasUNCName && fileHasUNCName)
             || (   !prjHasUNCName
                 && !fileHasUNCName
-                && vol.IsSameAs(f->file.GetVolume()) ) )
+                && vol.IsSameAs(f->file.GetVolume(), false) ) )
         {
             wxFileName relFileCTLP(f->file);
             relFileCTLP.MakeRelativeTo( m_CommonTopLevelPath );

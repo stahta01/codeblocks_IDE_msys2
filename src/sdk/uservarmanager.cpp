@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11359 $
- * $Id: uservarmanager.cpp 11359 2018-04-01 17:11:54Z fuscated $
+ * $Revision: 12044 $
+ * $Id: uservarmanager.cpp 12044 2020-04-11 11:21:46Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/uservarmanager.cpp $
  */
 
@@ -745,7 +745,7 @@ void UsrGlblMgrEditDialog::Save()
                 || t.Contains(_T('#') + m_CurrentVar) ) )
         {
             if (cbMessageBox(_("Are you sure you want to save an invalid global variable?"), _("Global variables"),
-                             wxYES_NO | wxICON_QUESTION) == wxID_YES)
+                             wxYES_NO | wxICON_QUESTION, this) == wxID_YES)
             {
                 t.assign(_T("(invalid)"));
             }

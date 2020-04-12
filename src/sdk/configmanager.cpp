@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11901 $
- * $Id: configmanager.cpp 11901 2019-11-04 19:35:26Z fuscated $
+ * $Revision: 12178 $
+ * $Id: configmanager.cpp 12178 2020-06-23 21:29:49Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/configmanager.cpp $
  */
 
@@ -612,7 +612,10 @@ inline wxString ConfigManager::GetUserDataFolder()
         return wxStandardPathsBase::Get().GetUserDataDir();
 #else
 #ifdef __linux__
-    return wxString::FromUTF8(g_build_filename (g_get_user_config_dir(), "codeblocks", NULL));
+    gchar *filename = g_build_filename(g_get_user_config_dir(), "codeblocks", nullptr);
+    wxString result=wxString::FromUTF8(filename);
+    g_free(filename);
+    return result;
 #else
     return wxStandardPathsBase::Get().GetUserDataDir();
 #endif // __linux__
@@ -1586,7 +1589,11 @@ void ConfigManager::InitPaths()
     wxString dataPathUser = ConfigManager::config_folder + wxFILE_SEP_PATH + _T("share");
 #ifdef __linux__
     if (!has_alternate_user_data_path)
-      dataPathUser = wxString::FromUTF8(g_build_filename (g_get_user_data_dir(), NULL));
+    {
+        gchar *filename = g_build_filename(g_get_user_data_dir(), nullptr);
+        dataPathUser = wxString::FromUTF8(filename);
+        g_free(filename);
+    }
 #endif // __linux__
 
     ConfigManager::data_path_user = dataPathUser + wxFILE_SEP_PATH + _T("codeblocks");
@@ -1594,7 +1601,7 @@ void ConfigManager::InitPaths()
     // if user- and global-datapath are the same (can happen in portable mode) we run in conflicts
     // so we extend the user-datapath with the users name
     if (wxFileName(ConfigManager::data_path_user) == wxFileName(ConfigManager::data_path_global))
-        ConfigManager::data_path_user.append(_(".")+wxGetUserId());
+        ConfigManager::data_path_user.append("." + wxGetUserId());
 
     CreateDirRecursively(ConfigManager::config_folder);
     CreateDirRecursively(ConfigManager::data_path_user   + _T("/plugins/"));

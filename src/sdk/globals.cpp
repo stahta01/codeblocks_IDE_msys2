@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11847 $
- * $Id: globals.cpp 11847 2019-09-08 22:38:06Z fuscated $
+ * $Revision: 12142 $
+ * $Id: globals.cpp 12142 2020-05-31 15:54:43Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/globals.cpp $
  */
 
@@ -19,6 +19,7 @@
     #include <wx/imaglist.h>
     #include <wx/listctrl.h>
     #include <wx/menu.h>
+    #include <wx/settings.h>
     #include <wx/textdlg.h>
 
     #include "wx/wxscintilla.h"
@@ -993,7 +994,7 @@ bool IsSuffixOfPath(wxFileName const & suffix, wxFileName const & path)
         j--;
     }
 
-    if (suffix.IsAbsolute() && (j >= 0 || suffix.GetVolume() != path.GetVolume()))
+    if (suffix.IsAbsolute() && (j >= 0 || !(suffix.GetVolume().IsSameAs(path.GetVolume(), false))) )
         return false;
 
     // 'suffix' is a suffix of 'path'
@@ -1269,6 +1270,26 @@ bool cbAddBitmapToImageList(wxImageList &list, const wxBitmap &bitmap, int size,
         list.Add(missingBitmap);
         return false;
     }
+}
+
+bool cbIsDarkTheme()
+{
+    bool isDarkTheme = false;
+#if wxCHECK_VERSION(3, 1, 3)
+    isDarkTheme = wxSystemSettings::GetAppearance().IsDark();
+#else
+    // Taken from wxSystemAppearance::IsUsingDarkBackground in wxWidgets...
+    const wxColour bg = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
+    const wxColour fg = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+
+    const double fgLuminance = (0.299 * fg.Red() + 0.587 * fg.Green() + 0.114 * fg.Blue()) / 255.0;
+    const double bgLuminance = (0.299 * bg.Red() + 0.587 * bg.Green() + 0.114 * bg.Blue()) / 255.0;
+    // The threshold here is rather arbitrary, but it seems that using just
+    // inequality would be wrong as it could result in false positives.
+    isDarkTheme = ((fgLuminance - bgLuminance) > 0.2);
+#endif // wxCHECK_VERSION(3, 1, 3)
+
+    return isDarkTheme;
 }
 
 // this doesn't work under wxGTK, and is only needed on wxMSW, we work around it on wxGTK

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11119 $
- * $Id: projectfileoptionsdlg.cpp 11119 2017-08-01 21:49:34Z fuscated $
+ * $Revision: 12178 $
+ * $Id: projectfileoptionsdlg.cpp 12178 2020-06-23 21:29:49Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/projectfileoptionsdlg.cpp $
  */
 
@@ -179,7 +179,7 @@ ProjectFileOptionsDlg::ProjectFileOptionsDlg(wxWindow* parent, ProjectFile* pf) 
         XRCCTRL(*this, "txtAbsName",         wxTextCtrl)->SetValue(m_FileNameStr);
         XRCCTRL(*this, "txtRelName",         wxTextCtrl)->SetValue(pf->relativeFilename);
 
-        SetTitle(_("Properties of ") + wxString(_("\"")) + pf->relativeFilename + wxString(_("\"")));
+        SetTitle(wxString::Format(_("Properties of \"%s\""), pf->relativeFilename.wx_str()));
     }
     XRCCTRL(*this, "txtObjName",               wxTextCtrl)->Enable(false);
     // included files not implemented yet -> hide it
