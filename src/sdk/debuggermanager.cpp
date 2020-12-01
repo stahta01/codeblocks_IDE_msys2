@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <wx/fontutil.h>
 #include <wx/toolbar.h>
 
 #include "debuggermanager.h"
