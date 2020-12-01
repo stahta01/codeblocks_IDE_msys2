@@ -7,8 +7,9 @@
 #define CB_BASE64_H
 
 #include <wx/defs.h>
-#include <wx/string.h>
 #include "settings.h"
+
+class wxString;
 
 namespace wxBase64
 {

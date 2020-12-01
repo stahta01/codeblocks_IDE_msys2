@@ -10,7 +10,6 @@
 #include <map>
 
 #include <wx/string.h>
-#include <wx/filename.h>
 #include <wx/dynarray.h>
 #include <wx/regex.h>
 #include "compileoptionsbase.h"

@@ -10,7 +10,6 @@
 #include "settings.h"
 #include "scrollingdialog.h"
 #include <wx/panel.h>
-#include <wx/string.h>
 
 class wxButton;
 class wxWindow;
