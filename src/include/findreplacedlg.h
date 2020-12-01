@@ -6,12 +6,14 @@
 #ifndef REPLACEDLG_H
 #define REPLACEDLG_H
 
-#include <wx/notebook.h>
+#include <wx/window.h>
+#include <wx/bookctrl.h>
 
 #include "findreplacebase.h"
 
 class wxComboBox;
 class wxCommandEvent;
+class wxNotebookEvent;
 
 class DLLIMPORT FindReplaceDlg : public FindReplaceBase
 {

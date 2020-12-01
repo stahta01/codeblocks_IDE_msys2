@@ -7,7 +7,6 @@
 #define FINDREPLACEBASE_H
 
 #include "scrollingdialog.h"
-#include <wx/string.h>
 
 class wxWindow;
 
