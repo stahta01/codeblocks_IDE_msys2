@@ -9,8 +9,6 @@
 #undef new
 
 #include <vector>
-#include <wx/file.h>
-#include <wx/string.h>
 #include <typeinfo>
 #include "globals.h"
 #include "prep.h"

@@ -6,13 +6,13 @@
 #ifndef _CB_DEBUGGER_INTERFACES_H_
 #define _CB_DEBUGGER_INTERFACES_H_
 
-#include <wx/string.h>
 #include "settings.h"
 #include "debuggermanager.h"
 
 class cbDebuggerPlugin;
 class wxMenu;
 class wxObject;
+class wxString;
 class wxWindow;
 
 class DLLIMPORT cbBacktraceDlg

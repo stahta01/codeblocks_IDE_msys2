@@ -6,10 +6,11 @@
 #define X_COLOURMANAGER_H
 
 #include <map>
-#include <wx/colour.h>
-#include <wx/string.h>
 
 #include "manager.h"
+
+class wxColour;
+class wxString;
 
 class DLLIMPORT ColourManager : public Mgr<ColourManager>
 {

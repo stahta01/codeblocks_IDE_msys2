@@ -6,9 +6,6 @@
 #ifndef CBEDITOR_H
 #define CBEDITOR_H
 
-#include <wx/hashmap.h>
-#include <wx/datetime.h>
-#include <wx/fontmap.h>
 #include <wx/timer.h>
 
 #include "settings.h"
