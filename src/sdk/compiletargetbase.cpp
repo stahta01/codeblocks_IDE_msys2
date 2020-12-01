@@ -12,6 +12,7 @@
 #ifndef CB_PRECOMP
     #include <wx/filename.h>
 
+    #include "compiler.h"
     #include "compiletargetbase.h"
     #include "globals.h"
     #include "logmanager.h" // Manager::Get()->GetLogManager()->DebugLog(F())

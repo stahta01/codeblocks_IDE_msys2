@@ -22,6 +22,8 @@
 
 #include "base64.h"
 
+#include <wx/string.h>
+
 #if wxCHECK_VERSION(3, 0, 0)
 #include <wx/unichar.h>
 #endif
