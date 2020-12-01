@@ -6,8 +6,6 @@
 #ifndef EDITORLEXERLOADER_H
 #define EDITORLEXERLOADER_H
 
-#include <wx/string.h>
-
 class EditorColourSet;
 class LoaderBase;
 class TiXmlElement;
