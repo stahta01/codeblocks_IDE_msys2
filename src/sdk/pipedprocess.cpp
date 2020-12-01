@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11282 $
- * $Id: pipedprocess.cpp 11282 2018-01-31 23:48:23Z fuscated $
+ * $Revision: 12208 $
+ * $Id: pipedprocess.cpp 12208 2020-10-04 20:42:14Z d_anselmi $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/pipedprocess.cpp $
  */
 
@@ -235,8 +235,9 @@ void PipedProcess::OnTimer(cb_unused wxTimerEvent& event)
     wxWakeUpIdle();
 }
 
-void PipedProcess::OnIdle(cb_unused wxIdleEvent& event)
+void PipedProcess::OnIdle(wxIdleEvent& event)
 {
     while ( HasInput() )
         ;
+    event.Skip();
 }

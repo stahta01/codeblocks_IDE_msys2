@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11431 $
- * $Id: cbauibook.cpp 11431 2018-08-04 05:40:37Z ollydbg $
+ * $Revision: 12208 $
+ * $Id: cbauibook.cpp 12208 2020-10-04 20:42:14Z d_anselmi $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbauibook.cpp $
  */
 
@@ -239,7 +239,7 @@ void cbAuiNotebook::SetZoom(int zoom)
     m_SetZoomOnIdle = true;
 }
 
-void cbAuiNotebook::OnIdle(cb_unused wxIdleEvent& event)
+void cbAuiNotebook::OnIdle(wxIdleEvent& event)
 {
     if (m_SetZoomOnIdle)
     {
@@ -261,6 +261,7 @@ void cbAuiNotebook::OnIdle(cb_unused wxIdleEvent& event)
             MinimizeFreeSpace(m_TabCtrls[i]);
     }
 
+    event.Skip();
 }
 
 void cbAuiNotebook::OnDragDone(cb_unused wxAuiNotebookEvent& event)

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12205 $
- * $Id: cbplugin.cpp 12205 2020-09-26 14:23:32Z fuscated $
+ * $Revision: 12225 $
+ * $Id: cbplugin.cpp 12225 2020-10-26 10:07:43Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbplugin.cpp $
  */
 
@@ -468,9 +468,9 @@ void cbDebuggerPlugin::OnProjectActivated(CodeBlocksEvent& event)
 
     if (event.GetProject() != GetProject() && GetProject())
     {
-        wxString msg = _("You can't change the active project while you 're actively debugging another.\n"
-                        "Do you want to stop debugging?\n\n"
-                        "Click \"Yes\" to stop debugging now or click \"No\" to re-activate the debuggee.");
+        wxString msg = _("You can't change the active project while you're actively debugging another.\n"
+                         "Do you want to stop debugging?\n\n"
+                         "Click \"Yes\" to stop debugging now or click \"No\" to re-activate the debuggee.");
         if (cbMessageBox(msg, _("Warning"), wxICON_WARNING | wxYES_NO) == wxID_YES)
         {
             Stop();

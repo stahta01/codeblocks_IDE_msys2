@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11349 $
- * $Id: findreplacedlg.cpp 11349 2018-03-27 21:59:55Z fuscated $
+ * $Revision: 12229 $
+ * $Id: findreplacedlg.cpp 12229 2020-10-31 00:20:02Z d_anselmi $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/findreplacedlg.cpp $
  */
 
@@ -122,6 +122,8 @@ FindReplaceDlg::FindReplaceDlg(wxWindow* parent, const wxString& initial, bool h
     XRCCTRL(*this, "chkFixEOLs2",         wxCheckBox)->SetValue(cfg->ReadBool(CONF_GROUP _T("/fix_eols2"), false));
     XRCCTRL(*this, "chkFixEOLs2",         wxCheckBox)->Enable(XRCCTRL(*this, "chkMultiLine2", wxCheckBox)->GetValue());
     XRCCTRL(*this, "chkDelOldSearchRes2", wxCheckBox)->SetValue(cfg->ReadBool(CONF_GROUP _T("/delete_old_searches2"), true));
+    XRCCTRL(*this, "chkAutoOpen2",        wxCheckBox)->SetValue(cfg->ReadBool(CONF_GROUP _T("/auto_open_first_result2"), true));
+    XRCCTRL(*this, "chkAutoOpen2",        wxCheckBox)->Enable(XRCCTRL(*this, "rbScope2", wxRadioBox)->GetSelection() != 0);
 
     wxSize szReplaceMulti = XRCCTRL(*this, "nbReplaceMulti", wxPanel)->GetEffectiveMinSize();
     XRCCTRL(*this, "nbReplaceSingle", wxPanel)->SetMinSize(szReplaceMulti);
@@ -344,11 +346,12 @@ FindReplaceDlg::~FindReplaceDlg()
     cfg->Write(CONF_GROUP _T("/start_word2"), flgLimitTo && valLimitTo == 1);
     cfg->Write(CONF_GROUP _T("/start_file2"), flgLimitTo && valLimitTo == 2);
 
-    cfg->Write(CONF_GROUP _T("/fix_eols2"),            XRCCTRL(*this, "chkFixEOLs2",         wxCheckBox)->GetValue());
-    cfg->Write(CONF_GROUP _T("/match_case2"),          XRCCTRL(*this, "chkMatchCase2",       wxCheckBox)->GetValue());
-    cfg->Write(CONF_GROUP _T("/regex2"),               XRCCTRL(*this, "chkRegEx2",           wxCheckBox)->GetValue());
-    cfg->Write(CONF_GROUP _T("/scope2"),               XRCCTRL(*this, "rbScope2",            wxRadioBox)->GetSelection());
-    cfg->Write(CONF_GROUP _T("/delete_old_searches2"), XRCCTRL(*this, "chkDelOldSearchRes2", wxCheckBox)->GetValue());
+    cfg->Write(CONF_GROUP _T("/fix_eols2"),               XRCCTRL(*this, "chkFixEOLs2",         wxCheckBox)->GetValue());
+    cfg->Write(CONF_GROUP _T("/match_case2"),             XRCCTRL(*this, "chkMatchCase2",       wxCheckBox)->GetValue());
+    cfg->Write(CONF_GROUP _T("/regex2"),                  XRCCTRL(*this, "chkRegEx2",           wxCheckBox)->GetValue());
+    cfg->Write(CONF_GROUP _T("/scope2"),                  XRCCTRL(*this, "rbScope2",            wxRadioBox)->GetSelection());
+    cfg->Write(CONF_GROUP _T("/delete_old_searches2"),    XRCCTRL(*this, "chkDelOldSearchRes2", wxCheckBox)->GetValue());
+    cfg->Write(CONF_GROUP _T("/auto_open_first_result2"), XRCCTRL(*this, "chkAutoOpen2",        wxCheckBox)->GetValue());
 
     cfg->Write(CONF_GROUP _T("/search_path"),      XRCCTRL(*this, "txtSearchPath",        wxTextCtrl)->GetValue());
     SaveComboValues(XRCCTRL(*this, "cmbSearchMask", wxComboBox), CONF_GROUP _T("/search_masks"));
@@ -584,6 +587,8 @@ void FindReplaceDlg::OnScopeChange(cb_unused wxCommandEvent& event)
         (XRCCTRL(*this, "nbReplace", wxNotebook)->GetPage(1))->Layout();
     else
         (XRCCTRL(*this, "nbReplace", wxNotebook)->GetPage(0))->Layout();
+
+    XRCCTRL(*this, "chkAutoOpen2", wxCheckBox)->Enable(rbScope->GetSelection() != 0);
 }
 
 void FindReplaceDlg::OnBrowsePath(cb_unused wxCommandEvent& event)
@@ -826,3 +831,10 @@ void FindReplaceDlg::OnSelectTarget(cb_unused wxCommandEvent& event)
         }
     }
 }
+
+bool FindReplaceDlg::GetHasToOpenFirstResult() const
+{
+    return (XRCCTRL(*this, "rbScope2", wxRadioBox)->GetSelection() != 0) &&
+           (XRCCTRL(*this, "chkAutoOpen2", wxCheckBox)->GetValue());
+}
+

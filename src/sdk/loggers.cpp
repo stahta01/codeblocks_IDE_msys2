@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11436 $
- * $Id: loggers.cpp 11436 2018-08-07 07:13:27Z fuscated $
+ * $Revision: 12240 $
+ * $Id: loggers.cpp 12240 2020-11-23 18:14:58Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/loggers.cpp $
  */
 
@@ -74,7 +74,7 @@ void TextCtrlLogger::UpdateSettings()
     control->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
 
     ConfigManager* cfgman = Manager::Get()->GetConfigManager(_T("message_manager"));
-    int size = cfgman->ReadInt(_T("/log_font_size"), platform::macosx ? 10 : 8);
+    int size = cfgman->ReadInt(_T("/log_font_size"), (platform::macosx ? 10 : 8));
 
     wxFont default_font(size, fixed ? wxFONTFAMILY_MODERN : wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
     wxFont bold_font(default_font);
@@ -311,7 +311,7 @@ void ListCtrlLogger::UpdateSettings()
         return;
 
     ConfigManager* cfgman = Manager::Get()->GetConfigManager(_T("message_manager"));
-    int size = cfgman->ReadInt(_T("/log_font_size"), platform::macosx ? 10 : 8);
+    int size = cfgman->ReadInt(_T("/log_font_size"), (platform::macosx ? 10 : 8));
     wxFont default_font(size, fixed ? wxFONTFAMILY_MODERN : wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
     wxFont bold_font(default_font);
     wxFont italic_font(default_font);

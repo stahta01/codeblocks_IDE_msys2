@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11887 $
- * $Id: sc_consts.cpp 11887 2019-10-26 09:12:28Z fuscated $
+ * $Revision: 12233 $
+ * $Id: sc_consts.cpp 12233 2020-11-02 00:18:32Z d_anselmi $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/scripting/bindings/sc_consts.cpp $
  */
 
@@ -177,6 +177,8 @@ namespace ScriptBindings
         BIND_INT_CONSTANT(mtEditorManager);
         BIND_INT_CONSTANT(mtLogManager);
         BIND_INT_CONSTANT(mtOpenFilesList);
+        BIND_INT_CONSTANT(mtEditorTab);
+        BIND_INT_CONSTANT(mtFileExplorer);
         BIND_INT_CONSTANT(mtUnknown);
 
         // FileTreeDataKind

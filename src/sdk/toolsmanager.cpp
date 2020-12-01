@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11435 $
- * $Id: toolsmanager.cpp 11435 2018-08-07 07:13:14Z fuscated $
+ * $Revision: 12208 $
+ * $Id: toolsmanager.cpp 12208 2020-10-04 20:42:14Z d_anselmi $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/toolsmanager.cpp $
  */
 
@@ -376,8 +376,7 @@ void ToolsManager::OnIdle(wxIdleEvent& event)
             event.RequestMore();
         }
     }
-    else
-        event.Skip();
+    event.Skip();
 }
 
 void ToolsManager::OnToolStdOutput(CodeBlocksEvent& event)

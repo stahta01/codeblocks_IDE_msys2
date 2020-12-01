@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12093 $
- * $Id: projectmanager.cpp 12093 2020-05-25 22:44:37Z fuscated $
+ * $Revision: 12224 $
+ * $Id: projectmanager.cpp 12224 2020-10-26 10:07:41Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/projectmanager.cpp $
  */
 
@@ -541,14 +541,14 @@ bool ProjectManager::SaveActiveProjectAs()
 bool ProjectManager::SaveAllProjects()
 {
     m_ui->FreezeTree();
-    int prjCount = m_pProjects->GetCount();
+    const int prjCount = m_pProjects->GetCount();
     int count = 0;
     for (int i = 0; i < prjCount; ++i)
     {
         cbProject* project = m_pProjects->Item(i);
         if (project)
         {
-            bool isModified = project->GetModified();
+            const bool isModified = project->GetModified();
             if (isModified && SaveProject(project))
                 ++count;
         }
