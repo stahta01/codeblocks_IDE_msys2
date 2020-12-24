@@ -37,7 +37,7 @@
 // this is the plugins SDK version number
 // it will change when the SDK interface breaks
 #define PLUGIN_SDK_VERSION_MAJOR   2
-#define PLUGIN_SDK_VERSION_MINOR   4
+#define PLUGIN_SDK_VERSION_MINOR   5
 #define PLUGIN_SDK_VERSION_RELEASE 0
 
 // class decls
@@ -1053,7 +1053,7 @@ class PLUGIN_EXPORT cbWizardPlugin : public cbPlugin
   * The hook gets installed during OnAttach.
   */
 class cbStyledTextCtrl;
-class cbSmartIndentPlugin : public cbPlugin
+class PLUGIN_EXPORT cbSmartIndentPlugin : public cbPlugin
 {
     public:
         cbSmartIndentPlugin();

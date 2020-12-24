@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12046 $
- * $Id: cbproject.cpp 12046 2020-04-12 16:36:27Z bluehazzard $
+ * $Revision: 12253 $
+ * $Id: cbproject.cpp 12253 2020-12-22 18:36:16Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbproject.cpp $
  */
 
@@ -1207,6 +1207,9 @@ bool cbProject::QueryCloseAllFiles()
     return true;
 }
 
+// FIXME This call is rather strange. It advertises that it will close the files, but in fact it
+// removes all files from the project, deallocates all ProjectFile instances and returns. This
+// leaves the ProjectBuildTarget ProjectFile instances to be dangling. I don't undestand!!!
 bool cbProject::CloseAllFiles(bool dontsave)
 {
     // first try to close modified editors

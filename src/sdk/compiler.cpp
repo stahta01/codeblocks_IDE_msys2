@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11938 $
- * $Id: compiler.cpp 11938 2020-01-04 15:41:53Z mortenmacfly $
+ * $Revision: 12241 $
+ * $Id: compiler.cpp 12241 2020-12-22 13:59:40Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/compiler.cpp $
  */
 
@@ -1232,6 +1232,8 @@ bool Compiler::EvalXMLCondition(const wxXmlNode* node)
         if ( !cmd[0].IsEmpty() ) // should never be empty
             ret = Execute(GetStringFromArray(cmd, wxT(" "), false), cmd);
 
+        wxSetEnv(wxT("PATH"), origPath); // restore path
+
         if (ret != 0) // execution failed
             val = (node->GetAttribute(wxT("default"), wxEmptyString) == wxT("true"));
         else if (node->GetAttribute(wxT("regex"), &test))
@@ -1251,8 +1253,6 @@ bool Compiler::EvalXMLCondition(const wxXmlNode* node)
         }
         else // execution succeeded (and no regex test given)
             val = true;
-
-        wxSetEnv(wxT("PATH"), origPath); // restore path
     }
     return val;
 }
