@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11539 $
- * $Id: filemanager.cpp 11539 2018-12-20 20:06:58Z fuscated $
+ * $Revision: 12273 $
+ * $Id: filemanager.cpp 12273 2020-12-26 14:35:41Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/filemanager.cpp $
  */
 
@@ -219,7 +219,12 @@ bool FileManager::SaveUTF8(const wxString& name, const char* data, size_t len)
 {
     if (wxFileExists(name) == false)
     {
-        return wxFile(name, wxFile::write_excl).Write(data, len) == len;
+        wxFile file(name, wxFile::write_excl);
+        if (!file.IsOpened())
+            return false;
+        if (!data && len > 0)
+            return false;
+        return file.Write(data, len) == len;
     }
 #if wxCHECK_VERSION(3, 0, 0)
     else if (wxFileName::Exists(name, wxFILE_EXISTS_SYMLINK))
@@ -227,7 +232,12 @@ bool FileManager::SaveUTF8(const wxString& name, const char* data, size_t len)
         // Enable editing symlinks. Do not use temp file->replace procedure
         // since that would get rid of the symlink. Writing directly causes
         // edits to reflect to the target file.
-        return wxFile(name, wxFile::write).Write(data, len) == len;
+        wxFile file(name, wxFile::write);
+        if (!file.IsOpened())
+            return false;
+        if (!data && len > 0)
+            return false;
+        return file.Write(data, len) == len;
     }
 #endif // wxCHECK_VERSION(3, 0, 0)
     else
@@ -242,7 +252,8 @@ bool FileManager::SaveUTF8(const wxString& name, const char* data, size_t len)
         wxLstat( name, &buff );
 
         wxFile f;
-        f.Create(temp, true, buff.st_mode);
+        if (!f.Create(temp, true, buff.st_mode))
+            return false;
 
         if (f.Write(data, len) == len)
         {
@@ -268,6 +279,8 @@ bool FileManager::Save(const wxString& name, const wxString& data, wxFontEncodin
     if (wxFileExists(name) == false)
     {
         wxFile f(name, wxFile::write_excl);
+        if (!f.IsOpened())
+            return false;
         return WriteWxStringToFile(f, data, encoding, bom);
     }
 
@@ -287,6 +300,8 @@ bool FileManager::Save(const wxString& name, const wxString& data, wxFontEncodin
     if (directWrite)
     {
         wxFile f(name, wxFile::write);
+        if (!f.IsOpened())
+            return false;
         return WriteWxStringToFile(f, data, encoding, bom);
     }
     else
@@ -301,7 +316,8 @@ bool FileManager::Save(const wxString& name, const wxString& data, wxFontEncodin
         wxLstat( name, &buff );
 
         wxFile f;
-        f.Create(temp, true, buff.st_mode);
+        if (!f.Create(temp, true, buff.st_mode))
+            return false;
 
         if (WriteWxStringToFile(f, data, encoding, bom))
         {

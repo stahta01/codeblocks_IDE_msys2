@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12202 $
- * $Id: editorbase.cpp 12202 2020-09-26 14:23:23Z fuscated $
+ * $Revision: 12271 $
+ * $Id: editorbase.cpp 12271 2020-12-26 14:35:35Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editorbase.cpp $
  */
 
@@ -141,7 +141,7 @@ EditorBase::~EditorBase()
     delete m_pData;
 }
 
-const wxString& EditorBase::GetTitle()
+const wxString& EditorBase::GetTitle() const
 {
     return m_WinTitle;
 }

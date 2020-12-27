@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12182 $
- * $Id: debuggermanager.cpp 12182 2020-07-05 10:48:47Z fuscated $
+ * $Revision: 12274 $
+ * $Id: debuggermanager.cpp 12274 2020-12-26 15:14:22Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/debuggermanager.cpp $
  */
 
@@ -483,12 +483,42 @@ wxString cbDetectDebuggerExecutable(const wxString &exeName)
 
 uint64_t cbDebuggerStringToAddress(const wxString &address)
 {
-    if (address.empty())
+    const wxString::size_type length = address.length();
+    if (length == 0)
         return 0;
-    std::istringstream s(address.utf8_str().data());
-    uint64_t result;
-    s >> std::hex >> result;
-    return (s.fail() ? 0 : result);
+
+    wxString::size_type ii = 0;
+    // Skip 0x at the beginning
+    if (length >= 2 && address[0] == '0' && address[1] == 'x')
+        ii += 2;
+
+    uint64_t result = 0;
+    for (; ii < address.length(); ++ii)
+    {
+        wxUniChar ch = address[ii];
+
+        if (unsigned(ch - '0') < 10)
+        {
+            result *= 16;
+            result += ch - '0';
+        }
+        else if (ch >= 'a' && ch <= 'f')
+        {
+            result *= 16;
+            result += 10 + (ch - 'a');
+        }
+        else if (ch >= 'A' && ch <= 'F')
+        {
+            result *= 16;
+            result += 10 + (ch - 'A');
+        }
+        else if (ch == '`')
+            ; // This is used in 64 bit addresses in CDB, so skip it.
+        else
+            return 0;
+    }
+
+    return result;
 }
 
 wxString cbDebuggerAddressToString(uint64_t address)

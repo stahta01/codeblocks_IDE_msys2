@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 10912 $
- * $Id: scriptsecuritywarningdlg.cpp 10912 2016-09-25 16:10:13Z fuscated $
+ * $Revision: 12272 $
+ * $Id: scriptsecuritywarningdlg.cpp 12272 2020-12-26 14:35:39Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/scriptsecuritywarningdlg.cpp $
  */
 
@@ -40,7 +40,7 @@ ScriptSecurityWarningDlg::~ScriptSecurityWarningDlg()
 
 ScriptSecurityResponse ScriptSecurityWarningDlg::GetResponse()
 {
-    return (ScriptSecurityResponse)XRCCTRL(*this, "cmbAnswer", wxComboBox)->GetSelection();
+    return (ScriptSecurityResponse)XRCCTRL(*this, "cmbAnswer", wxChoice)->GetSelection();
 }
 
 void ScriptSecurityWarningDlg::EndModal(int retCode)
