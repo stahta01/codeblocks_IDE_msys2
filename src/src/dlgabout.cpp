@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 11926 $
- * $Id: dlgabout.cpp 11926 2019-12-07 22:47:30Z fuscated $
+ * $Revision: 12281 $
+ * $Id: dlgabout.cpp 12281 2020-12-29 09:51:54Z mortenmacfly $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/dlgabout.cpp $
  */
 
@@ -84,6 +84,7 @@ dlgAbout::dlgAbout(wxWindow* parent)
     txtDescription->SetValue(description);
 
     wxTextCtrl *txtThanksTo = XRCCTRL(*this, "txtThanksTo", wxTextCtrl);
+    // Note: Keep this is sync with the AUTHORS file in SVN.
     txtThanksTo->SetValue(_(
         "Developers:\n"
         "--------------\n"
@@ -100,6 +101,7 @@ dlgAbout::dlgAbout(wxWindow* parent)
         "Yuanhui Zhang       : Developer\n"
         "Damien Moore        : Developer\n"
         "Micah Ng            : Developer\n"
+        "BlueHazzard         : Developer\n"
         "Ricardo Garcia      : All-hands person\n"
         "Paul A. Jimenez     : Help and AStyle plugins\n"
         "Thomas Lorblanches  : CodeStat and Profiler plugins\n"
@@ -131,7 +133,7 @@ dlgAbout::dlgAbout(wxWindow* parent)
         "Alexandr Efremo     : Providing OpenSuSe packages\n"
         "Huki                : Misc. Code-Completion improvements\n"
         "stahta01            : Misc. patches for several enhancements\n"
-        "BlueHazzard         : Misc. patches for several enhancements\n"
+        "Miguel Gimenez      : Misc. patches for several enhancements\n"
         "\n"
         "All contributors that provided patches.\n"
         "The wxWidgets project (http://www.wxwidgets.org).\n"
