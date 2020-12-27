@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 11130 $
- * $Id: examinememorydlg.cpp 11130 2017-08-06 11:31:43Z fuscated $
+ * $Revision: 12275 $
+ * $Id: examinememorydlg.cpp 12275 2020-12-26 15:14:26Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/examinememorydlg.cpp $
  */
 
@@ -91,7 +91,7 @@ void ExamineMemoryDlg::AddHexByte(const wxString& addr, const wxString& hexbyte)
 //    m_pDbg->Log(_T("AddHexByte(") + addr + _T(", ") + hexbyte + _T(')'));
     int bcmod = m_ByteCounter % 16;
 
-    if (m_LastRowStartingAddress == 0)
+    if (m_ByteCounter == 0)
     {
         // because we 'll be appending each row *after* we have consumed it
         // and then "addr" will point to the next row's starting address,
@@ -122,14 +122,11 @@ void ExamineMemoryDlg::AddHexByte(const wxString& addr, const wxString& hexbyte)
             m_pText->AppendText(_T('\n')); // prepend a newline
         m_LineText[23] = _T('|'); // put a "separator" in the middle (just to ease reading a bit)
 
-        unsigned long a;
-        addr.ToULong(&a, 16);
         m_pText->AppendText(wxString::Format(_T("0x%lx: %.67s"), m_LastRowStartingAddress, m_LineText));
         for (int i = 0; i < 67; ++i)
             m_LineText[i] = _T(' ');
-        // update starting address for next row
-        // add 8 bytes: addr is the start address of the second 8-byte chunk of this line, so next line is +8
-        m_LastRowStartingAddress = a + 8;
+        // update starting address for next row every 16 bytes
+        m_LastRowStartingAddress += 16;
     }
 }
 
