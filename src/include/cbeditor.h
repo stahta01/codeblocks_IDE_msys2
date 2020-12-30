@@ -6,16 +6,11 @@
 #ifndef CBEDITOR_H
 #define CBEDITOR_H
 
-#include <wx/hashmap.h>
-#include <wx/datetime.h>
-#include <wx/fontmap.h>
 #include <wx/timer.h>
 
 #include "settings.h"
 #include "editorbase.h"
 #include "printing_types.h"
-
-extern const wxString g_EditorModified;
 
 // forward decls
 struct cbEditorInternalData; // this is the private data struct used by the editor.
@@ -27,7 +22,9 @@ class LoaderBase;
 class cbStyledTextCtrl;
 class wxScintillaEvent;
 class wxBoxSizer;
+class wxString;
 
+extern const wxString g_EditorModified;
 
 /** @brief A file editor
   *
