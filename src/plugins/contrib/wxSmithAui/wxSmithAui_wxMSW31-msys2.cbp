@@ -85,7 +85,6 @@
 			<Add option="-DNOPCH" />
 			<Add directory="../../../include" />
 			<Add directory="../../../include/tinyxml" />
-			<Add directory="../../../sdk/wxscintilla/include" />
 			<Add directory="../wxSmith" />
 		</Compiler>
 		<Linker>
