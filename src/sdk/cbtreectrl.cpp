@@ -20,6 +20,8 @@
     #include "projectfile.h"
 #endif
 
+#include "cbtreectrl.h"
+
 IMPLEMENT_DYNAMIC_CLASS(cbTreeCtrl, wxTreeCtrl)
 
 BEGIN_EVENT_TABLE(cbTreeCtrl, wxTreeCtrl)

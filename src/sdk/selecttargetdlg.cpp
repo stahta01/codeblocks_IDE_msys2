@@ -19,6 +19,7 @@
 
     #include "projectbuildtarget.h"
     #include "cbproject.h"
+    #include "cbexception.h"
 #endif
 #include <wx/filedlg.h>
 #include "selecttargetdlg.h"
