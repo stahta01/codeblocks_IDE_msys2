@@ -18,11 +18,12 @@
     #include <wx/stattext.h>
     #include "globals.h"
     #include "manager.h"
-    #include "macrosmanager.h"
-    #include "uservarmanager.h"
 #endif
 
 #include "editpathdlg.h"
+#include "macrosmanager.h"
+#include "uservarmanager.h"
+
 #include <wx/display.h>
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>

@@ -12,7 +12,6 @@
 #ifndef CB_PRECOMP
     #include "configmanager.h"
     #include "globals.h"
-    #include "personalitymanager.h"
     #include "cbexception.h"
     #include "logmanager.h"
     #include <wx/file.h>
@@ -21,6 +20,7 @@
 #endif
 
 #include "crc32.h"
+#include "personalitymanager.h"
 
 #include <wx/url.h>
 #include <wx/stream.h>

@@ -11,11 +11,9 @@
 
 #ifndef CB_PRECOMP
     #include "cbproject.h"
-    #include "compilerfactory.h"
     #include "editormanager.h"
-    #include "editorcolourset.h"
     #include "logmanager.h"
-    #include "projectmanager.h"
+
     #include <wx/xrc/xmlres.h>
     #include <wx/intl.h>
     #include <wx/choice.h>
@@ -35,7 +33,10 @@
 #include <errno.h>
 #endif
 
+#include "compilerfactory.h"
+#include "editorcolourset.h"
 #include "projectfileoptionsdlg.h"
+#include "projectmanager.h"
 #include <wx/slider.h>
 #include <wx/notebook.h>
 #include <wx/textfile.h>
