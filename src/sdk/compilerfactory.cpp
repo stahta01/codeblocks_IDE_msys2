@@ -11,14 +11,15 @@
 
 #ifndef CB_PRECOMP
     #include <wx/choicdlg.h> // wxSingleChoiceDialog
-    #include "compilerfactory.h"
+
     #include "manager.h"
     #include "logmanager.h"
     #include "configmanager.h"
-    #include "compiler.h"
 #endif
 
 #include "autodetectcompilers.h"
+#include "compiler.h"
+#include "compilerfactory.h"
 
 // statics
 CompilersArray CompilerFactory::Compilers;

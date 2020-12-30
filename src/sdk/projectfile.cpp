@@ -13,14 +13,14 @@
     #include "projectfile.h"
     #include "projectbuildtarget.h"
     #include "cbproject.h"
-    #include "compilerfactory.h"
     #include "manager.h"
-    #include "projectmanager.h"
-    #include "macrosmanager.h"
     #include "globals.h"
 #endif
 
+#include "compilerfactory.h"
+#include "macrosmanager.h"
 #include "projectfileoptionsdlg.h"
+#include "projectmanager.h"
 #include "filefilters.h"
 
 ProjectFile::ProjectFile(cbProject* prj) :

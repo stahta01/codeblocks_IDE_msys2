@@ -19,26 +19,26 @@
 
     #include "cbeditor.h" // class's header file
 
-    #include "cbauibook.h"
-    #include "cbplugin.h"
     #include "cbproject.h"
     #include "configmanager.h"
-    #include "debuggermanager.h"
-    #include "editorcolourset.h"
     #include "editormanager.h"
     #include "globals.h"
-    #include "infowindow.h"
     #include "logmanager.h"
     #include "macrosmanager.h" // ReplaceMacros
     #include "manager.h"
-    #include "pluginmanager.h"
     #include "projectbuildtarget.h"
     #include "projectfile.h"
-    #include "projectmanager.h"
     #include "sdk_events.h"
 #endif
 #include "cbstyledtextctrl.h"
 #include "cbcolourmanager.h"
+#include "cbauibook.h"
+#include "cbplugin.h"
+#include "debuggermanager.h"
+#include "editorcolourset.h"
+#include "infowindow.h"
+#include "pluginmanager.h"
+#include "projectmanager.h"
 
 #include <stack>
 
