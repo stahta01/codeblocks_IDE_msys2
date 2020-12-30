@@ -20,6 +20,7 @@
     #include "settings.h"
 #endif
 
+#include <cbplugin.h>
 #include <filefilters.h>
 
 

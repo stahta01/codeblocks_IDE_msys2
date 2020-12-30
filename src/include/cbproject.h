@@ -15,7 +15,6 @@
 #include "settings.h"
 #include "misctreeitemdata.h"
 #include "compiletargetbase.h"
-#include "cbplugin.h"
 #include "projectbuildtarget.h"
 #include "projectmanager.h"
 

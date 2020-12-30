@@ -103,7 +103,6 @@
     #include "compiletargetbase.h"
     #include "projectbuildtarget.h"
     #include "projectfile.h"
-    #include "cbplugin.h"
     #include "cbproject.h"
     #include "cbtool.h"
     #include "cbworkspace.h"
