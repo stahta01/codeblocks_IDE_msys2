@@ -16,11 +16,11 @@
     #include <wx/spinctrl.h>
     #include <wx/stattext.h>
     #include <wx/textctrl.h>
-    #include <wx/wxscintilla.h>
-    #include "editorcolourset.h"
 #endif
 
 #include "editkeywordsdlg.h"
+#include <wx/wxscintilla.h>
+#include "editorcolourset.h"
 
 BEGIN_EVENT_TABLE(EditKeywordsDlg, wxScrollingDialog)
     EVT_SPINCTRL(wxID_ANY, EditKeywordsDlg::OnSetChange)

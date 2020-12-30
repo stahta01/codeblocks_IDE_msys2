@@ -18,7 +18,6 @@
     #include <wx/sizer.h>
 
     #include "cbexception.h"
-    #include "cbplugin.h"
     #include "logmanager.h"
     #include "scrollingdialog.h"
 #endif
@@ -33,6 +32,7 @@
 #include "watchesdlg.h"
 
 #include "cbcolourmanager.h"
+#include "cbplugin.h"
 #include "debuggermanager.h"
 
 namespace
