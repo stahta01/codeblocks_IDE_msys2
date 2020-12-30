@@ -27,11 +27,9 @@
     #include <wx/toolbar.h>
     #include <wx/utils.h>
     #include <wx/xrc/xmlres.h>
-    #include <wx/wxscintilla.h>
 
     #include <cbeditor.h>
     #include <configmanager.h>
-    #include <editorcolourset.h>
     #include <editormanager.h>
     #include <globals.h>
     #include <logmanager.h>
@@ -45,6 +43,7 @@
 #include <wx/html/htmlwin.h>
 
 #include <cbstyledtextctrl.h>
+#include <editorcolourset.h>
 #include <editor_hooks.h>
 #include <filegroupsandmasks.h>
 #include <multiselectdlg.h>
