@@ -47,6 +47,7 @@
 
 #include "annoyingdialog.h"
 #include "appglobals.h"
+#include "cbplugin.h" // cgEditor
 #include "configurationpanel.h"
 #include "environmentsettingsdlg.h"
 #include "cbcolourmanager.h"
