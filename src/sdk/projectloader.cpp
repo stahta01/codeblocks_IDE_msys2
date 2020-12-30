@@ -22,7 +22,6 @@
     #include "logmanager.h"
     #include "macrosmanager.h"
     #include "cbproject.h"
-    #include "compilerfactory.h"
     #include "globals.h"
 #endif
 
@@ -32,6 +31,7 @@
 #include <unordered_map>
 
 #include <algorithm>
+#include "compilerfactory.h"
 #include "filefilters.h"
 #include "projectloader.h"
 #include "projectloader_hooks.h"

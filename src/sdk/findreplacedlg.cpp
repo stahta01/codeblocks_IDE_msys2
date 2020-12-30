@@ -31,10 +31,10 @@
     #include "configmanager.h"
     #include "editormanager.h"
     #include "globals.h"
-    #include "projectmanager.h"
 #endif
 
 #include "incremental_select_helper.h"
+#include "projectmanager.h"
 
 #define CONF_GROUP _T("/replace_options")
 

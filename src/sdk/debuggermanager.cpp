@@ -22,13 +22,10 @@
 
     #include "cbeditor.h"
     #include "cbexception.h"
-    #include "cbplugin.h"
     #include "cbproject.h"
-    #include "compilerfactory.h"
     #include "configmanager.h"
     #include "editormanager.h"
     #include "logmanager.h"
-    #include "projectmanager.h"
 #endif
 
 #include <algorithm>
@@ -39,8 +36,11 @@
 
 #include "annoyingdialog.h"
 #include "cbdebugger_interfaces.h"
+#include "cbplugin.h"
+#include "compilerfactory.h"
 #include "loggers.h"
 #include "manager.h"
+#include "projectmanager.h"
 
 cbWatch::cbWatch() :
     m_changed(true),
