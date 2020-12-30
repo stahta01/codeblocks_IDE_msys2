@@ -21,6 +21,7 @@
 #include "confirmreplacedlg.h"
 #include "encodingdetector.h"
 #include "findreplacedlg.h"
+#include "projectmanager.h"
 #include "searchresultslog.h"
 #include "main.h"
 
