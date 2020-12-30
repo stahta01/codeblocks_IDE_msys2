@@ -21,6 +21,7 @@
 #endif
 
 #include "debuggermenu.h"
+#include "cbplugin.h"
 
 #include <algorithm>
 #include <wx/aui/aui.h> // wxAuiManager
