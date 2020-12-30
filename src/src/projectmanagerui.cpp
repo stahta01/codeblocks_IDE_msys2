@@ -39,6 +39,7 @@
 
 #include "cbauibook.h"
 #include "cbcolourmanager.h"
+#include "cbplugin.h"
 #include "confirmreplacedlg.h"
 #include "filefilters.h"
 #include "filegroupsandmasks.h"
