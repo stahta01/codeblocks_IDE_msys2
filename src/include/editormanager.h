@@ -7,10 +7,7 @@
 #define EDITORMANAGER_H
 
 #include "prep.h"
-#include <wx/list.h>
-#include <wx/treectrl.h>
-#include <wx/hashmap.h>
-#include <wx/filename.h>
+#include <wx/window.h>
 
 #include "settings.h"
 #include "manager.h"
