@@ -43,6 +43,7 @@
     #include <wx/dcclient.h>
     #include <wx/dialog.h>
     #include <wx/dir.h>
+    #include <wx/dnd.h>
     #include <wx/dynarray.h>
     #include <wx/event.h>
     #include <wx/file.h>
@@ -86,7 +87,6 @@
     #include <wx/txtstrm.h>
     #include <wx/utils.h>
     #include <wx/wfstream.h>
-    #include <wx/wxscintilla.h>
     #include <wx/xrc/xmlres.h>
 
     // basic headers
@@ -110,11 +110,9 @@
     #include "compilerfactory.h"
     #include "compiler.h"
     #include "workspaceloader.h"
-    #include "editorcolourset.h"
     #include "pipedprocess.h"
     #include "scrollingdialog.h"
     #include "cbauibook.h"
-
 
     // managers
     #include "manager.h"
