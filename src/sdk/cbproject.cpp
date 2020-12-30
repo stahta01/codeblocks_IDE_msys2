@@ -24,19 +24,14 @@
     #include "cbeditor.h"
     #include "cbtreectrl.h"
     #include "compiler.h" // GetSwitches
-    #include "compilerfactory.h"
     #include "configmanager.h"
     #include "editormanager.h"
-    #include "filemanager.h"
     #include "globals.h"
-    #include "infowindow.h"
     #include "logmanager.h"
-    #include "macrosmanager.h"
     #include "manager.h"
     #include "pluginmanager.h"
     #include "projectbuildtarget.h"
     #include "projectfile.h"
-    #include "projectmanager.h"
     #include "sdk_events.h"
 #endif
 
@@ -49,7 +44,12 @@
 #include "annoyingdialog.h"
 #include "genericmultilinenotesdlg.h"
 #include "compilercommandgenerator.h"
+#include "compilerfactory.h"
 #include "cbcolourmanager.h"
+#include "macrosmanager.h"
+#include "filemanager.h"
+#include "infowindow.h"
+#include "projectmanager.h"
 
 // class constructor
 cbProject::cbProject(const wxString& filename) :

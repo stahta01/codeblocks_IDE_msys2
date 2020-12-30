@@ -19,17 +19,11 @@
 
     #include "cbeditor.h"
     #include "cbproject.h"
-    #include "compiler.h"
-    #include "compilerfactory.h"
     #include "configmanager.h"
     #include "editormanager.h" // class's header file
-    #include "filemanager.h"
     #include "logmanager.h"
-    #include "macrosmanager.h"
     #include "manager.h"
-    #include "pluginmanager.h"
     #include "projectbuildtarget.h"
-    #include "projectmanager.h"
     #include "sdk_events.h"
 #endif
 
@@ -43,11 +37,18 @@
 #include <wx/tokenzr.h>
 
 #include "cbauibook.h"
+#include "compiler.h"
+#include "compilerfactory.h"
 #include "editorcolourset.h"
 #include "confirmreplacedlg.h"
 #include "filefilters.h"
 #include "projectfileoptionsdlg.h"
+#include "filemanager.h"
 #include "filegroupsandmasks.h"
+#include "macrosmanager.h"
+#include "pluginmanager.h"
+#include "projectmanager.h"
+
 
 template<> EditorManager* Mgr<EditorManager>::instance = nullptr;
 template<> bool  Mgr<EditorManager>::isShutdown = false;

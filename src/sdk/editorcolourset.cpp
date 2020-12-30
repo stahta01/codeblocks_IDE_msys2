@@ -17,7 +17,6 @@
     #include "cbeditor.h"
     #include "configmanager.h"
     #include "logmanager.h"
-    #include "filemanager.h"
     #include "manager.h"
 #endif
 
@@ -31,6 +30,7 @@
 #include "editorcolourset.h"
 #include "editorlexerloader.h"
 #include "filefilters.h"
+#include "filemanager.h"
 
 EditorColourSet::EditorColourSet(const wxString& setName)
     : m_Name(setName)

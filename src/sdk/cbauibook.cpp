@@ -11,13 +11,11 @@
 #include "sdk_precomp.h"
 
 #ifndef CB_PRECOMP
-    #include "cbauibook.h"
     #include "cbeditor.h"
     #include "cbproject.h"
     #include "configmanager.h"
     #include "editormanager.h"
     #include "manager.h"
-    #include "projectmanager.h"
 
     #include <wx/app.h>
     #include <wx/dcclient.h>
@@ -26,6 +24,9 @@
 
 #include <wx/tooltip.h>
 #include <wx/wupdlock.h>
+
+#include "cbauibook.h"
+#include "projectmanager.h"
 
 // static
 bool cbAuiNotebook::s_AllowMousewheel = true;

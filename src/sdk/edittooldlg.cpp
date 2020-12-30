@@ -17,11 +17,11 @@
     #include <wx/string.h>
     #include <wx/textctrl.h>
     #include <wx/xrc/xmlres.h>
-    #include "cbtool.h"
     #include "cbexception.h"
     #include "globals.h"
 #endif
 
+#include "cbtool.h"
 #include "edittooldlg.h"
 #include <wx/filedlg.h>
 
