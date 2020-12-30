@@ -26,12 +26,13 @@
 
     #include "licenses.h"
     #include "configmanager.h"
-    #include "wx/wxscintilla.h"
 #endif
 
 #include <wx/bitmap.h>
 #include <wx/dcmemory.h>    // wxMemoryDC
 #include <wx/statbmp.h>
+
+#include "wx/wxscintilla.h"
 
 #include "appglobals.h"
 #include "dlgabout.h" // class's header file
