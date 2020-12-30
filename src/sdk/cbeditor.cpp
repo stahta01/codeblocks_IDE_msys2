@@ -20,11 +20,9 @@
     #include "cbeditor.h" // class's header file
 
     #include "cbauibook.h"
-    #include "cbplugin.h"
     #include "cbproject.h"
     #include "configmanager.h"
     #include "debuggermanager.h"
-    #include "editorcolourset.h"
     #include "editormanager.h"
     #include "globals.h"
     #include "infowindow.h"
@@ -39,6 +37,8 @@
 #endif
 #include "cbstyledtextctrl.h"
 #include "cbcolourmanager.h"
+#include "cbplugin.h"
+#include "editorcolourset.h"
 
 #include <stack>
 

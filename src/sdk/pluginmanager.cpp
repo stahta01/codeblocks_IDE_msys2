@@ -18,7 +18,6 @@
 
     #include "pluginmanager.h"
     #include "cbexception.h"
-    #include "cbplugin.h"
     #include "infowindow.h"
     #include "logmanager.h"
     #include "macrosmanager.h"
@@ -47,6 +46,7 @@
 #include <tinyxml.h>
 
 #include "annoyingdialog.h"
+#include "cbplugin.h"
 #include "pluginsconfigurationdlg.h"
 
 #include "scripting/bindings/sc_plugin.h"

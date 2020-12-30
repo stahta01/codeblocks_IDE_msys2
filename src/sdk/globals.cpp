@@ -22,8 +22,6 @@
     #include <wx/settings.h>
     #include <wx/textdlg.h>
 
-    #include "wx/wxscintilla.h"
-
     #include "cbexception.h"
     #include "configmanager.h" // ReadBool
     #include "filemanager.h"
@@ -45,6 +43,7 @@
 #include <algorithm>
 #include <string>
 
+#include "wx/wxscintilla.h"
 #include "filefilters.h"
 #include "tinywxuni.h"
 #include "filegroupsandmasks.h"
