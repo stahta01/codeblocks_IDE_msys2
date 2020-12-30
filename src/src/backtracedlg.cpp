@@ -16,7 +16,7 @@
     #include <wx/txtstrm.h>
     #include <wx/wfstream.h>
     #include <wx/dataobj.h>
-    #include "cbplugin.h"
+
     #include "configmanager.h"
 #endif
 
@@ -25,6 +25,7 @@
 
 #include "backtracedlg.h"
 #include "cbcolourmanager.h"
+#include "cbplugin.h"
 #include "debuggermanager.h"
 
 namespace
