@@ -9,13 +9,14 @@
 
 	#include <wx/textdlg.h>
 
-	#include "cbplugin.h"
 	#include "debuggermanager.h"
 #endif
 //(*InternalHeaders(DebuggerSettingsPanel)
 //*)
 
 #include "debuggersettingsdlg.h"
+
+#include "cbplugin.h"
 
 //(*IdInit(DebuggerSettingsPanel)
 const long DebuggerSettingsPanel::ID_BUTTON_CREATE = wxNewId();
