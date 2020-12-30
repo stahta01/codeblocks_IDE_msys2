@@ -11,10 +11,12 @@
 
 #ifndef CB_PRECOMP
     #include <wx/app.h>         // wxWakeUpIdle
-    #include "pipedprocess.h" // class' header file
+
     #include "sdk_events.h"
     #include "globals.h"
 #endif
+
+#include "pipedprocess.h" // class' header file
 
 // The following class is created to override wxTextStream::ReadLine()
 class cbTextInputStream : public wxTextInputStream

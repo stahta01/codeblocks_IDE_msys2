@@ -22,12 +22,9 @@
     #include "debuggermanager.h"
     #include "editorcolourset.h"
     #include "editormanager.h"
-    #include "infowindow.h"
     #include "logmanager.h"
-    #include "macrosmanager.h"
     #include "manager.h"
     #include "projectbuildtarget.h"
-    #include "projectmanager.h"
     #include "sdk_events.h"
 #endif
 
@@ -39,7 +36,10 @@
 #include "ccmanager.h"
 #include "debuggermanager.h"
 #include "editor_hooks.h"
+#include "infowindow.h"
 #include "loggers.h"
+#include "macrosmanager.h"
+#include "projectmanager.h"
 
 #ifndef __WXMSW__
     #include <errno.h>

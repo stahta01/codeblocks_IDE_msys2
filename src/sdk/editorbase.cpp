@@ -17,13 +17,13 @@
     #include "editorbase.h"
     #include "cbeditor.h"
     #include "editormanager.h"
-    #include "pluginmanager.h"
     #include "cbproject.h" // FileTreeData
-    #include "projectmanager.h" // ProjectsArray
     #include <wx/wfstream.h>
 #endif
 
 #include "cbauibook.h"
+#include "pluginmanager.h"
+#include "projectmanager.h" // ProjectsArray
 
 #include "cbstyledtextctrl.h"
 
