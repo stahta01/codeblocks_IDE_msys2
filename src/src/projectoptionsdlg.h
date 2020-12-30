@@ -6,6 +6,7 @@
 #ifndef PROJECTOPTIONSDLG_H
 #define PROJECTOPTIONSDLG_H
 
+#include "pluginmanager.h"
 #include "settings.h"
 #include "scrollingdialog.h"
 
