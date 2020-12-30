@@ -6,12 +6,10 @@
 #ifndef CCMANAGER_H
 #define CCMANAGER_H
 
-#include "manager.h"
+#include <wx/timer.h>
 
-#ifndef CB_PRECOMP
-    #include <wx/timer.h>
-    #include "cbplugin.h"
-#endif
+#include "cbplugin.h"
+#include "manager.h"
 
 class UnfocusablePopupWindow;
 class wxHtmlLinkEvent;

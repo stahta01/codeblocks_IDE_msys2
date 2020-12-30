@@ -33,6 +33,7 @@
 #include <wx/progdlg.h>
 
 #include "cbauibook.h"
+#include "cbplugin.h"
 //#include "filefilters.h"
 #include "filegroupsandmasks.h"
 
