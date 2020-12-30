@@ -13,7 +13,7 @@
     #include <manager.h>
     #include <configmanager.h>
     #include <pluginmanager.h>
-    #include <cbplugin.h>
+
     #include <wx/button.h>
     #include <wx/checklst.h>
     #include <wx/filename.h>
@@ -26,6 +26,8 @@
 #endif // CB_PRECOMP
 
 #include <wx/listbook.h>
+
+#include <cbplugin.h>
 
 #include "configurationpanel.h"
 #include "compilersettingsdlg.h"

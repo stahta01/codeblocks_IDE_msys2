@@ -15,11 +15,10 @@
     #include <wx/intl.h>
     #include <wx/textctrl.h>
     #include <wx/xrc/xmlres.h>
-
-    #include "cbplugin.h"
 #endif
 
 #include "examinememorydlg.h"
+#include "cbplugin.h"
 #include "debuggermanager.h"
 
 #include <cinttypes> // For PRIx64
