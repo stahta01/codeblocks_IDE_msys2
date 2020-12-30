@@ -6,20 +6,20 @@
 #ifndef X_CONFIGMANAGER_H
 #define X_CONFIGMANAGER_H
 
-#include <wx/hashmap.h>
-#include <wx/hashset.h>
-
-#include "settings.h"
-#include "globals.h"
+#include <wx/arrstr.h>
+#include <wx/colour.h>
 
 #include <tinyxml.h>
-#include "manager.h"
+
+#include "settings.h"
 #include "base64.h"
+#include "manager.h"
 
 #undef new
 #include <map>
 #include <set>
 
+class wxString;
 
 /* ------------------------------------------------------------------------------------------------------------------
 *  Interface Serializable
