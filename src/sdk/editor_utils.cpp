@@ -5,9 +5,8 @@
 
 #include "sdk_precomp.h"
 #include "editor_utils.h"
-#ifndef CB_PRECOMP
-    #include <wx/wxscintilla.h>
-#endif // CB_PRECOMP
+#include <wx/wxscintilla.h>
+
 
 namespace cb
 {

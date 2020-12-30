@@ -10,14 +10,11 @@
 #include "sdk_precomp.h"
 
 #ifndef CB_PRECOMP
-    #include "uservarmanager.h"
     #include "configmanager.h"
     #include "logmanager.h"
-    #include "projectmanager.h"
     #include "macrosmanager.h"
     #include "manager.h"
     #include "cbexception.h"
-    #include "infowindow.h"
 
     #include <wx/button.h>
     #include "scrollingdialog.h"
@@ -31,6 +28,9 @@
 #endif
 
 #include "annoyingdialog.h"
+#include "infowindow.h"
+#include "projectmanager.h"
+#include "uservarmanager.h"
 
 #if wxCHECK_VERSION(3, 0, 0)
 #include <wx/unichar.h>
