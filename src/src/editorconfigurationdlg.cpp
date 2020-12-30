@@ -30,7 +30,6 @@
     #include "manager.h"
     #include "cbauibook.h"
     #include "cbeditor.h"
-    #include "cbplugin.h" // cgEditor
     #include "configmanager.h"
     #include "editormanager.h"
     #include "globals.h"
@@ -38,6 +37,7 @@
 #endif
 #include "cbstyledtextctrl.h"
 #include "cbcolourmanager.h"
+#include "cbplugin.h" // cgEditor
 
 #include <wx/fontdlg.h>
 #include <wx/fontutil.h>

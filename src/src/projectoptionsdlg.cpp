@@ -19,7 +19,6 @@
     #include "compilerfactory.h"
     #include "globals.h"
     #include "cbproject.h"
-    #include "cbplugin.h"
     #include "sdk_events.h"
 
     #include <wx/button.h>
@@ -41,6 +40,7 @@
 #include "scripting/sqplus/sqplus.h"
 
 #include "annoyingdialog.h"
+#include "cbplugin.h"
 #include "configurationpanel.h"
 #include "editarrayorderdlg.h"
 #include "editarrayfiledlg.h"
