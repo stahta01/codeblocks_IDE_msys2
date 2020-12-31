@@ -1,5 +1,19 @@
+#include "sdk.h"
+
+#include <wx/dirdlg.h>
+#include <wx/filedlg.h>
+#include <wx/textdlg.h>
+
+#include <cbproject.h>
+#include <configmanager.h>
+#include <editorbase.h>
+#include <editormanager.h>
+#include <macrosmanager.h>
+
 #include "ToolsPlus.h"
 #include "se_globals.h"
+#include "ShellCtrlBase.h"
+#include "CmdConfigDialog.h"
 
 // Register the plugin with Code::Blocks.
 // We are using an anonymous namespace so we don't litter the global one.

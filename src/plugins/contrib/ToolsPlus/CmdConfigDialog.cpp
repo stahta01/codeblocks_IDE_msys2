@@ -1,22 +1,21 @@
-///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Feb  2 2007)
-// http://www.wxformbuilder.org/
-//
-// PLEASE DO "NOT" EDIT THIS FILE!
-///////////////////////////////////////////////////////////////////////////
+#include "sdk.h"
 
-#include "wx/wxprec.h"
+#include <wx/button.h>
+#include <wx/checkbox.h>
+#include <wx/choice.h>
+#include <wx/filedlg.h>
+#include <wx/listbox.h>
+#include <wx/notebook.h>
+#include <wx/sizer.h>
+#include <wx/spinctrl.h>
+#include <wx/stattext.h>
 
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif //__BORLANDC__
-
-#ifndef WX_PRECOMP
-#include <wx/wx.h>
-#endif //WX_PRECOMP
+#include <configmanager.h>
 
 #include "ToolsPlus.h"
 #include "CmdConfigDialog.h"
+#include "shellproperties.h"
+
 
 ///////////////////////////////////////////////////////////////////////////
 
