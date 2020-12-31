@@ -10,6 +10,7 @@
 #include <cbplugin.h>
 #include <cbproject.h>
 #include <sdk_events.h>
+#include <wx/wxscintilla.h>
 
 #include "coderefactoring.h"
 #include "nativeparser.h"
