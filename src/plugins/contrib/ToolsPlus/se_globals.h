@@ -1,24 +1,7 @@
 #ifndef IL_GLOBALS_H
 #define IL_GLOBALS_H
 
-#include <wx/wxprec.h>
-
-#ifndef WX_PRECOMP
-	#include <wx/wx.h>
-#endif
-
-#include <sdk.h>
-#ifndef CB_PRECOMP
-    #include <wx/filename.h>
- 
-    #include <editorbase.h>
-    #include <editormanager.h>
-    #include <logmanager.h>
-    #include <manager.h>
-    #include <macrosmanager.h>
-    #include <configmanager.h>
-    #include <cbproject.h>
-#endif
+#include <logmanager.h>
 
 wxString GetParentDir(const wxString &path);
 
