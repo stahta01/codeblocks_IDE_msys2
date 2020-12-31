@@ -1,9 +1,15 @@
+#include "sdk.h"
+
 #include <wx/notebook.h>
 #include <wx/textctrl.h>
 #include <wx/regex.h>
-#include "PipedProcessCtrl.h"
+
 #include <globals.h>
 #include <cbeditor.h>
+#include <configmanager.h>
+#include <editormanager.h>
+
+#include "PipedProcessCtrl.h"
 
 ////////////////////////////////////// PipedProcessCtrl /////////////////////////////////////////////
 #define PP_ERROR_STYLE 1

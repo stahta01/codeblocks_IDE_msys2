@@ -1,3 +1,15 @@
+#include "sdk.h"
+
+#include <wx/filename.h>
+
+#include <editorbase.h>
+#include <editormanager.h>
+#include <logmanager.h>
+#include <manager.h>
+#include <macrosmanager.h>
+#include <configmanager.h>
+#include <cbproject.h>
+
 #include "se_globals.h"
 
 wxString GetParentDir(const wxString &path)
