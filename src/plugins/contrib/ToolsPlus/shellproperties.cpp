@@ -1,6 +1,8 @@
-#include "shellproperties.h"
+#include "sdk.h"
 
 #include <configmanager.h>
+
+#include "shellproperties.h"
 
 #include <wx/arrimpl.cpp>
 WX_DEFINE_OBJARRAY(ShellCommandVec);
