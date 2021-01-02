@@ -47,7 +47,11 @@
 #include "configurationpanel.h"
 #include "editkeywordsdlg.h"
 #include "editorcolourset.h"
+#include "pluginmanager.h"
 #include "editorconfigurationdlg.h"
+#include "cbauibook.h"
+#include "cbplugin.h" // cgEditor
+
 
 // images by order of pages
 const wxString base_imgs[] =
