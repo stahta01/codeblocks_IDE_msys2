@@ -13,6 +13,8 @@
     #include <projectmanager.h>
 #endif
 
+#include <cbplugin.h>
+
 #include <list>
 #include <vector>
 #include <iostream>
