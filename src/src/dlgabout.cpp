@@ -24,7 +24,6 @@
         #include <wx/versioninfo.h>
     #endif // wxCHECK_VERSION
 
-    #include "licenses.h"
     #include "configmanager.h"
 #endif
 
@@ -37,6 +36,7 @@
 #include "appglobals.h"
 #include "dlgabout.h" // class's header file
 #include "configmanager.h"
+#include "licenses.h"
 #include "splashscreen.h"
 
 // class constructor

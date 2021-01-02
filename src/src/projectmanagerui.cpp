@@ -26,7 +26,6 @@
 
     #include "cbeditor.h"
     #include "cbproject.h"
-    #include "cbworkspace.h"
     #include "configmanager.h"
     #include "editormanager.h"
     #include "logmanager.h"
@@ -40,6 +39,7 @@
 #include "cbauibook.h"
 #include "cbcolourmanager.h"
 #include "cbplugin.h"
+#include "cbworkspace.h"
 #include "confirmreplacedlg.h"
 #include "filefilters.h"
 #include "filegroupsandmasks.h"

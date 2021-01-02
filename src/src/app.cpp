@@ -32,6 +32,7 @@
 #include <configmanager.h>
 #include <debuggermanager.h>
 #include <editormanager.h>
+#include <filemanager.h>
 #include <globals.h>
 #include <loggers.h>
 #include <logmanager.h>
@@ -41,7 +42,10 @@
 #include <projectmanager.h>
 #include <scriptingmanager.h>
 #include <sdk_events.h>
+#include <xtra_res.h>
 #include <sqplus.h>
+#include <filemanager.h>
+#include <xtra_res.h>
 
 #include "appglobals.h"
 #include "associations.h"

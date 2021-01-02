@@ -17,11 +17,11 @@
     #include "cbproject.h"
     #include "editormanager.h"
     #include "logmanager.h"
-    #include "projectmanager.h"
 #endif
 
 #include "debuggermenu.h"
 #include "cbplugin.h"
+#include "projectmanager.h"
 
 #include <algorithm>
 #include <wx/aui/aui.h> // wxAuiManager

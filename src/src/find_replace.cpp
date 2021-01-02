@@ -6,21 +6,21 @@
     #include <wx/dir.h>
     #include <wx/regex.h>
 
-    #include "cbauibook.h"
     #include "cbeditor.h"
     #include "cbproject.h"
     #include "editormanager.h"
-    #include "infowindow.h"
     #include "projectfile.h"
 #endif
 
 #include <wx/progdlg.h>
 
 #include "annoyingdialog.h"
+#include "cbauibook.h"
 #include "cbstyledtextctrl.h"
 #include "confirmreplacedlg.h"
 #include "encodingdetector.h"
 #include "findreplacedlg.h"
+#include "infowindow.h"
 #include "projectmanager.h"
 #include "searchresultslog.h"
 
