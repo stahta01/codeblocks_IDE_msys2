@@ -12,7 +12,7 @@
 #ifndef CB_PRECOMP
     #include "cbproject.h"
     #include "manager.h"
-    #include "projectmanager.h"
+
     #include <wx/button.h>
     #include <wx/intl.h>
     #include <wx/xrc/xmlres.h>
@@ -22,6 +22,7 @@
 #endif
 
 #include "projectdepsdlg.h"
+#include "projectmanager.h"
 
 
 BEGIN_EVENT_TABLE(ProjectDepsDlg, wxScrollingDialog)

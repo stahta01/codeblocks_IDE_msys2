@@ -38,7 +38,6 @@
     #include "appglobals.h"
     #include "globals.h"
     #include "associations.h"
-    #include "cbauibook.h"
 #endif
 
 #include <wx/aui/aui.h>
@@ -47,6 +46,7 @@
 
 #include "annoyingdialog.h"
 #include "appglobals.h"
+#include "cbauibook.h"
 #include "cbplugin.h" // cgEditor
 #include "configurationpanel.h"
 #include "environmentsettingsdlg.h"

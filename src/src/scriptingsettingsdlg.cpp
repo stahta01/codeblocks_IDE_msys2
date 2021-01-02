@@ -13,10 +13,7 @@
 #include "manager.h"
 #include "configmanager.h"
 #include "filefilters.h"
-
-#ifndef CB_PRECOMP
-    #include "scriptingmanager.h"
-#endif
+#include "scriptingmanager.h"
 
 #include <wx/textctrl.h>
 #include <wx/button.h>
