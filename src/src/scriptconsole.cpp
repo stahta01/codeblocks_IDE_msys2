@@ -16,7 +16,6 @@
     #include <globals.h>
     #include <manager.h>
     #include <configmanager.h>
-    #include <scriptingmanager.h>
 #endif
 
 #include <wx/filedlg.h>
@@ -29,6 +28,8 @@
 #include <wx/settings.h>
 #include <wx/string.h>
 //*)
+
+#include <scriptingmanager.h>
 
 //(*IdInit(ScriptConsole)
 const long ScriptConsole::ID_TEXTCTRL1 = wxNewId();
