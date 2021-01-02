@@ -6,10 +6,10 @@
 #ifndef PROJECTLAYOUTLOADER_H
 #define PROJECTLAYOUTLOADER_H
 
-#ifndef CB_PRECOMP
-    #include <wx/string.h>
-    #include "cbauibook.h"
-#endif
+
+#include <wx/string.h>
+#include "cbauibook.h"
+
 
 #define PROJECT_LAYOUT_FILE_VERSION_MAJOR 1
 #define PROJECT_LAYOUT_FILE_VERSION_MINOR 0

@@ -6,10 +6,8 @@
 #ifndef COMPILERFACTORY_H
 #define COMPILERFACTORY_H
 
-#ifndef CB_PRECOMP
-    #include <wx/arrstr.h> // WX_DEFINE_ARRAY
-    #include "compiler.h" // Compiler
-#endif
+#include <wx/arrstr.h> // WX_DEFINE_ARRAY
+#include "compiler.h" // Compiler
 
 #include "settings.h"
 
