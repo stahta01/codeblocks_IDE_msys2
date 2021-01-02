@@ -14,17 +14,12 @@
     #include <wx/dir.h>
     #include <wx/filename.h>
 
-    #include "projectmanager.h" // class's header file
     #include "sdk_events.h"
     #include "manager.h"
     #include "configmanager.h"
     #include "cbproject.h"
     #include "logmanager.h"
-    #include "pluginmanager.h"
     #include "editormanager.h"
-    #include "uservarmanager.h"
-    #include "workspaceloader.h"
-    #include "cbworkspace.h"
     #include "cbeditor.h"
     #include "globals.h"
     #include "cbexception.h"  // for cbassert
@@ -34,8 +29,13 @@
 
 #include "cbauibook.h"
 #include "cbplugin.h"
+#include "cbworkspace.h"
+#include "workspaceloader.h"
 //#include "filefilters.h"
 #include "filegroupsandmasks.h"
+#include "pluginmanager.h"
+#include "projectmanager.h" // class's header file
+#include "uservarmanager.h"
 
 template<> ProjectManager* Mgr<ProjectManager>::instance = nullptr;
 template<> bool  Mgr<ProjectManager>::isShutdown = false;
