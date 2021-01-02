@@ -26,14 +26,16 @@
     #include "editormanager.h"
     #include "globals.h"
     #include "manager.h"
-    #include "projectmanager.h"
 #endif
+
+#include <wx/fontutil.h>
 
 #include <wx/wxscintilla.h>
 #include "debuggermanager.h"
 #include "cbplugin.h"
 #include "editorcolourset.h"
 #include "filefilters.h"
+#include "projectmanager.h"
 
 // Keep in sync with cbEditor.cpp:
 #define DEBUG_MARKER     6

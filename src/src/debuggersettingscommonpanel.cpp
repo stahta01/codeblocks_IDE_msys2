@@ -6,11 +6,10 @@
     #include <wx/string.h>
     #include <wx/intl.h>
     //*)
-
-    #include <wx/fontutil.h>
 #endif
 
 #include <wx/fontdlg.h>
+#include <wx/fontutil.h>
 
 #include "debuggermanager.h"
 
