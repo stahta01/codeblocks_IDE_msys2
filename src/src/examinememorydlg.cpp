@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12275 $
- * $Id: examinememorydlg.cpp 12275 2020-12-26 15:14:26Z fuscated $
+ * $Revision: 12285 $
+ * $Id: examinememorydlg.cpp 12285 2021-01-02 14:06:28Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/examinememorydlg.cpp $
  */
 
@@ -21,6 +21,8 @@
 
 #include "examinememorydlg.h"
 #include "debuggermanager.h"
+
+#include <cinttypes> // For PRIx64
 
 BEGIN_EVENT_TABLE(ExamineMemoryDlg, wxPanel)
     EVT_BUTTON(XRCID("btnGo"), ExamineMemoryDlg::OnGo)
@@ -99,7 +101,7 @@ void ExamineMemoryDlg::AddHexByte(const wxString& addr, const wxString& hexbyte)
 
         // if it's zero (i.e this is the first row), keep "addr" as starting address for this row.
         // m_LastRowStartingAddress will be set again when we 've consumed this row...
-        addr.ToULong(&m_LastRowStartingAddress, 16);
+        m_LastRowStartingAddress = cbDebuggerStringToAddress(addr);
     }
 
 #define HEX_OFFSET(a) (a*3)
@@ -122,7 +124,7 @@ void ExamineMemoryDlg::AddHexByte(const wxString& addr, const wxString& hexbyte)
             m_pText->AppendText(_T('\n')); // prepend a newline
         m_LineText[23] = _T('|'); // put a "separator" in the middle (just to ease reading a bit)
 
-        m_pText->AppendText(wxString::Format(_T("0x%lx: %.67s"), m_LastRowStartingAddress, m_LineText));
+        m_pText->AppendText(wxString::Format(_T("0x%" PRIx64 ": %.67s"), m_LastRowStartingAddress, m_LineText));
         for (int i = 0; i < 67; ++i)
             m_LineText[i] = _T(' ');
         // update starting address for next row every 16 bytes
