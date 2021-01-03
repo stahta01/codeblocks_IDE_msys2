@@ -18,12 +18,13 @@
   #include "configmanager.h"
   #include "globals.h"
   #include "manager.h"
-  #include "macrosmanager.h"
   #include "logmanager.h"
 #endif
 
 #include <map>
 #include <utility> // std::pair
+
+#include "macrosmanager.h"
 
 #include "envvars_common.h"
 
