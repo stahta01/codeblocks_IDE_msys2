@@ -17,15 +17,12 @@
     #include <wx/regex.h>
     #include <wx/wfstream.h>
 
-    #include <cbauibook.h>
     #include <cbeditor.h>
     #include <cbexception.h>
     #include <cbproject.h>
-    #include <compilerfactory.h>
     #include <configmanager.h>
     #include <editormanager.h>
     #include <logmanager.h>
-    #include <macrosmanager.h>
     #include <manager.h>
     #include <pluginmanager.h>
     #include <prep.h> // nullptr
@@ -36,8 +33,11 @@
 
 #include <wx/tokenzr.h>
 
+#include <cbauibook.h>
 #include <cbstyledtextctrl.h>
 #include <compilercommandgenerator.h>
+#include <compilerfactory.h>
+#include <macrosmanager.h>
 
 #include "nativeparser.h"
 #include "classbrowser.h"

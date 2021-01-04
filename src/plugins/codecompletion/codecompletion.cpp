@@ -33,7 +33,6 @@
     #include <editormanager.h>
     #include <globals.h>
     #include <logmanager.h>
-    #include <macrosmanager.h>
     #include <manager.h>
     #include <projectmanager.h>
     #include <sdk_events.h>
@@ -46,6 +45,7 @@
 #include <editorcolourset.h>
 #include <editor_hooks.h>
 #include <filegroupsandmasks.h>
+#include <macrosmanager.h>
 #include <multiselectdlg.h>
 
 #include "codecompletion.h"
