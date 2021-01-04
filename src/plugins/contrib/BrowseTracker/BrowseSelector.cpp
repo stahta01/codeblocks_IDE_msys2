@@ -28,6 +28,7 @@
 #include <wx/sizer.h>
 #include <wx/dcmemory.h>
 #include <wx/font.h>
+#include <wx/fontutil.h>
 #include <wx/settings.h>
 #include "wx/xrc/xmlres.h"
 #include "wx/event.h"
