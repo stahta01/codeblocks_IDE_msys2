@@ -26,11 +26,9 @@
     #include "projectmanager.h"
     #include "pluginmanager.h"
     #include "editormanager.h"
-    #include "macrosmanager.h"
     #include "cbeditor.h"
     #include "projectbuildtarget.h"
     #include "sdk_events.h"
-    #include "compilerfactory.h"
 
     #include "scrollingdialog.h"
     #include "globals.h"
@@ -41,6 +39,8 @@
 #include "annoyingdialog.h"
 #include "cbstyledtextctrl.h"
 #include "compilercommandgenerator.h"
+#include "compilerfactory.h"
+#include "macrosmanager.h"
 #include "xtra_res.h"
 
 #include <cbdebugger_interfaces.h>
