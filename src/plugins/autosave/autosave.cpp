@@ -18,7 +18,6 @@
     #include <wx/xrc/xmlres.h>
     #include "cbeditor.h"
     #include "cbproject.h"
-    #include "cbworkspace.h"
     #include "configmanager.h"
     #include "editormanager.h"
     #include "globals.h"
@@ -26,11 +25,12 @@
     #include "projectmanager.h"
     #include "manager.h"
     #include "sdk_events.h"
-    #include "workspaceloader.h"
 #endif
 
 #include <algorithm>
 #include "cbstyledtextctrl.h"
+#include "cbworkspace.h"
+#include "workspaceloader.h"
 
 #include "projectloader.h"
 #include "autosave.h"
