@@ -15,11 +15,12 @@
     #include <configmanager.h>
     #include <debuggermanager.h>
     #include <globals.h>
-    #include <infowindow.h>
     #include <logmanager.h>
     #include <manager.h>
     #include <projectbuildtarget.h>
 #endif
+
+#include <infowindow.h>
 
 #include "cdb_driver.h"
 #include "cdb_commands.h"
