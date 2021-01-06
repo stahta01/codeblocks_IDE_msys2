@@ -8,6 +8,8 @@
     #include "logmanager.h"
     #include "projectmanager.h"
 #endif
+#include <wx/menu.h>
+
 #include <configurationpanel.h>
 #include <configmanager.h>
 #include <cbstyledtextctrl.h>
