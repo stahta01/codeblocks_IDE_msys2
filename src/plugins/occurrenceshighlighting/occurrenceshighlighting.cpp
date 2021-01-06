@@ -20,6 +20,7 @@
 #include <configurationpanel.h>
 
 #include <wx/listctrl.h>
+#include <wx/menu.h>
 
 #include "cbcolourmanager.h"
 #include "cbstyledtextctrl.h"
