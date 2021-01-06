@@ -29,6 +29,7 @@
     #include <projectmanager.h>
 #endif
 
+#include <wx/menu.h>
 #include <wx/progdlg.h>
 #include <cbstyledtextctrl.h>
 
