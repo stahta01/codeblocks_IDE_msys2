@@ -93,6 +93,7 @@
 	#include <wx/xrc/xmlres.h>
 	#include <wx/fileconf.h>
 	#include <wx/utils.h>
+    #include <wx/toolbar.h>
     #include <wx/aui/auibook.h>
 
 #include "Version.h"
