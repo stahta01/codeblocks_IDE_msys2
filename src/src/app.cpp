@@ -14,6 +14,7 @@
 #include <wx/choicdlg.h>
 #include <wx/clipbrd.h>
 #include <wx/cmdline.h>
+#include <wx/dcmemory.h>
 #include <wx/debugrpt.h>
 #include <wx/filefn.h>
 #include <wx/fs_zip.h>

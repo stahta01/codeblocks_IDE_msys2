@@ -32,9 +32,11 @@
 #include "cbstatusbar.h"
 #include "loggers.h"
 
+#include <wx/dcclient.h>
 #include <wx/display.h>
 #include <wx/dnd.h>
 #include <wx/fileconf.h>
+#include <wx/filedlg.h>
 #include <wx/filename.h>
 #include <wx/gdicmn.h>
 #include <wx/printdlg.h>
