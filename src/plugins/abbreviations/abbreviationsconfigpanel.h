@@ -16,6 +16,8 @@
 #include <wx/panel.h>
 #include <wx/button.h>
 
+class wxComboBox;
+
 class AbbreviationsConfigPanel: public cbConfigurationPanel
 {
 public:
