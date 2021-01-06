@@ -18,6 +18,7 @@
 */
 // RCS-ID: $Id: BrowseSelector.cpp 12254 2020-12-23 19:11:14Z pecanh $
 
+#include "sdk.h"
 
 #include <wx/listctrl.h>
 #include <wx/listbox.h>
