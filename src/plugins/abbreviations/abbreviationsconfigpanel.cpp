@@ -20,6 +20,8 @@
     #include <logmanager.h>
 #endif
 
+#include <wx/combobox.h>
+
 #include <editorcolourset.h>
 
 #include "cbcolourmanager.h"
