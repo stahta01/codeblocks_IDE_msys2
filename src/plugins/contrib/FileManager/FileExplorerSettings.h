@@ -3,7 +3,10 @@
 
 
 #include <wx/button.h>
+#include <wx/dialog.h>
 
+class wxListBox;
+class wxTextCtrl;
 
 class FavoriteDir
 {
