@@ -19,6 +19,9 @@
 #include <vector>
 #include <iostream>
 
+#include <wx/dirdlg.h>
+#include <wx/textdlg.h>
+
 #include "se_globals.h"
 #include "CommitBrowser.h"
 
