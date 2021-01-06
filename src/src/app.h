@@ -6,14 +6,7 @@
 #ifndef CODEBLOCKS_APP_H
 #define CODEBLOCKS_APP_H
 
-#include <wx/wxprec.h>
-
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
-
 #if !defined(WX_PRECOMP)
-    #include <wx/wx.h>
     #include <wx/intl.h>
     #include <wx/laywin.h>
     #include <wx/image.h>
