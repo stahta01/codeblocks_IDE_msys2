@@ -1,7 +1,6 @@
 #ifndef FILEEXPLORERUPDATER_H_INCLUDED
 #define FILEEXPLORERUPDATER_H_INCLUDED
 
-#include <wx/wx.h>
 #include <wx/treectrl.h>
 #include <wx/thread.h>
 #include <wx/process.h>
