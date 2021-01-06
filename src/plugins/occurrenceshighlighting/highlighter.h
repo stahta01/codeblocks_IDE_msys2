@@ -8,9 +8,12 @@
 
 #include <set>
 
+#include <wx/dynarray.h>
+
 #include <editor_hooks.h>
 
 class cbStyledTextCtrl;
+class wxString;
 
 class Highlighter
 {
