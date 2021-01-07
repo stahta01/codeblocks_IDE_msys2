@@ -1,6 +1,4 @@
-#include "FileExplorerSettings.h"
-
-#include <sdk.h>
+#include "sdk.h"
 #ifndef CB_PRECOMP
   #include <wx/xrc/xmlres.h>
   #include <wx/checkbox.h>
@@ -11,6 +9,8 @@
 
 #include <wx/dirdlg.h>
 #include <wx/listbox.h>
+
+#include "FileExplorerSettings.h"
 
 #include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
 WX_DEFINE_OBJARRAY(FavoriteDirs);
