@@ -32,6 +32,8 @@ cd ~/devel/codeblocks-dev && \
 git checkout cb_source && git restore . && git pull && \
 svn cleanup && svn revert -R . && \
 svn update --ignore-externals . && \
+rm -fr src/templates/ && \
+mkdir -p src/templates/ && \
 svn status -q && git status -uno;
 ```
 ####Results
