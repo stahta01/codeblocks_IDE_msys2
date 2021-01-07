@@ -6,7 +6,31 @@
 		<Option platforms="Windows;" />
 		<Option compiler="gcc" />
 		<Build>
-			<Target title="default">
+			<Target title="usePCH">
+				<Option output="../../../devel31_msys2/share/CodeBlocks/plugins/FileManager" prefix_auto="1" extension_auto="1" />
+				<Option object_output="../../../.objs31_msys2/plugins/contrib/FileManager" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option parameters="--debug-log --multiple-instance -na -ns -nd -p debug" />
+				<Option host_application="../../../devel31_msys2/codeblocks.exe" />
+				<Option run_host_application_in_terminal="0" />
+				<Option projectIncludeDirsRelation="2" />
+				<Compiler>
+					<Add option="$(#CB_RELEASE_TYPE)" />
+					<Add option="-Winvalid-pch" />
+					<Add option="-DCB_PRECOMP" />
+					<Add directory="../../../.objs31_msys2/include" />
+				</Compiler>
+				<Linker>
+					<Add library="codeblocks" />
+					<Add library="wx_$(WX_TOOLKIT)$(WX_SUFFIX)_xrc-$(WX_VERSION).dll" />
+					<Add library="wx_$(WX_TOOLKIT)$(WX_SUFFIX)_aui-$(WX_VERSION).dll" />
+					<Add library="wx_$(WX_TOOLKIT)$(WX_SUFFIX)_core-$(WX_VERSION).dll" />
+					<Add library="wx_base$(WX_SUFFIX)-$(WX_VERSION).dll" />
+					<Add directory="../../../devel31_msys2" />
+				</Linker>
+			</Target>
+			<Target title="noPCH">
 				<Option output="../../../devel31_msys2/share/CodeBlocks/plugins/FileManager" prefix_auto="1" extension_auto="1" />
 				<Option object_output="../../../.objs31_msys2/plugins/contrib/FileManager" />
 				<Option type="3" />
@@ -16,6 +40,7 @@
 				<Option run_host_application_in_terminal="0" />
 				<Compiler>
 					<Add option="$(#CB_RELEASE_TYPE)" />
+					<Add option="-DNOPCH" />
 				</Compiler>
 				<Linker>
 					<Add library="codeblocks" />
@@ -33,7 +58,7 @@
 			</Environment>
 		</Build>
 		<VirtualTargets>
-			<Add alias="All" targets="default;" />
+			<Add alias="All" targets="usePCH;" />
 		</VirtualTargets>
 		<Compiler>
 			<Add option="-Wall" />
@@ -46,7 +71,6 @@
 			<Add option="-DHAVE_W32API_H" />
 			<Add option="-D__WXMSW__" />
 			<Add option="-DcbDEBUG" />
-			<Add option="-DNOPCH" />
 			<Add option="-DwxUSE_UNICODE" />
 			<Add option="-DBUILDING_PLUGIN" />
 			<Add directory="../../../include" />
