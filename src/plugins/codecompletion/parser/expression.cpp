@@ -11,10 +11,6 @@
 
 #include <stack>
 
-#ifndef CB_PRECOMP
-    #include <wx/wx.h>
-#endif
-
 #include <logmanager.h>
 #include <manager.h>
 
