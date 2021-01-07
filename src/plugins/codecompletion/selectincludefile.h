@@ -6,8 +6,6 @@
 #ifndef SELECTINCLUDEFILE_H
 #define SELECTINCLUDEFILE_H
 
-#include <wx/wxprec.h>
-
 #include "scrollingdialog.h"
 
 #ifndef WX_PRECOMP
