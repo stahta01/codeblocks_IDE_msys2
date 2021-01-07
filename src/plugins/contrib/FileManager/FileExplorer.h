@@ -15,6 +15,9 @@ class UpdateQueue;
 
 class Expansion;
 
+class wxCheckBox;
+class wxStaticText;
+
 typedef std::vector<Expansion*> ExpList;
 
 class VCSstate
