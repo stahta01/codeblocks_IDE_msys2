@@ -6,7 +6,9 @@
  * License:   GPL
  **************************************************************/
 
+#include <wx/filedlg.h>
 #include <wx/frame.h> // GetMenuBar
+#include <wx/menu.h>
 #include "exporter.h"
 #include <configmanager.h>
 #include <manager.h>
