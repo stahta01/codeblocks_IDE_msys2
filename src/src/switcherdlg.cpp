@@ -11,6 +11,7 @@
 
 #include <wx/settings.h>
 #include <wx/dcbuffer.h>
+#include <wx/sizer.h>
 
 #if defined(__WXMSW__) && wxUSE_UXTHEME
 #include <wx/msw/uxtheme.h>
