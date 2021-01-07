@@ -1,9 +1,4 @@
-#include "FileExplorer.h"
-#include <wx/dir.h>
-#include <wx/filename.h>
-#include <wx/aui/aui.h>
-
-#include <sdk.h>
+#include "sdk.h"
 #ifndef CB_PRECOMP
     #include <wx/dnd.h>
     #include <wx/imaglist.h>
@@ -12,6 +7,11 @@
     #include <configmanager.h>
     #include <projectmanager.h>
 #endif
+
+#include "FileExplorer.h"
+#include <wx/dir.h>
+#include <wx/filename.h>
+#include <wx/aui/aui.h>
 
 #include <cbplugin.h>
 

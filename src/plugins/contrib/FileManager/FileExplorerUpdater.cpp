@@ -1,4 +1,4 @@
-#include <sdk.h>
+#include "sdk.h"
 
 #include <wx/checkbox.h>
 #include <wx/sstream.h>
