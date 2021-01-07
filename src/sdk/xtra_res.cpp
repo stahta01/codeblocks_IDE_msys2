@@ -11,7 +11,6 @@
 
 #ifndef CB_PRECOMP
     #include "logmanager.h"
-    #include <wx/wx.h>
 #endif
 
 #include <wx/xml/xml.h>
