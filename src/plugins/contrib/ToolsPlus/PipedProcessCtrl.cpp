@@ -1,5 +1,6 @@
 #include "sdk.h"
 
+#include <wx/fontutil.h>
 #include <wx/notebook.h>
 #include <wx/textctrl.h>
 #include <wx/regex.h>
