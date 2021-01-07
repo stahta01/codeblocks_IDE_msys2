@@ -9,6 +9,8 @@
   #include "cbproject.h"
 #endif
 
+#include <wx/dirdlg.h>
+#include <wx/listbox.h>
 
 #include <wx/arrimpl.cpp> // this is a magic incantation which must be done!
 WX_DEFINE_OBJARRAY(FavoriteDirs);
