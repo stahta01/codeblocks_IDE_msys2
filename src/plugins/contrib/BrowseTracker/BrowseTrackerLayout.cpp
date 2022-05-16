@@ -16,7 +16,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-// RCS-ID: $Id: BrowseTrackerLayout.cpp 12195 2020-07-29 22:24:29Z fuscated $
+// RCS-ID: $Id: BrowseTrackerLayout.cpp 12602 2021-12-21 07:26:04Z wh11204 $
 
 /*
 * This file is part of Code::Bocks, an open-source cross-platform IDE
@@ -25,8 +25,8 @@
 * This program is distributed under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 *
-* $Revision: 12195 $
-* $Id: BrowseTrackerLayout.cpp 12195 2020-07-29 22:24:29Z fuscated $
+* $Revision: 12602 $
+* $Id: BrowseTrackerLayout.cpp 12602 2021-12-21 07:26:04Z wh11204 $
 * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/contrib/BrowseTracker/BrowseTrackerLayout.cpp $
 */
 
@@ -124,7 +124,7 @@ bool BrowseTrackerLayout::Open(const wxString& filename, FileBrowse_MarksHash& m
         if (fname.IsEmpty())
         {
             //pMsg->DebugLog(_T("'File' node exists, but no filename?!?"));
-            pf = 0L;
+            pf = nullptr;
         }
         else
             pf = m_pProject->GetFileByFilename(fname);
@@ -227,7 +227,7 @@ bool BrowseTrackerLayout::Save(const wxString& filename, FileBrowse_MarksHash& m
     TiXmlElement* tgtidx = static_cast<TiXmlElement*>(rootnode->InsertEndChild(TiXmlElement("ActiveTarget")));
     tgtidx->SetAttribute("name", cbU2C(m_pProject->GetActiveBuildTarget()));
 
-    ProjectFile* active = 0L;
+    ProjectFile* active = nullptr;
     cbEditor* ed = Manager::Get()->GetEditorManager()->GetBuiltinActiveEditor();
     if (ed)
         active = ed->GetProjectFile();

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12142 $
- * $Id: globals.cpp 12142 2020-05-31 15:54:43Z fuscated $
+ * $Revision: 12671 $
+ * $Id: globals.cpp 12671 2022-01-21 12:34:25Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/globals.cpp $
  */
 
@@ -859,9 +859,10 @@ wxString URLEncode(const wxString &str) // not sure this is 100% standards compl
 }
 
 /** Adds support for backtick'd expressions under Windows. */
-typedef std::map<wxString, wxString> BackticksMap;
-BackticksMap m_Backticks; // all calls share the same cache
-wxString ExpandBackticks(wxString& str) // backticks are written in-place to str
+
+cbBackticksMap m_Backticks; // all calls share the same cache
+
+wxString cbExpandBackticks(wxString& str) // backticks are written in-place to str
 {
     wxString ret;
 
@@ -884,21 +885,33 @@ wxString ExpandBackticks(wxString& str) // backticks are written in-place to str
             break;
 
         wxString bt;
-        BackticksMap::iterator it = m_Backticks.find(cmd);
+        cbBackticksMap::iterator it = m_Backticks.find(cmd);
         if (it != m_Backticks.end()) // in the cache :)
             bt = it->second;
         else
         {
-            Manager::Get()->GetLogManager()->DebugLog(F(_T("Caching result of `%s`"), cmd.wx_str()));
-            wxArrayString output;
-            if (platform::WindowsVersion() >= platform::winver_WindowsNT2000)
-                wxExecute(_T("cmd /c ") + cmd, output, wxEXEC_NODISABLE);
+            LogManager *log = Manager::Get()->GetLogManager();
+            log->DebugLog(F(_T("Caching result of `%s`"), cmd.wx_str()));
+
+            wxString fullCmd;
+
+            if (platform::windows)
+                fullCmd = "cmd /c " + cmd;
             else
-                wxExecute(cmd,                 output, wxEXEC_NODISABLE);
+            {
+                ConfigManager *conf = Manager::Get()->GetConfigManager(_T("app"));
+                const wxString shell = conf->Read(_T("/console_shell"), DEFAULT_CONSOLE_SHELL);
+                fullCmd = cmd;
+                fullCmd.Replace("'", "\\'");
+                fullCmd = shell + " '" + fullCmd + "'";
+            }
+            wxArrayString output;
+            const long exitCode = wxExecute(fullCmd, output, wxEXEC_NODISABLE);
             bt = GetStringFromArray(output, _T(" "), false);
             // add it in the cache
             m_Backticks[cmd] = bt;
-            Manager::Get()->GetLogManager()->DebugLog(_T("Cached"));
+            log->DebugLog(wxString::Format("Cached: '%s' (full cmd: '%s' exit code: %d)", bt,
+                                           fullCmd, int(exitCode)));
         }
         ret << bt << _T(' ');
         str = str.substr(0, start) + bt + str.substr(end + 1, wxString::npos);
@@ -909,6 +922,17 @@ wxString ExpandBackticks(wxString& str) // backticks are written in-place to str
     }
 
     return ret; // return a list of the replaced expressions
+}
+
+void cbClearBackticksCache()
+{
+    Manager::Get()->GetLogManager()->DebugLog("Cached: cleared!");
+    m_Backticks.clear();
+}
+
+const cbBackticksMap& cbGetBackticksCache()
+{
+    return m_Backticks;
 }
 
 wxMenu* CopyMenu(wxMenu* mnu, bool with_accelerators)
@@ -947,7 +971,7 @@ bool NormalizePath(wxFileName& f,const wxString& base)
     bool result = true;
 //    if (!f.IsAbsolute())
     {
-        f.Normalize(wxPATH_NORM_ALL & ~wxPATH_NORM_CASE, base);
+        f.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_TILDE | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_LONG | wxPATH_NORM_SHORTCUT, base);
         result = f.IsOk();
     }
     return result;
@@ -1162,11 +1186,11 @@ wxBitmap cbLoadBitmapScaled(const wxString& filename, wxBitmapType bitmapType, d
 
 double cbGetContentScaleFactor(const wxWindow &window)
 {
-#if wxCHECK_VERSION(3, 0, 0)
-    return window.GetContentScaleFactor();
+#if wxCHECK_VERSION(3, 1, 4)
+    return window.GetDPIScaleFactor();
 #else
-    return 1.0;
-#endif // wxCHECK_VERSION(3, 0, 0)
+    return window.GetContentScaleFactor();
+#endif
 }
 
 #ifdef __WXGTK__
@@ -1176,31 +1200,12 @@ double cbGetContentScaleFactor(const wxWindow &window)
 // For other platforms the value returned by GetContentScalingFactor seems adequate.
 double cbGetActualContentScaleFactor(cb_unused const wxWindow &window)
 {
-#if wxCHECK_VERSION(3, 0, 0)
     // It is possible to use the window to find a display, but unfortunately this doesn't work well,
     // because we call this function mostly on windows which haven't been shown. This leads to
     // warnings in the log about ClientToScreen failures.
     // If there are problems on multi-monitor setups we should think about some other solution. :(
     const wxSize ppi = wxGetDisplayPPI();
     return ppi.y / 96.0;
-#else // wxCHECK_VERSION(3, 0, 0)
-    // This code is the simplest version which works in the most common case.
-    // If people complain that multi-monitor setups behave strangely, this should be revised with
-    // direct calls to GTK/GDK functions.
-
-    // This function might return bad results for multi screen setups.
-    const wxSize mm = wxGetDisplaySizeMM();
-    if (mm.x == 0 || mm.y == 0)
-        return 1.0;
-    const wxSize pixels = wxGetDisplaySize();
-
-    const double ppiX = wxRound((pixels.x * inches2mm) / mm.x);
-    const double ppiY = wxRound((pixels.y * inches2mm) / mm.y);
-
-    // My guess is that smaller scaling factor would look better. Probably it has effect only in
-    // multi monitor setups where there are monitors with different dpi.
-    return std::min(ppiX / 96.0, ppiY /96.0);
-#endif // wxCHECK_VERSION(3, 0, 0)
 }
 #else // __WXGTK__
 double cbGetActualContentScaleFactor(const wxWindow &window)
@@ -1299,11 +1304,7 @@ void SetSettingsIconsStyle(wxListCtrl* lc, SettingsIconsStyle style)
     long flags = lc->GetWindowStyleFlag();
     switch (style)
     {
-#if wxCHECK_VERSION(3, 0, 0)
         case sisNoIcons: flags = (flags & ~wxLC_MASK_TYPE) | wxLC_LIST; break;
-#else
-        case sisNoIcons: flags = (flags & ~wxLC_MASK_TYPE) | wxLC_SMALL_ICON; break;
-#endif
         default: flags = (flags & ~wxLC_MASK_TYPE) | wxLC_ICON; break;
     }
     lc->SetWindowStyleFlag(flags);
@@ -1359,9 +1360,9 @@ cbChildWindowPlacement cbGetChildWindowPlacement(ConfigManager &appConfig)
 void PlaceWindow(wxTopLevelWindow *w, cbPlaceDialogMode mode, bool enforce)
 {
     if (!w)
-        cbThrow(_T("Passed NULL pointer to PlaceWindow."));
+        cbThrow(_T("Passed nullptr pointer to PlaceWindow."));
 
-    int the_mode;
+    int the_mode = int(mode);
 
     if (!enforce)
     {
@@ -1530,42 +1531,54 @@ namespace platform
     windows_version_t cb_get_os()
     {
         if (!platform::windows)
-        {
             return winver_NotWindows;
-        }
-        else
+
+        windows_version_t version = winver_UnknownWindows;
+
+        int Major = 0;
+        int Minor = 0;
+        int Micro = 0;
+#if wxCHECK_VERSION(3, 1, 1)
+        switch (wxGetOsVersion(&Major, &Minor, &Micro))
+#else
+        switch (wxGetOsVersion(&Major, &Minor))
+#endif
         {
+            case wxOS_WINDOWS_9X:
+                version = winver_Windows9598ME;
+            break;
+            case wxOS_WINDOWS_NT:
+                switch (Major)
+                {
+                case 5:
+                    if (Minor == 0)
+                        version = winver_WindowsNT2000;
+                    else if (Minor == 1)
+                        version = winver_WindowsXP;
+                    else if (Minor == 2)
+                        version = winver_WindowsServer2003;
 
-            int famWin95 = wxOS_WINDOWS_9X;
-            int famWinNT = wxOS_WINDOWS_NT;
+                break;
+                case 6:
+                    if (Minor == 0)
+                        version = winver_WindowsVista;
+                    else if (Minor == 1)
+                        version = winver_Windows7;
+                    else if ((Minor == 2) || (Minor == 3))
+                        version = winver_Windows8;
 
-            int Major = 0;
-            int Minor = 0;
-            int family = wxGetOsVersion(&Major, &Minor);
+                break;
+                case 10:
+                    if (Minor == 0)
+                        version = (Micro < 22000) ? winver_Windows10 : winver_Windows11;
+                }
 
-            if (family == famWin95)
-                 return winver_Windows9598ME;
-
-            if (family == famWinNT)
-            {
-                if (Major == 5 && Minor == 0)
-                    return winver_WindowsNT2000;
-
-                if (Major == 5 && Minor == 1)
-                    return winver_WindowsXP;
-
-                if (Major == 5 && Minor == 2)
-                    return winver_WindowsServer2003;
-
-                if (Major == 6 && Minor == 0)
-                    return winver_WindowsVista;
-
-                if (Major == 6 && Minor == 1)
-                    return winver_Windows7;
-            }
-
-            return winver_UnknownWindows;
+            break;
+            default:
+                ;
         }
+
+        return version;
     }
 
     windows_version_t WindowsVersion()
@@ -1630,7 +1643,7 @@ int cbMessageBox(const wxString& message, const wxString& caption, int style, wx
     if (!parent)
         parent = Manager::Get()->GetAppWindow();
 
-    // Cannot create a wxMessageDialog with a NULL as parent
+    // Cannot create a wxMessageDialog with a nullptr as parent
     if (!parent)
     {
       // wxMessage*Box* returns any of: wxYES, wxNO, wxCANCEL, wxOK.
@@ -1689,11 +1702,7 @@ DLLIMPORT wxArrayInt cbGetMultiChoiceDialog(const wxString& message, const wxStr
         return wxArrayInt();
 }
 
-#if wxCHECK_VERSION(3, 0, 0)
 const char* cbGetTextFromUserPromptStr = wxGetTextFromUserPromptStr;
-#else
-const wxChar* cbGetTextFromUserPromptStr = wxGetTextFromUserPromptStr;
-#endif // wxCHECK_VERSION
 
 wxString cbGetTextFromUser(const wxString& message, const wxString& caption, const wxString& defaultValue,
                            wxWindow *parent, wxCoord x, wxCoord y, bool centre)

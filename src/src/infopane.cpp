@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 11770 $
- * $Id: infopane.cpp 11770 2019-07-04 22:15:32Z fuscated $
+ * $Revision: 12604 $
+ * $Id: infopane.cpp 12604 2021-12-22 08:48:07Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/infopane.cpp $
  */
 
@@ -220,15 +220,15 @@ int InfoPane::GetCurrentPage(bool &is_logger)
 Logger* InfoPane::GetLogger(int index)
 {
     if (index < 0 || (size_t)index > m_Pages.GetCount())
-        return NULL;
-    return m_Pages.Item(index)->islogger ? m_Pages.Item(index)->logger : NULL;
+        return nullptr;
+    return m_Pages.Item(index)->islogger ? m_Pages.Item(index)->logger : nullptr;
 }
 
 wxWindow* InfoPane::GetWindow(int index)
 {
     if (index < 0 || (size_t)index > m_Pages.GetCount())
-        return NULL;
-    return !m_Pages.Item(index)->islogger ? m_Pages.Item(index)->window : NULL;
+        return nullptr;
+    return !m_Pages.Item(index)->islogger ? m_Pages.Item(index)->window : nullptr;
 }
 
 void InfoPane::Show(size_t i)

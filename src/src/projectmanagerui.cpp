@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12227 $
- * $Id: projectmanagerui.cpp 12227 2020-10-26 10:07:50Z fuscated $
+ * $Revision: 12756 $
+ * $Id: projectmanagerui.cpp 12756 2022-03-17 23:41:38Z bluehazzard $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/projectmanagerui.cpp $
  */
 
@@ -33,15 +33,18 @@
 #endif
 
 #include <unordered_map>
+#include "wxstringhash.h"
 #include <wx/dataobj.h>
 #include <wx/dnd.h>
 #include <wx/progdlg.h>
 
+#include "annoyingdialog.h"
 #include "cbauibook.h"
 #include "cbcolourmanager.h"
 #include "confirmreplacedlg.h"
 #include "filefilters.h"
 #include "filegroupsandmasks.h"
+#include "macrosmanager.h"
 #include "multiselectdlg.h"
 #include "projectdepsdlg.h"
 #include "projectfileoptionsdlg.h"
@@ -106,6 +109,7 @@ const int idMenuProjectDown              = wxNewId();
 const int idMenuViewCategorizePopup      = wxNewId();
 const int idMenuViewUseFoldersPopup      = wxNewId();
 const int idMenuViewHideFolderNamePopup  = wxNewId();
+const int idMenuViewSortAlphabetically   = wxNewId();
 const int idMenuTreeRenameWorkspace      = wxNewId();
 const int idMenuTreeSaveWorkspace        = wxNewId();
 const int idMenuTreeSaveAsWorkspace      = wxNewId();
@@ -121,6 +125,10 @@ const int idNB_TabBottom = wxNewId();
 namespace
 {
 static bool ProjectCanDragNode(cbProject* project, wxTreeCtrl* tree, wxTreeItemId node);
+static bool TestProjectNodeDragged(cbProject* project, wxTreeCtrl* tree, const wxArrayTreeItemIds& fromArray,
+                                    wxTreeItemId to);
+static bool TestProjectVirtualFolderDragged(cbProject* project, wxTreeCtrl* tree, wxTreeItemId from,
+                                             wxTreeItemId to);
 static bool ProjectNodeDragged(cbProject* project, wxTreeCtrl* tree, wxArrayTreeItemIds& fromArray,
                         wxTreeItemId to);
 static bool ProjectVirtualFolderAdded(cbProject* project, wxTreeCtrl* tree,
@@ -131,12 +139,168 @@ static bool ProjectVirtualFolderRenamed(cbProject* project, wxTreeCtrl* tree, wx
 static bool ProjectVirtualFolderDragged(cbProject* project, wxTreeCtrl* tree, wxTreeItemId from,
                                         wxTreeItemId to);
 static bool ProjectShowOptions(cbProject* project);
+static wxString GetRelativeFolderPath(wxTreeCtrl* tree, wxTreeItemId parent);
 } // anonymous namespace
+
+
+ProjectTreeDropTarget::ProjectTreeDropTarget(cbTreeCtrl* ctrl, ProjectManagerUI* ui) : m_treeCtrl(ctrl), m_ui(ui)
+{
+    wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+    dataobj->Add(new TreeDNDObject(), true);
+    dataobj->Add(new wxFileDataObject());
+    SetDataObject(dataobj);
+}
+
+wxDragResult ProjectTreeDropTarget::OnData(wxCoord x, wxCoord y, wxDragResult defaultDragResult)
+{
+    // We dropped on an item, clean up highlighting before we do anything,
+    // because old item may be invalid after we are finished with
+    // this function and so we can not use it in OnDragOver
+    if(oldItem.IsOk())
+    {
+        m_treeCtrl->SetItemDropHighlight(oldItem, false);
+        oldItem.Unset();   // invalidate old item
+    }
+
+    int flag = 0;
+    wxUnusedVar(flag);
+    GetData();
+    wxDataObjectComposite *dataobjComp = static_cast<wxDataObjectComposite *>(GetDataObject());
+    const wxDataFormat format = dataobjComp->GetReceivedFormat();
+    const wxTreeItemId item = m_treeCtrl->HitTest(wxPoint(x,y), flag);
+    wxArrayInt emptyTargets;
+
+    // When the format is a file we add it to the project, or if no project is open, we simply open the file in the editor
+    if (format == wxDF_FILENAME)
+    {
+        wxFileDataObject *dataobjFile = static_cast<wxFileDataObject *>(dataobjComp->GetObject(wxDF_FILENAME));
+        ProjectManager* mgr = Manager::Get()->GetProjectManager();
+        if (!mgr || !m_treeCtrl || !dataobjFile)
+            return wxDragNone;
+
+        if (item.IsOk())
+        {
+            // Drop point is  valid tree item, so we add the files to a specific user selected project
+            FileTreeData* ftd = (FileTreeData*) m_treeCtrl->GetItemData(item);
+            if (ftd)
+            {
+                cbProject* prj = ftd->GetProject();
+                mgr->AddMultipleFilesToProject(dataobjFile->GetFilenames(), mgr->GetActiveProject(), emptyTargets);   // project found, add files
+
+                if (ftd->GetKind() == FileTreeData::ftdkVirtualFolder)
+                {
+                    // The files are dropped on a virtual folder, so we try to move them to it
+                    for (const wxString& filename : dataobjFile->GetFilenames())
+                    {
+                        // first find the files again with the non relative paths
+                        ProjectFile* file = prj->GetFileByFilename(filename, false);
+                        if (file)
+                        {
+                            file->virtual_path = GetRelativeFolderPath(m_treeCtrl, item);
+                        }
+                    }
+                }
+                mgr->GetUI().RebuildTree();
+            }
+        }
+        else if(mgr->GetActiveProject())
+        {
+            // if the files are not dropped on a project tree item, but there is an active project:
+            // add them to the current active project
+            mgr->AddMultipleFilesToProject(dataobjFile->GetFilenames(), mgr->GetActiveProject(), emptyTargets);
+            mgr->GetUI().RebuildTree();
+        }
+        else
+        {
+            // if no (active) project is found, we simply open the file in the editor
+            for (const wxString& file : dataobjFile->GetFilenames())
+                Manager::Get()->GetEditorManager()->Open(file);
+        }
+
+        // Return result is not so important?
+        return wxDragCopy;
+    }
+    else if (format == TreeDNDObject::GetDnDDataFormat())
+    {
+        // The dnd object is an internal tree dnd
+        TreeDNDObject* tt = dynamic_cast<TreeDNDObject*>(dataobjComp->GetObject(TreeDNDObject::GetDnDDataFormat()));
+        if (tt != nullptr) // This checks if the source of the tt object is this codeblock instance, if not tt would be nullptr
+        {
+            if (item.IsOk())
+            {
+                if (m_ui->HandleDropOnItem(item))
+                    return wxDragMove;
+                return wxDragNone;
+            }
+        }
+    }
+    return wxDragNone;
+}
+
+wxDragResult ProjectTreeDropTarget::OnDragOver(wxCoord x, wxCoord y, wxDragResult defResult)
+{
+
+    bool allowDrop = false;
+    int flag = 0;
+    wxUnusedVar(flag);
+    const wxTreeItemId item = m_treeCtrl->HitTest(wxPoint(x,y), flag);
+
+    // GetData in OnDragOver seems only to work in windows...
+    if (GetData())
+    {
+        // If we get any data, we can check the target and give user feedback if he can drop the item here...
+
+        const wxDataObjectComposite *dataobjComp = static_cast<wxDataObjectComposite *>(GetDataObject());
+        const wxDataFormat format = dataobjComp->GetReceivedFormat();
+        if (format == wxDF_FILENAME)
+        {
+            // For files we allow always dropping,
+            // if it is over a valid tree item, we get the project
+            // to add the file from the item, if the drop is over no
+            // valid tree item, we use the current active project
+            allowDrop = true;
+            defResult = wxDragCopy;
+        }
+        else if (format == TreeDNDObject::GetDnDDataFormat())
+        {
+            // For tree internal data we make a hit testing
+            if (item.IsOk() && m_ui->TestDropOnItem(item))
+            {
+                // this is a drag and drop item from the tree
+                allowDrop = true;
+            }
+        }
+    }
+    else
+    {
+        // If we get no data/format information we allow dropping always,
+        // give no feedback and check in the OnData function if the drop was
+        // allowed
+        allowDrop = true;
+    }
+
+    // for user feedback we color the current active item, but
+    // we also have to reset the old item
+    if (item != oldItem)
+    {
+        if (oldItem.IsOk())
+            m_treeCtrl->SetItemDropHighlight(oldItem, false);
+
+        oldItem = item;
+
+        if (item.IsOk() && allowDrop)
+            m_treeCtrl->SetItemDropHighlight(item, true);
+    }
+
+    if (!allowDrop)
+        return wxDragNone;
+
+    return defResult;
+}
 
 
 BEGIN_EVENT_TABLE(ProjectManagerUI, wxEvtHandler)
     EVT_TREE_BEGIN_DRAG(ID_ProjectManager,       ProjectManagerUI::OnTreeBeginDrag)
-    EVT_TREE_END_DRAG(ID_ProjectManager,         ProjectManagerUI::OnTreeEndDrag)
 
     EVT_TREE_BEGIN_LABEL_EDIT(ID_ProjectManager, ProjectManagerUI::OnBeginEditNode)
     EVT_TREE_END_LABEL_EDIT(ID_ProjectManager,   ProjectManagerUI::OnEndEditNode)
@@ -195,6 +359,7 @@ BEGIN_EVENT_TABLE(ProjectManagerUI, wxEvtHandler)
     EVT_MENU(idMenuViewCategorizePopup,      ProjectManagerUI::OnViewCategorize)
     EVT_MENU(idMenuViewUseFoldersPopup,      ProjectManagerUI::OnViewUseFolders)
     EVT_MENU(idMenuViewHideFolderNamePopup,  ProjectManagerUI::OnViewHideFolderName)
+    EVT_MENU(idMenuViewSortAlphabetically,   ProjectManagerUI::OnViewSortAlphabetically)
     EVT_MENU(idMenuViewFileMasks,            ProjectManagerUI::OnViewFileMasks)
     EVT_MENU(idMenuFindFile,                 ProjectManagerUI::OnFindFile)
     EVT_IDLE(                                ProjectManagerUI::OnIdle)
@@ -230,6 +395,7 @@ ProjectManagerUI::ProjectManagerUI() :
     m_TreeVisualState |= (cfg->ReadBool(_T("/categorize_tree"),  true)  ? ptvsCategorize     : ptvsNone);
     m_TreeVisualState |= (cfg->ReadBool(_T("/use_folders"),      true)  ? ptvsUseFolders     : ptvsNone);
     m_TreeVisualState |= (cfg->ReadBool(_T("/hide_folder_name"), false) ? ptvsHideFolderName : ptvsNone);
+    m_TreeVisualState |= (cfg->ReadBool(_T("/sort_alpha"),       false) ? ptvsSortAlpha      : ptvsNone);
     // fix invalid combination, "use folders" has precedence
     if ( (m_TreeVisualState&ptvsUseFolders) && (m_TreeVisualState&ptvsHideFolderName) )
     {
@@ -262,6 +428,8 @@ void ProjectManagerUI::InitPane()
         return;
 
     m_pTree = new cbTreeCtrl(m_pNotebook, ID_ProjectManager);
+    // Set drop target for adding files, and dragging tree items
+    m_pTree->SetDropTarget(new ProjectTreeDropTarget(m_pTree, this));
 
     m_pImages = cbProjectTreeImages::MakeImageList(16, *m_pNotebook);
     m_pTree->SetImageList(m_pImages.get());
@@ -300,13 +468,21 @@ void ProjectManagerUI::RebuildTree()
     if (title.IsEmpty())
         title = _("Workspace");
     m_TreeRoot = m_pTree->AddRoot(title, cbProjectTreeImages::WorkspaceIconIndex(read_only), cbProjectTreeImages::WorkspaceIconIndex(read_only));
+
+    std::vector<cbProject*> prjv;
     for (int i = 0; i < count; ++i)
     {
-        if ( cbProject* prj = pa->Item(i) )
-        {
-            BuildProjectTree(prj, m_pTree, m_TreeRoot, m_TreeVisualState, pm->GetFilesGroupsAndMasks());
-            m_pTree->SetItemBold(prj->GetProjectNode(), prj == pm->GetActiveProject());
-        }
+        if (pa && pa->Item(i))
+            prjv.push_back(pa->Item(i));
+    }
+
+    if (m_TreeVisualState & ptvsSortAlpha)
+        std::sort(prjv.begin(), prjv.end(), [](cbProject* a, cbProject* b) { return a->GetTitle().Upper() < b->GetTitle().Upper();});
+
+    for (cbProject* prj : prjv)
+    {
+        BuildProjectTree(prj, m_pTree, m_TreeRoot, m_TreeVisualState, pm->GetFilesGroupsAndMasks());
+        m_pTree->SetItemBold(prj->GetProjectNode(), prj == pm->GetActiveProject());
     }
     m_pTree->Expand(m_TreeRoot);
 
@@ -408,7 +584,9 @@ void ProjectManagerUI::CloseWorkspace()
 
 void ProjectManagerUI::FinishLoadingProject(cbProject* project, bool newAddition, cb_unused FilesGroupsAndMasks* fgam)
 {
-    if (newAddition)
+    // If the project tree is sorted alphabetically we have to rebuild the project tree
+    // also when it is a new addition...
+    if (newAddition && !(m_TreeVisualState & ptvsSortAlpha))
     {
         ProjectManager* pm = Manager::Get()->GetProjectManager();
         BuildProjectTree(project, m_pTree, m_TreeRoot, m_TreeVisualState, pm->GetFilesGroupsAndMasks());
@@ -515,10 +693,12 @@ void ProjectManagerUI::CreateMenuTreeProps(wxMenu* menu, bool popup)
                               _("Display folders as on disk"));
     treeprops->AppendCheckItem((popup ? idMenuViewHideFolderNamePopup : idMenuViewHideFolderName),
                               _("Hide folder name"));
+    treeprops->AppendCheckItem(idMenuViewSortAlphabetically,  _("Sort projects alphabetically"));
 
     ConfigManager *cfg = Manager::Get()->GetConfigManager(_T("project_manager"));
     bool do_categorise       = cfg->ReadBool(_T("/categorize_tree"),  true);
     bool do_use_folders      = cfg->ReadBool(_T("/use_folders"),      true);
+    bool do_sort_alpha       = cfg->ReadBool(_T("/sort_alpha"),       false);
     bool do_hide_folder_name = !do_use_folders && cfg->ReadBool(_T("/hide_folder_name"), false); // "use folders" has precedence
     cfg->Write(_T("/hide_folder_name"), do_hide_folder_name); // make sure that configuration is consistent
 
@@ -528,6 +708,10 @@ void ProjectManagerUI::CreateMenuTreeProps(wxMenu* menu, bool popup)
 
     treeprops->Enable((popup ? idMenuViewUseFoldersPopup     : idMenuViewUseFolders),     !do_hide_folder_name);
     treeprops->Enable((popup ? idMenuViewHideFolderNamePopup : idMenuViewHideFolderName), !do_use_folders);
+
+    treeprops->Check(idMenuViewSortAlphabetically,  do_sort_alpha);
+    treeprops->Enable(idMenuProjectUp,   !do_sort_alpha);
+    treeprops->Enable(idMenuProjectDown, !do_sort_alpha);
 
     treeprops->Append(idMenuViewFileMasks, _("Edit file types && categories..."));
 
@@ -633,10 +817,10 @@ void ProjectManagerUI::ShowMenu(wxTreeItemId id, const wxPoint& pt)
             openWith->Append(idOpenWithInternal, _("Internal editor"));
             menu.Append(wxID_ANY, _("Open with"), openWith);
 
-            if (pf->GetFileState() == fvsNormal &&  !Manager::Get()->GetEditorManager()->IsOpen(pf->file.GetFullPath()))
+            if (pf->GetFileState() == fvsNormal || pf->GetFileState() == fvsModified)
             {
                 menu.AppendSeparator();
-                menu.Append(idMenuRenameFile,  _("Rename file..."));
+                menu.Append(idMenuRenameFile, _("Rename file..."));
                 menu.Enable(idMenuRenameFile, PopUpMenuOption);
             }
             menu.AppendSeparator();
@@ -926,99 +1110,103 @@ void ProjectManagerUI::OnTreeBeginDrag(wxTreeEvent& event)
         if (!ProjectCanDragNode(prj, m_pTree, id))
             continue;
 
-        // We allow drag and drop for normal files or projects,
+        // We allow drag and drop for normal files, projects, or virtual folders,
         // but not for mixed selection, or any other project items
         if (ftd->GetKind() == FileTreeData::ftdkFile)
         {
-                fileList.Add(ftd->GetProjectFile()->file.GetLongPath());
+            fileList.Add(ftd->GetProjectFile()->file.GetLongPath());
         }
         else if (ftd->GetKind() == FileTreeData::ftdkProject)
         {
             fileList.Add(ftd->GetProject()->GetFilename());
         }
-    }
-
-    // wxTreeCtrl Internal vs External DragAndDrop are incompatible.
-    // To do an external DnD here, we have to test the mouse position
-    // and verify that the cursor is outside the wxTreeCtrl
-    m_pTree->SetCursor(wxCursor(wxCURSOR_HAND)); //show feedback to user
-    bool isExternalDrag = false;
-    for (int ii=0; ii<8; ++ii)
-    {
-        // wait max 800 milliseconds for cursor move outside the tree
-        wxMilliSleep(100); //wait awhile for possible mouse move outside tree ctrl
-        wxWindow* pWin = ::wxFindWindowAtPoint(wxGetMousePosition());
-        wxString winName = pWin ? pWin->GetName().Lower(): _T("unkwn");
-        if (!pWin || (_T("treectrl") != winName))
+        else if(ftd->GetKind() == FileTreeData::ftdkVirtualFolder)
         {
-            isExternalDrag = true;
-            break;
+            fileList.Add(ftd->GetFolder());
         }
-        if (!wxGetMouseState().LeftIsDown())
-            break; //internal tree drag
     }
-    if (!fileList.empty() && isExternalDrag)
+    if (!fileList.empty())
     {
-        // create a drop object of file paths
-        wxTextDataObject dropObject( GetStringFromArray(fileList , wxT("\n"), false));
+        m_pTree->SetCursor(wxCursor(wxCURSOR_HAND)); //show feedback to user
+        // create a composite data object, to make it possible
+        // drag objects in text editor and also fix bug, where a user drags an items
+        // outside the control and then back in. This triggers this part of code,
+        // and with the composite TreeDNDObject we know that this is from the tree in
+        // the drop code
+        wxDataObjectComposite dropObject;
+        dropObject.Add(new wxTextDataObject(GetStringFromArray(fileList , wxT("\n"), false)));
+        dropObject.Add(new TreeDNDObject(), true);
+
         wxDropSource dragSource(m_pTree);
         dragSource.SetData(dropObject);
         dragSource.DoDragDrop();
         m_pTree->SetCursor(wxCursor(wxNullCursor));
         return;
     }
-
-    m_pTree->SetCursor(wxCursor(wxNullCursor));
-
-    // allowed
-    event.Allow();
 }
 
-void ProjectManagerUI::OnTreeEndDrag(wxTreeEvent& event)
+bool ProjectManagerUI::TestDropOnItem(const wxTreeItemId& to) const
 {
-    m_pTree->SetCursor(wxCursor(wxNullCursor));
-
-    wxTreeItemId to = event.GetItem();
-
     // is the drag target valid?
     if (!to.IsOk())
-        return;
+        return false;
 
     // if no data associated with any of them, disallow
     FileTreeData* ftdTo = (FileTreeData*)m_pTree->GetItemData(to);
     if (!ftdTo)
-        return;
+        return false;
 
     // if no project or different projects, disallow
     cbProject* prjTo = ftdTo->GetProject();
     if (!prjTo)
-        return;
+        return false;
 
-    size_t count = m_DraggingSelection.Count();
+    const size_t count = m_DraggingSelection.Count();
     for (size_t i = 0; i < count; i++)
     {
         wxTreeItemId from = m_DraggingSelection[i];
 
         // is the item valid?
         if (!from.IsOk())
-            return;
+            return false;
 
         // if no data associated with any of them, disallow
         FileTreeData* ftdFrom = (FileTreeData*)m_pTree->GetItemData(from);
         if (!ftdFrom)
-            return;
+            return false;
 
         // if no project or different projects, disallow
         cbProject* prjFrom = ftdTo->GetProject();
         if (prjFrom != prjTo)
-            return;
+            return false;
     }
+
+    if (!TestProjectNodeDragged(prjTo, m_pTree, m_DraggingSelection, to))
+        return false;
+
+    return true;
+}
+
+bool ProjectManagerUI::HandleDropOnItem(const wxTreeItemId& to)
+{
+
+    if (!TestDropOnItem(to))
+        return false;
+
+    FileTreeData* ftdTo = (FileTreeData*)m_pTree->GetItemData(to);
+    if (!ftdTo)
+        return false;
+
+    cbProject* prjTo = ftdTo->GetProject();
+    if (!prjTo)
+        return false;
+
 
     // allow only if the project approves
     if (!ProjectNodeDragged(prjTo, m_pTree, m_DraggingSelection, to))
-        return;
+        return false;
 
-    event.Allow();
+    return true;
 }
 
 void ProjectManagerUI::OnProjectFileActivated(wxTreeEvent& event)
@@ -1088,14 +1276,17 @@ void ProjectManagerUI::OnRightClick(cb_unused wxCommandEvent& event)
     menu.AppendCheckItem(idMenuViewCategorizePopup,     _("Categorize by file types"));
     menu.AppendCheckItem(idMenuViewUseFoldersPopup,     _("Display folders as on disk"));
     menu.AppendCheckItem(idMenuViewHideFolderNamePopup, _("Hide folder name"));
+    menu.AppendCheckItem(idMenuViewSortAlphabetically,  _("Sort projects alphabetically"));
 
     bool do_categorise       = (m_TreeVisualState&ptvsCategorize);
     bool do_use_folders      = (m_TreeVisualState&ptvsUseFolders);
     bool do_hide_folder_name = !do_use_folders && (m_TreeVisualState&ptvsHideFolderName); // "use folders" has precedence
+    bool do_sort_alpha       = (m_TreeVisualState&ptvsSortAlpha);
 
     menu.Check(idMenuViewCategorizePopup,     do_categorise);
     menu.Check(idMenuViewUseFoldersPopup,     do_use_folders);
     menu.Check(idMenuViewHideFolderNamePopup, do_hide_folder_name);
+    menu.Check(idMenuViewSortAlphabetically,  do_sort_alpha);
 
     menu.Enable(idMenuViewUseFoldersPopup,     !do_hide_folder_name);
     menu.Enable(idMenuViewHideFolderNamePopup, !do_use_folders);
@@ -1493,15 +1684,52 @@ void ProjectManagerUI::OnRemoveFileFromProject(wxCommandEvent& event)
     }
     else if (event.GetId() == idMenuRemoveFilePopup)
     {
-        if ( ProjectFile* pf = ftd->GetProjectFile() )
+        wxArrayTreeItemIds selections;
+        std::map <cbProject*, wxArrayTreeItemIds> projectMap;
+
+        // Classify selected files by project
+        const size_t fileCount = m_pTree->GetSelections(selections);
+        for (size_t i = 0; i < fileCount; ++i)
         {
-            // remove single file
-            prj->BeginRemoveFiles();
-            pm->RemoveFileFromProject(pf, prj);
-            prj->CalculateCommonTopLevelPath();
-            if (prj->GetCommonTopLevelPath() == oldpath)
-                m_pTree->Delete(sel);
-            prj->EndRemoveFiles();
+            if (!selections[i].IsOk())
+                continue;
+
+            FileTreeData* ftd = (FileTreeData*)m_pTree->GetItemData(selections[i]);
+            if (!ftd)
+                continue;
+
+            cbProject* prj = ftd->GetProject();
+            if (!prj)
+                continue;
+
+            projectMap.insert(std::pair <cbProject*, wxArrayTreeItemIds> (prj, wxArrayTreeItemIds())).first->second.Add(selections[i]);
+        }
+
+        if (!projectMap.empty())
+        {
+            // Remove files project by project
+            for (std::map <cbProject*, wxArrayTreeItemIds>::const_iterator it = projectMap.begin(); it != projectMap.end(); ++it)
+            {
+                cbProject* prj = it->first;
+                prj->BeginRemoveFiles();
+                const size_t idCount = it->second.GetCount();
+                for (size_t i = 0; i < idCount; ++i)
+                {
+                    FileTreeData* ftd = (FileTreeData*)m_pTree->GetItemData(it->second[i]);
+                    ProjectFile* pf = ftd->GetProjectFile();
+                    if (!pf)
+                        continue;
+
+                    const wxString topLevelPath(prj->GetCommonTopLevelPath());
+                    pm->RemoveFileFromProject(pf, prj);
+                    prj->CalculateCommonTopLevelPath();
+                    if (prj->GetCommonTopLevelPath() == topLevelPath)
+                        m_pTree->Delete(selections[i]);
+                }
+
+                prj->EndRemoveFiles();
+            }
+
             RebuildTree();
         }
     }
@@ -1723,6 +1951,10 @@ void ProjectManagerUI::OnProperties(wxCommandEvent& event)
         wxString newTitle = prj->GetTitle();
         if (backupTitle != newTitle)
         {
+            // title has changed, if the tree is sorted alphabetically, we have to rebuild the tree
+            if (m_TreeVisualState & ptvsSortAlpha)
+                RebuildTree();
+
             cbAuiNotebook* nb = Manager::Get()->GetEditorManager()->GetNotebook();
             if (nb)
             {
@@ -1870,18 +2102,6 @@ private:
     cbProject* m_pActiveProject;
 };
 
-struct cbStringHash
-{
-    size_t operator()(const wxString& s) const
-    {
-#if wxCHECK_VERSION(3, 0, 0)
-        return std::hash<std::wstring>()(s.ToStdWstring());
-#else
-        return std::hash<std::wstring>()(s.wc_str());
-#endif // wxCHECK_VERSION
-    }
-};
-
 void ProjectManagerUI::OnGotoFile(cb_unused wxCommandEvent& event)
 {
     ProjectManager* pm = Manager::Get()->GetProjectManager();
@@ -1895,7 +2115,7 @@ void ProjectManagerUI::OnGotoFile(cb_unused wxCommandEvent& event)
 
     ProjectsArray* pa = pm->GetProjects();
 
-    std::unordered_map<wxString, ProjectFile*, cbStringHash> uniqueAbsPathFiles;
+    std::unordered_map<wxString, ProjectFile*> uniqueAbsPathFiles;
     for (size_t prjIdx = 0; prjIdx < pa->GetCount(); ++prjIdx)
     {
         cbProject* prj = (*pa)[prjIdx];
@@ -2034,6 +2254,19 @@ void ProjectManagerUI::OnViewUseFolders(wxCommandEvent& event)
         Manager::Get()->GetConfigManager(_T("project_manager"))->Write(_T("/hide_folder_name"), false);
     }
 
+    RebuildTree();
+}
+
+void ProjectManagerUI::OnViewSortAlphabetically(wxCommandEvent& event)
+{
+    bool do_sort_alpha = event.IsChecked();
+    Manager::Get()->GetConfigManager(_T("project_manager"))->Write(_T("/sort_alpha"), do_sort_alpha);
+
+    // Do not create an invalid state
+    if (do_sort_alpha)
+        m_TreeVisualState |= ptvsSortAlpha;
+    else
+        m_TreeVisualState &= ~ptvsSortAlpha;
     RebuildTree();
 }
 
@@ -2349,7 +2582,7 @@ void ProjectManagerUI::OnUpdateUI(wxUpdateUIEvent& event)
     if (event.GetId() == idMenuFileProperties)
     {
         EditorManager *editorManager = Manager::Get()->GetEditorManager();
-        bool enableProperties;
+        bool enableProperties = false;
         if (editorManager)
         {
             EditorBase *editor = editorManager->GetActiveEditor();
@@ -2359,8 +2592,6 @@ void ProjectManagerUI::OnUpdateUI(wxUpdateUIEvent& event)
             if (enableProperties)
                 enableProperties = !cbHasRunningCompilers(Manager::Get()->GetPluginManager());
         }
-        else
-            enableProperties = false;
 
         event.Enable(enableProperties);
     }
@@ -2379,10 +2610,7 @@ void ProjectManagerUI::OnUpdateUI(wxUpdateUIEvent& event)
             if (!project)
                 event.Enable(false);
             else
-            {
-                bool enable = !cbHasRunningCompilers(Manager::Get()->GetPluginManager());
-                event.Enable(enable);
-            }
+                event.Enable(!cbHasRunningCompilers(Manager::Get()->GetPluginManager()));
         }
     }
     else
@@ -2407,41 +2635,59 @@ void ProjectManagerUI::OnRenameFile(cb_unused wxCommandEvent& event)
     cbProject* prj = ftd->GetProject();
     if (!prj)
         return;
+    ProjectFile* pf = ftd->GetProjectFile();
+    if (!pf)
+        return;
 
-    if (ftd->GetProjectFile()->AutoGeneratedBy())
+    if (pf->AutoGeneratedBy())
     {
         cbMessageBox(_("Can't rename file because it is auto-generated..."), _("Error"));
         return;
     }
 
-    wxString path = ftd->GetProjectFile()->file.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR);
-    wxString name = ftd->GetProjectFile()->file.GetFullName();
+    const wxString path(pf->file.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR));
+    const wxString oldName(pf->file.GetFullName());
 
-    wxTextEntryDialog dlg(Manager::Get()->GetAppWindow(), _("Please enter the new name:"), _("Rename file"), name, wxOK | wxCANCEL | wxCENTRE);
+    wxTextEntryDialog dlg(Manager::Get()->GetAppWindow(), _("Please enter the new name:"),
+                          _("Rename file"), oldName, wxOK | wxCANCEL | wxCENTRE);
     PlaceWindow(&dlg);
     if (dlg.ShowModal() == wxID_OK)
     {
         wxFileName fn(dlg.GetValue());
-        wxString new_name = fn.GetFullName();
+        const wxString newName(fn.GetFullName());
 
-        if (name != new_name)
+        if (oldName != newName)
         {
+            const wxString absoluteOldName(path + oldName);
+            EditorManager* editorManager = Manager::Get()->GetEditorManager();
+            EditorBase* ed = editorManager->GetEditor(absoluteOldName);
+            if (ed)
+            {
+                editorManager->SetActiveEditor(ed);
+
+                AnnoyingDialog dialog(_("Close warning"),
+                                      _("The file must be closed before renaming, continue?"),
+                                      wxART_QUESTION, AnnoyingDialog::YES_NO, AnnoyingDialog::rtYES,
+                                      _("C&lose"), _("&Cancel"));
+                if ((dialog.ShowModal() != AnnoyingDialog::rtYES) || !editorManager->Close(ed))
+                    return;
+            }
+
+            const wxString absoluteNewName(path + newName);
         #ifdef __WXMSW__
             // only overwrite files, if the names are the same, but with different cases
-            if (!wxRenameFile(path + name, path + new_name, (name.Lower() == new_name.Lower())))
+            if (!wxRenameFile(absoluteOldName, absoluteNewName,
+                              (oldName.Lower() == newName.Lower())))
         #else
-            if (!wxRenameFile(path + name, path + new_name, false))
+            if (!wxRenameFile(absoluteOldName, absoluteNewName, false))
         #endif
             {
                 wxBell();
                 return;
             }
 
-            if ( ProjectFile* pf = ftd->GetProjectFile() )
-            {
-                pf->Rename(new_name);
-                RebuildTree();
-            }
+            pf->Rename(newName);
+            RebuildTree();
         }
     }
 }
@@ -2911,7 +3157,7 @@ static bool ProjectCanDragNode(cbProject* project, wxTreeCtrl* tree, wxTreeItemI
     if (ftd->GetProject() != project)
         return false;
 
-    // allow only if it is a file or a virtual folder or project file(.cbp)
+    // allow only if it is a file or a virtual folder or project file (.cbp)
     return (   (ftd->GetKind() == FileTreeData::ftdkFile)
             || (ftd->GetKind() == FileTreeData::ftdkVirtualFolder)
             || (ftd->GetKind() == FileTreeData::ftdkProject) );
@@ -2953,6 +3199,59 @@ static void ProjectCopyTreeNodeRecursively(wxTreeCtrl* tree, const wxTreeItemId&
         ftd_moved->GetProjectFile()->virtual_path = GetRelativeFolderPath(tree, new_parent);
 }
 
+static bool TestProjectVirtualFolderDragged(cbProject* project, wxTreeCtrl* tree, wxTreeItemId from,
+                                        wxTreeItemId to)
+{
+    FileTreeData* ftdFrom = static_cast<FileTreeData*>(tree->GetItemData(from));
+    FileTreeData* ftdTo   = static_cast<FileTreeData*>(tree->GetItemData(to)  );
+    if (!ftdFrom || !ftdTo)
+        return false;
+
+    wxString sep = wxString(wxFileName::GetPathSeparator());
+    wxChar sepChar = wxFileName::GetPathSeparator();
+    wxString fromFolderPath = ftdFrom->GetFolder();
+    wxString toFolderPath = ftdTo->GetFolder();
+
+    wxString fromFolder = fromFolderPath;
+    fromFolder = fromFolder.RemoveLast();
+    fromFolder = fromFolder.AfterLast(sepChar) + sep;
+    wxString toFolder = toFolderPath;
+    toFolder = toFolder.RemoveLast();
+    toFolder = toFolder.AfterLast(sepChar) + sep;
+
+    if (ftdFrom->GetKind() == FileTreeData::ftdkVirtualFolder && ftdTo->GetKind() == FileTreeData::ftdkVirtualFolder)
+    {
+        const wxArrayString &oldArray = project->GetVirtualFolders();
+        for (size_t i = 0; i < oldArray.GetCount(); ++i)
+        {
+            if (!toFolderPath.StartsWith(fromFolderPath.BeforeFirst(sepChar)))
+            {
+                const wxString& item = oldArray[i];
+                // A virtual folder has been dropped from a different place
+                if (item.Find(toFolderPath + fromFolder) != wxNOT_FOUND)
+                {
+                    return false;
+                }
+            }
+        }
+    }
+    else if (ftdFrom->GetKind() == FileTreeData::ftdkVirtualFolder && ftdTo->GetKind() == FileTreeData::ftdkProject)
+    {
+        const wxArrayString &oldArray = project->GetVirtualFolders();
+        for (size_t i = 0; i < oldArray.GetCount(); ++i)
+        {
+            const wxString& item = oldArray[i];
+            if (item.StartsWith(fromFolder))
+            {
+                // We can't overwrite an existing folder
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
 static bool ProjectVirtualFolderDragged(cbProject* project, wxTreeCtrl* tree, wxTreeItemId from,
                                         wxTreeItemId to)
 {
@@ -2983,7 +3282,7 @@ static bool ProjectVirtualFolderDragged(cbProject* project, wxTreeCtrl* tree, wx
             wxString toFolderStr;
             if (toFolderPath.StartsWith(fromFolderPath.BeforeFirst(sepChar)))
             {
-                // The virtual folder is drageed under same root
+                // The virtual folder is dragged under same root
                 int posFrom = item.Find(fromFolderPath);
                 if (posFrom != wxNOT_FOUND)
                 {
@@ -3080,8 +3379,8 @@ static bool ProjectVirtualFolderDragged(cbProject* project, wxTreeCtrl* tree, wx
     return true;
 }
 
-static bool ProjectNodeDragged(cbProject* project, wxTreeCtrl* tree, wxArrayTreeItemIds& fromArray,
-                               wxTreeItemId to)
+static bool TestProjectNodeDragged(cbProject* project, wxTreeCtrl* tree, const wxArrayTreeItemIds& fromArray,
+                                    wxTreeItemId to)
 {
     // what items did we drag?
     if (!to.IsOk())
@@ -3110,7 +3409,7 @@ static bool ProjectNodeDragged(cbProject* project, wxTreeCtrl* tree, wxArrayTree
     size_t count = fromArray.Count();
     for (size_t i = 0; i < count; i++)
     {
-        wxTreeItemId from = fromArray[i];
+        const wxTreeItemId from = fromArray[i];
         if (!from.IsOk())
             return false;
 
@@ -3145,15 +3444,47 @@ static bool ProjectNodeDragged(cbProject* project, wxTreeCtrl* tree, wxArrayTree
                     return false;
                 toParent = tree->GetItemParent(toParent);
             }
-            if (!ProjectVirtualFolderDragged(project, tree, from, to))
+            if (!TestProjectVirtualFolderDragged(project, tree, from, to))
                 return false;
         }
     }
+    return true;
+}
 
+static bool ProjectNodeDragged(cbProject* project, wxTreeCtrl* tree, wxArrayTreeItemIds& fromArray,
+                               wxTreeItemId to)
+{
+    if (!TestProjectNodeDragged(project, tree, fromArray, to))
+        return false;
+
+    FileTreeData* ftdTo = (FileTreeData*) tree->GetItemData(to);
+    if (!ftdTo)
+        return false;
+
+    wxTreeItemId parentTo = ftdTo->GetKind() == FileTreeData::ftdkFile ? tree->GetItemParent(to) : to;
+    size_t count = fromArray.Count();
     // now that we have successfully done the checking, do the moving
     for (size_t i = 0; i < count; i++)
     {
         wxTreeItemId from = fromArray[i];
+        FileTreeData* ftdFrom = (FileTreeData*)tree->GetItemData(from);
+
+         // A special check for virtual folders.
+        if (   (ftdFrom->GetKind() == FileTreeData::ftdkVirtualFolder)
+            || (ftdTo->GetKind()   == FileTreeData::ftdkVirtualFolder) )
+        {
+            wxTreeItemId root = tree->GetRootItem();
+            wxTreeItemId toParent = tree->GetItemParent(to);
+            while (toParent != root)
+            {
+                if (toParent == from)
+                    return false;
+                toParent = tree->GetItemParent(toParent);
+            }
+            if (!ProjectVirtualFolderDragged(project, tree, from, to))
+                return false;
+        }
+
         // finally; make the move
         ProjectCopyTreeNodeRecursively(tree, from, parentTo);
         // remove old node
@@ -3328,7 +3659,8 @@ void ProjectManagerUI::BuildProjectTree(cbProject* project, cbTreeCtrl* tree,
 
     // add our project's root item
     FileTreeData* ftd = new FileTreeData(project, FileTreeData::ftdkProject);
-    project->SetProjectNode(tree->AppendItem(root, project->GetTitle(), prjIdx, prjIdx, ftd));
+    project->SetProjectNode(tree->AppendItem(
+                                             root, project->GetTitle(), prjIdx, prjIdx, ftd));
     wxTreeItemId  others, generated;
     others = generated = project->GetProjectNode();
     wxTreeItemId* pGroupNodes = nullptr; // file group nodes (if enabled)

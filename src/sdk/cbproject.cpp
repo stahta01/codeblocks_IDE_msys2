@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12253 $
- * $Id: cbproject.cpp 12253 2020-12-22 18:36:16Z fuscated $
+ * $Revision: 12781 $
+ * $Id: cbproject.cpp 12781 2022-04-06 16:43:01Z pecanh $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbproject.cpp $
  */
 
@@ -63,7 +63,8 @@ cbProject::cbProject(const wxString& filename) :
     m_ExtendedObjectNamesGeneration(false),
     m_AutoShowNotesOnLoad(false),
     m_CheckForExternallyModifiedFiles(true),
-    m_pExtensionsElement(nullptr)
+    m_pExtensionsElement(nullptr),
+    m_Notifications(true)
 {
     SetCompilerID(CompilerFactory::GetDefaultCompilerID());
     SetModified(false);
@@ -222,6 +223,10 @@ cbProject& cbProject::operator=(const cbProject &p)
 
 void cbProject::NotifyPlugins(wxEventType type, const wxString& targetName, const wxString& oldTargetName)
 {
+    // A cbProject may have turned off event notifications
+    // Eg., Clangd_client should not broadcast changes regarding its dummy cbProject.
+    if (not m_Notifications) return;
+
     CodeBlocksEvent event(type);
     event.SetProject(this);
     event.SetBuildTargetName(targetName);
@@ -1157,7 +1162,7 @@ ProjectFile* cbProject::GetFile(int index)
     }
 
     if (index < 0 || index >= static_cast<int>(m_Files.size()))
-        return NULL;
+        return nullptr;
 
     return m_FileArray.Item(index);
 }

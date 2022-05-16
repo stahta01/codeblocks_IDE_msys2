@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12224 $
- * $Id: projectmanager.cpp 12224 2020-10-26 10:07:41Z fuscated $
+ * $Revision: 12679 $
+ * $Id: projectmanager.cpp 12679 2022-01-25 09:15:00Z bluehazzard $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/projectmanager.cpp $
  */
 
@@ -750,7 +750,9 @@ int ProjectManager::AddFileToProject(const wxString& filename, cbProject* projec
         project = GetActiveProject();
 
     wxArrayInt targets;
-    targets.Add(target);
+    if(target != -1)
+        targets.Add(target);
+
     if (AddFileToProject(filename, project, targets) == 1)
         return targets[0];
     return -1;
@@ -778,7 +780,9 @@ int ProjectManager::AddMultipleFilesToProject(const wxArrayString& filelist, cbP
         project = GetActiveProject();
 
     wxArrayInt targets;
-    targets.Add(target);
+    if(target != -1)
+        targets.Add(target);
+
     if (AddMultipleFilesToProject(filelist, project, targets) == 1)
         return targets[0];
     return -1;

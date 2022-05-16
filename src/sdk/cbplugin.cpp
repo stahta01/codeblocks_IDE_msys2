@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12225 $
- * $Id: cbplugin.cpp 12225 2020-10-26 10:07:43Z fuscated $
+ * $Revision: 12607 $
+ * $Id: cbplugin.cpp 12607 2021-12-23 08:50:04Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbplugin.cpp $
  */
 
@@ -178,13 +178,13 @@ wxString cbDebuggerPlugin::GetEditorWordAtCaret(const wxPoint* mousePosition)
 {
     cbEditor* ed = Manager::Get()->GetEditorManager()->GetBuiltinActiveEditor();
     if (!ed)
-        return wxEmptyString;
+        return wxString();
     cbStyledTextCtrl* stc = ed->GetControl();
     if (!stc)
-        return wxEmptyString;
+        return wxString();
 
     wxString selected_text = stc->GetSelectedText();
-    if (selected_text != wxEmptyString)
+    if (!selected_text.empty())
     {
         selected_text.Trim(true);
         selected_text.Trim(false);
@@ -203,11 +203,11 @@ wxString cbDebuggerPlugin::GetEditorWordAtCaret(const wxPoint* mousePosition)
             int endPos = stc->GetSelectionEnd();
             int mousePos = stc->PositionFromPointClose(mousePosition->x, mousePosition->y);
             if (mousePos == wxSCI_INVALID_POSITION)
-                return wxEmptyString;
+                return wxString();
             else if (startPos <= mousePos && mousePos <= endPos)
                 return selected_text;
             else
-                return wxEmptyString;
+                return wxString();
         }
         else
             return selected_text;
@@ -440,10 +440,10 @@ void cbDebuggerPlugin::OnEditorOpened(CodeBlocksEvent& event)
             GetCurrentPosition(filename, line);
 
             wxFileName edFileName(ed->GetFilename());
-            edFileName.Normalize();
+            edFileName.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_TILDE | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_LONG | wxPATH_NORM_SHORTCUT);
 
             wxFileName dbgFileName(filename);
-            dbgFileName.Normalize();
+            dbgFileName.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_TILDE | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_LONG | wxPATH_NORM_SHORTCUT);
             if (dbgFileName.GetFullPath().IsSameAs(edFileName.GetFullPath()) && line != -1)
             {
                 editor->SetDebugLine(line - 1);
@@ -596,8 +596,6 @@ void cbDebuggerPlugin::SwitchToDebuggingLayout()
 
     // switch to debugging layout
     Manager::Get()->ProcessEvent(switchEvent);
-
-    ShowLog(false);
 }
 
 void cbDebuggerPlugin::SwitchToPreviousLayout()

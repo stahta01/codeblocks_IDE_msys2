@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12209 $
- * $Id: codecompletion.cpp 12209 2020-10-17 22:50:19Z fuscated $
+ * $Revision: 12545 $
+ * $Id: codecompletion.cpp 12545 2021-12-02 08:30:44Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/codecompletion/codecompletion.cpp $
  */
 
@@ -231,7 +231,7 @@ namespace CodeCompletionHelper
             cbStyledTextCtrl* control = ed->GetControl();
             const int pos = control->GetCurrentPos();
             const wxString line = control->GetLine(control->LineFromPosition(pos));
-            const wxRegEx reg(_T("^[ \t]*#[ \t]*include[ \t]+[\"<]([^\">]+)[\">]"));
+            const wxRegEx reg("^[[:blank:]]*#[[:blank:]]*include[[:blank:]]+[\"<]([^\">]+)[\">]");
             wxString inc;
             if (reg.Matches(line))
                 inc = reg.GetMatch(line, 1);
@@ -1073,13 +1073,8 @@ void CodeCompletion::DoCodeCompleteIncludes(cbEditor* ed, int& tknStart, int tkn
 
     // since we are going to access the m_SystemHeadersMap, we add a locker here
     // here we collect all the header files names which is under "system include search dirs"
-#if wxCHECK_VERSION(3, 0, 0)
     if (m_SystemHeadersThreadCS.TryEnter())
     {
-#else
-    {
-        m_SystemHeadersThreadCS.Enter();
-#endif // wxCHECK_VERSION(3, 0, 0)
         // if the project get modified, fetch the dirs again, otherwise, use cached dirs
         wxArrayString& incDirs = GetSystemIncludeDirs(project, project ? project->GetModified() : true);
         for (size_t i = 0; i < incDirs.GetCount(); ++i)
@@ -1110,13 +1105,8 @@ void CodeCompletion::DoCodeCompleteIncludes(cbEditor* ed, int& tknStart, int tkn
     // #include "
     if (project)
     {
-#if wxCHECK_VERSION(3, 0, 0)
         if (m_SystemHeadersThreadCS.TryEnter())
         {
-#else
-        {
-            m_SystemHeadersThreadCS.Enter();
-#endif // wxCHECK_VERSION(3, 0, 0)
             wxArrayString buildTargets;
             ProjectFile* pf = project ? project->GetFileByFilename(curFile, false) : 0;
             if (pf)
@@ -1287,8 +1277,8 @@ void CodeCompletion::DoAutocomplete(const CCToken& token, cbEditor* ed)
         }
         if (addComment) // search backwards for the #if*
         {
-            wxRegEx ppIf(wxT("^[ \t]*#[ \t]*if"));
-            wxRegEx ppEnd(wxT("^[ \t]*#[ \t]*endif"));
+            wxRegEx ppIf("^[[:blank:]]*#[[:blank:]]*if");
+            wxRegEx ppEnd("^[[:blank:]]*#[[:blank:]]*endif");
             int depth = -1;
             for (int ppLine = stc->GetCurrentLine() - 1; ppLine >= 0; --ppLine)
             {
@@ -1301,7 +1291,7 @@ void CodeCompletion::DoAutocomplete(const CCToken& token, cbEditor* ed)
                 }
                 if (depth == 0)
                 {
-                    wxRegEx pp(wxT("^[ \t]*#[ \t]*[a-z]*([ \t]+([a-zA-Z0-9_]+)|())"));
+                    wxRegEx pp("^[[:blank:]]*#[[:blank:]]*[a-z]*([[:blank:]]+([a-zA-Z0-9_]+)|())");
                     pp.Matches(stc->GetLine(ppLine));
                     if (!pp.GetMatch(stc->GetLine(ppLine), 2).IsEmpty())
                         itemText.Append(wxT(" // ") + pp.GetMatch(stc->GetLine(ppLine), 2));
@@ -1728,12 +1718,6 @@ void CodeCompletion::OnUpdateUI(wxUpdateUIEvent& event)
 
 void CodeCompletion::OnViewClassBrowser(wxCommandEvent& event)
 {
-#if wxCHECK_VERSION(3, 0, 0)
-    (void)event;
-    cbMessageBox(_("The symbols browser is disabled in wx3.x builds.\n"
-                    "We've done this because it causes crashes."), _("Information"), wxICON_INFORMATION);
-    return;
-#else
     if (!Manager::Get()->GetConfigManager(_T("code_completion"))->ReadBool(_T("/use_symbols_browser"), true))
     {
         cbMessageBox(_("The symbols browser is disabled in code-completion options.\n"
@@ -1743,7 +1727,6 @@ void CodeCompletion::OnViewClassBrowser(wxCommandEvent& event)
     CodeBlocksDockEvent evt(event.IsChecked() ? cbEVT_SHOW_DOCK_WINDOW : cbEVT_HIDE_DOCK_WINDOW);
     evt.pWindow = (wxWindow*)m_NativeParser.GetClassBrowser();
     Manager::Get()->ProcessEvent(evt);
-#endif // wxCHECK_VERSION
 }
 
 void CodeCompletion::OnGotoFunction(cb_unused wxCommandEvent& event)
@@ -1962,6 +1945,7 @@ void CodeCompletion::OnGotoDeclaration(wxCommandEvent& event)
             {
                 // FIXME: this  code can lead to a deadlock (because of double locking from single thread)
                 CCDebugInfo info(nullptr, &m_NativeParser.GetParser(), token);
+                PlaceWindow(&info);
                 info.ShowModal();
             }
             else if (isImpl)
@@ -2657,6 +2641,7 @@ int CodeCompletion::DoAllMethodsImpl()
 
     // select tokens
     MultiSelectDlg dlg(Manager::Get()->GetAppWindow(), arr, true);
+    PlaceWindow(&dlg);
     if (dlg.ShowModal() == wxID_OK)
     {
         cbStyledTextCtrl* control = ed->GetControl();

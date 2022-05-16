@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 11789 $
- * $Id: coderefactoring.cpp 11789 2019-07-14 15:00:57Z fuscated $
+ * $Revision: 12304 $
+ * $Id: coderefactoring.cpp 12304 2021-03-16 23:28:31Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/codecompletion/coderefactoring.cpp $
  */
 
@@ -199,6 +199,7 @@ bool CodeRefactoring::Parse()
     else
     {
         ScopeDialog scopeDlg(Manager::Get()->GetAppWindow(), _("Code Refactoring"));
+        PlaceWindow(&scopeDlg);
         const int ret = scopeDlg.ShowModal();
         if (ret == ScopeDialog::ID_OPEN_FILES)
             GetOpenedFiles(files);

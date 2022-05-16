@@ -213,14 +213,6 @@ int FindReplace::ShowFindDialog(bool replace, bool explicitly_find_in_files)
         return -2;
     }
 
-    // Don't look for empty strings:
-    if (dlg->GetFindString().empty())
-    {
-        dlg->Destroy();
-        cbMessageBox(_("Can't look for an empty search criterion!"), _("Error"), wxOK | wxICON_EXCLAMATION, Manager::Get()->GetAppWindow());
-        return -2;
-    }
-
     if (!m_LastFindReplaceData)
         m_LastFindReplaceData = new cbFindReplaceData;
 
@@ -269,16 +261,6 @@ int FindReplace::ShowFindDialog(bool replace, bool explicitly_find_in_files)
         m_LastFindReplaceData->SearchInSelectionEnd = control->GetSelectionEnd();
     }
     dlg->Destroy();
-
-    if ( m_LastFindReplaceData->regEx )
-    {
-        // Match nasty regexes
-        if ( m_LastFindReplaceData->findText.IsSameAs('^') || m_LastFindReplaceData->findText.IsSameAs('$') )
-        {
-            cbMessageBox(_T("Bad regex entered!\nPlease correct regex and try again!"), _T("Error!"), wxICON_ERROR);
-            return 0;
-        }
-    }
 
     int ReturnValue = 0;
     if (!replace)
@@ -764,22 +746,31 @@ int FindReplace::ReplaceInFiles(cbFindReplaceData* data)
         }
     }
     else if (data->scope == 3) // replace in custom search path and mask
-     {
-        // fill the search list with the files found under the search path
-        int flags = wxDIR_FILES |
-                    (data->recursiveSearch ? wxDIR_DIRS : 0) |
-                    (data->hiddenSearch ? wxDIR_HIDDEN : 0);
-        wxArrayString masks = GetArrayFromString(data->searchMask);
-        if (!masks.GetCount())
-            masks.Add(_T("*"));
-        unsigned int count = masks.GetCount();
+    {
         wxLogNull ln; // no logging
-        for (unsigned int i = 0; i < count; ++i)
+
+        // Calling wxDir::GetAllFiles() with an empty or invalid path has no sense
+        // and generates assertions on Linux (see ticket #951)
+        if (!data->searchPath.empty() && wxDir::Exists(data->searchPath))
         {
-            // wxDir::GetAllFiles() does *not* clear the array, so it suits us just fine ;)
-            wxDir::GetAllFiles(data->searchPath, &filesList, masks[i], flags);
+            // fill the search list with the files found under the search path
+            const int flags = wxDIR_FILES |
+                              (data->recursiveSearch ? wxDIR_DIRS : 0) |
+                              (data->hiddenSearch ? wxDIR_HIDDEN : 0);
+
+            wxArrayString masks = GetArrayFromString(data->searchMask);
+            if (!masks.GetCount())
+                masks.Add("*");
+
+            const size_t maskCount = masks.GetCount();
+            for (size_t i = 0; i < maskCount; ++i)
+            {
+                // wxDir::GetAllFiles() does *not* clear the array, so it suits us just fine ;)
+                wxDir::GetAllFiles(data->searchPath, &filesList, masks[i], flags);
+            }
         }
     }
+
     // if the list is empty, leave
     int filesCount = filesList.GetCount();
     if (filesCount == 0)
@@ -840,8 +831,8 @@ int FindReplace::ReplaceInFiles(cbFindReplaceData* data)
     int read_only_files_skipped = 0;
     for (int i = 0; i<filesCount && !stop; ++i)
     {
-        cbEditor*         ed      = NULL;
-        cbStyledTextCtrl* control = NULL;
+        cbEditor*         ed      = nullptr;
+        cbStyledTextCtrl* control = nullptr;
         bool fileWasNotOpen = false;
 
         if (progress)
@@ -866,7 +857,7 @@ int FindReplace::ReplaceInFiles(cbFindReplaceData* data)
             if (ed) control = ed->GetControl();
         }
 
-        //If it's still NULL, open a new editor
+        //If it's still nullptr, open a new editor
         if (!control)
         {
             wxFile file(filesList[i]);
@@ -895,7 +886,7 @@ int FindReplace::ReplaceInFiles(cbFindReplaceData* data)
             ed = editorMgr->Open(filesList[i]);
             if (ed) control = ed->GetControl();
         }
-        //Still NULL?
+        //Still nullptr?
         if (!control || !ed)
             continue;
 
@@ -1533,7 +1524,7 @@ int FindReplace::FindInFiles(cbFindReplaceData* data)
             Manager::Get()->ProcessEvent(evtSwitch);
             Manager::Get()->ProcessEvent(evtShow);
         }
-        if(data->hasToOpenAfterFind)
+        if (data->hasToOpenAfterFind)
             m_pSearchLog->FocusEntry(oldcount);
     }
     else

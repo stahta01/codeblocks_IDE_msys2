@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 9753 $
- * $Id: editor_hooks.cpp 9753 2014-04-15 05:12:55Z ollydbg $
+ * $Revision: 12605 $
+ * $Id: editor_hooks.cpp 12605 2021-12-22 08:53:19Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editor_hooks.cpp $
  */
 
@@ -128,10 +128,10 @@ void EditorHooks::CallHooks(cbEditor* editor, wxScintillaEvent& event)
             const char *p = functor->GetTypeName();
             int   status;
             char *realname;
-            realname = abi::__cxa_demangle(p, 0, 0, &status);
+            realname = abi::__cxa_demangle(p, nullptr, nullptr, &status);
             wxString txt;
-            // if the demangled C++ function name success, then realname is not NULL
-            if (realname != 0)
+            // if the demangled C++ function name success, then realname is not nullptr
+            if (realname != nullptr)
             {
                 txt = wxString::FromUTF8(realname);
                 free(realname);

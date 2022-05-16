@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12092 $
- * $Id: editormanager.cpp 12092 2020-05-25 22:44:34Z fuscated $
+ * $Revision: 12736 $
+ * $Id: editormanager.cpp 12736 2022-03-03 20:12:16Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editormanager.cpp $
  */
 
@@ -172,7 +172,9 @@ EditorManager::EditorManager()
     Manager::Get()->RegisterEventSink(cbEVT_PROJECT_ACTIVATE,           new cbEventFunctor<EditorManager, CodeBlocksEvent>(this, &EditorManager::CollectDefines));
     Manager::Get()->RegisterEventSink(cbEVT_WORKSPACE_LOADING_COMPLETE, new cbEventFunctor<EditorManager, CodeBlocksEvent>(this, &EditorManager::CollectDefines));
 
-    ColourManager *colours = Manager::Get()->GetColourManager();
+    ColourManager* colours = Manager::Get()->GetColourManager();
+    colours->RegisterColour(_("Editor"), _("Changebar (unsaved lines)"), wxT("changebar_unsaved"), wxColour(0xFF, 0xE6, 0x04));
+    colours->RegisterColour(_("Editor"), _("Changebar (saved lines)"),   wxT("changebar_saved"),   wxColour(0x04, 0xFF, 0x50));
     colours->RegisterColour(_("Editor"), _("Caret"), wxT("editor_caret"), *wxBLACK);
     colours->RegisterColour(_("Editor"), _("Right margin"), wxT("editor_gutter"), *wxLIGHT_GREY);
     colours->RegisterColour(_("Editor"), _("Line numbers foreground colour"), wxT("editor_linenumbers_fg"),
@@ -212,7 +214,7 @@ cbNotebookStack* EditorManager::GetNotebookStack()
             {
                 wnd = m_pNotebook->GetPage(i);
                 found = false;
-                for (body = m_pNotebookStackHead->next; body != NULL; body = body->next)
+                for (body = m_pNotebookStackHead->next; body != nullptr; body = body->next)
                 {
                     if (wnd == body->window)
                     {
@@ -230,7 +232,7 @@ cbNotebookStack* EditorManager::GetNotebookStack()
         }
         if (m_nNotebookStackSize > m_pNotebook->GetPageCount())
         {
-            for (prev_body = m_pNotebookStackHead, body = prev_body->next; body != NULL; prev_body = body, body = body->next)
+            for (prev_body = m_pNotebookStackHead, body = prev_body->next; body != nullptr; prev_body = body, body = body->next)
             {
                 if (m_pNotebook->GetPageIndex(body->window) == wxNOT_FOUND)
                 {
@@ -278,12 +280,15 @@ void EditorManager::RecreateOpenEditorStyles()
         cbEditor* ed = InternalGetBuiltinEditor(i);
         if (ed)
         {
-            bool saveSuccess = ed->SaveFoldState(); //First Save the old fold levels
+            const wxFontEncoding currentEncoding(ed->GetEncoding()); //Second save current encoding
+            const bool saveSuccess = ed->SaveFoldState(); //First save the old fold levels
             ed->SetEditorStyle();
             if (saveSuccess)
-            {
                 ed->FixFoldState(); //Compare old fold levels with new and change the bugs
-            }
+
+            const bool wasModified = ed->GetModified();
+            ed->SetEncoding(currentEncoding); //Restore encoding, may set modified flag
+            ed->SetModified(wasModified);
         }
     }
 }
@@ -1026,9 +1031,9 @@ void EditorManager::CheckForExternallyModifiedFiles()
         }
     }
 
-    // this will emmit a EVT_EDITOR_ACTIVATED event, which in turn will notify
+    // this will emit a EVT_EDITOR_ACTIVATED event, which in turn will notify
     // the app to update the currently active file's info
-    // (we 're interested in updating read-write state)
+    // (we're interested in updating read-write state)
     SetActiveEditor(GetActiveEditor());
 
     if (failedFiles.GetCount())
@@ -1234,11 +1239,11 @@ bool EditorManager::OpenContainingFolder()
         path = fullPath;
 
     QuoteStringIfNeeded(path);
-    cmdData.command << wxT(" ") << path;
+    cmdData.command << ' ' << path;
 
     wxExecute(cmdData.command);
-    Manager::Get()->GetLogManager()->DebugLog(F(wxT("Executing command to open folder: '%s'"),
-                                                cmdData.command.wx_str()));
+    Manager::Get()->GetLogManager()->DebugLog(wxString::Format(_("Executing command to open folder: '%s'"),
+                                              cmdData.command));
     return true;
 }
 
@@ -1393,7 +1398,7 @@ bool EditorManager::SwapActiveHeaderSource()
             wxFileName dname(dir);
             if (!dname.IsAbsolute())
             {
-                dname.Normalize(wxPATH_NORM_ALL & ~wxPATH_NORM_CASE, project->GetBasePath());
+                dname.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_TILDE | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_LONG | wxPATH_NORM_SHORTCUT, project->GetBasePath());
     //            Manager::Get()->GetLogManager()->DebugLog(F(_T("Normalizing dir to '%s'."), dname.GetFullPath().c_str()));
             }
 
@@ -1602,7 +1607,7 @@ void EditorManager::OnPageClose(wxAuiNotebookEvent& event)
     }
 
     if (doClose && eb != nullptr)
-        Close(eb);
+        Close(eb, true); // do not ask again if the file should be saved
     else
         event.Skip(); // allow others to process it too
 }
@@ -1939,7 +1944,7 @@ void EditorManager::CollectDefines(CodeBlocksEvent& event)
         else if (compilerFlags[i].Find(wxT("`")) != wxNOT_FOUND)
         {
             wxString str = compilerFlags[i];
-            ExpandBackticks(str);
+            cbExpandBackticks(str);
             str.Replace(wxT("`"), wxT(" ")); // remove any leftover backticks to prevent an infinite loop
             AppendArray(GetArrayFromString(str, wxT(" ")), compilerFlags);
         }

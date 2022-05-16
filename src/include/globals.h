@@ -6,6 +6,7 @@
 #ifndef SDK_GLOBALS_H
 #define SDK_GLOBALS_H
 
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -149,7 +150,8 @@ enum ProjectTreeVisualState
     ptvsCategorize     = 0x01, //!< If true, use virtual folders like "Sources", "Headers", etc.
     ptvsUseFolders     = 0x02, //!< If true, create folders as needed. If false, the list is flat (not compatible with "hie folder name")
     ptvsHideFolderName = 0x04, //!< If true, the folder name will be hidden and only the file name will be shown (not compatible with "use folders")
-    ptvsDefault        = 0x03  //!< Just here for convenience, "categorise" + "use folders" ON
+    ptvsDefault        = 0x03, //!< Just here for convenience, "categorise" + "use folders" ON
+    ptvsSortAlpha      = 0x08  //!< Sort projects alphabetically
 };
 
 /** Template output types. */
@@ -269,7 +271,11 @@ extern DLLIMPORT wxString GetEOLStr(int eolMode = -1);
 
 extern DLLIMPORT wxString URLEncode(const wxString &str);
 
-extern DLLIMPORT wxString ExpandBackticks(wxString &str);
+typedef std::map<wxString, wxString> cbBackticksMap;
+
+extern DLLIMPORT wxString cbExpandBackticks(wxString &str);
+extern DLLIMPORT void cbClearBackticksCache();
+extern DLLIMPORT const cbBackticksMap& cbGetBackticksCache();
 
 /** This function creates a new wxMenu object on the heap and recursively
   * copies a given menu into it.
@@ -436,11 +442,7 @@ extern DLLIMPORT wxArrayInt cbGetMultiChoiceDialog(const wxString& message, cons
                                      const wxSize& size = wxSize(300, 300),
                                      const wxArrayInt& initialSelection = wxArrayInt());
 
-#if wxCHECK_VERSION(3, 0, 0)
 extern DLLIMPORT const char *cbGetTextFromUserPromptStr;
-#else
-extern DLLIMPORT const wxChar *cbGetTextFromUserPromptStr;
-#endif // wxCHECK_VERSION
 
 extern DLLIMPORT wxString cbGetTextFromUser(const wxString &message,
                                             const wxString &caption = cbGetTextFromUserPromptStr,
@@ -483,7 +485,8 @@ namespace platform
         winver_WindowsVista,
         winver_Windows7,
         winver_Windows8,
-        winver_Windows10
+        winver_Windows10,
+        winver_Windows11
     } windows_version_t;
 
     extern DLLIMPORT windows_version_t WindowsVersion();

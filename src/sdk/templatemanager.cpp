@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11432 $
- * $Id: templatemanager.cpp 11432 2018-08-06 14:42:01Z ollydbg $
+ * $Revision: 12605 $
+ * $Id: templatemanager.cpp 12605 2021-12-22 08:53:19Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/templatemanager.cpp $
  */
 
@@ -83,7 +83,7 @@ void TemplateManager::LoadUserTemplates()
 
 cbProject* TemplateManager::New(TemplateOutputType initial, wxString* pFilename)
 {
-    cbProject* prj = NULL;
+    cbProject* prj = nullptr;
 
     LoadUserTemplates();
     NewFromTemplateDlg dlg(initial, m_UserTemplates);
@@ -100,7 +100,7 @@ cbProject* TemplateManager::New(TemplateOutputType initial, wxString* pFilename)
 
 cbProject* TemplateManager::NewFromTemplate(NewFromTemplateDlg& dlg, wxString* pFilename)
 {
-    cbProject* prj = NULL;
+    cbProject* prj = nullptr;
     cbWizardPlugin* wiz = dlg.GetWizard();
     if (wiz)
     {
@@ -121,11 +121,11 @@ cbProject* TemplateManager::NewFromTemplate(NewFromTemplateDlg& dlg, wxString* p
 
 cbProject* TemplateManager::NewProjectFromUserTemplate(NewFromTemplateDlg& dlg, wxString* pFilename)
 {
-    cbProject* prj = NULL;
+    cbProject* prj = nullptr;
     if (!dlg.SelectedUserTemplate())
     {
         Manager::Get()->GetLogManager()->DebugLog(_T("TemplateManager::NewProjectFromUserTemplate() called when no user template was selected ?!?"));
-        return NULL;
+        return nullptr;
     }
 
     wxString path = Manager::Get()->GetConfigManager(_T("template_manager"))->Read(_T("/projects_path"));
@@ -134,7 +134,7 @@ cbProject* TemplateManager::NewProjectFromUserTemplate(NewFromTemplateDlg& dlg, 
     path = ChooseDirectory(nullptr, _("Choose a directory to create the new project"),
                         path, _T(""), false, true);
     if (path.IsEmpty())
-        return NULL;
+        return nullptr;
     else if (path.Mid(path.Length() - 1) == wxFILE_SEP_PATH)
         path.RemoveLast();
 
@@ -161,7 +161,7 @@ cbProject* TemplateManager::NewProjectFromUserTemplate(NewFromTemplateDlg& dlg, 
     if (!wxDirExists(templ))
     {
         Manager::Get()->GetLogManager()->DebugLog(F(_T("Cannot open user-template source path '%s'!"), templ.wx_str()));
-        return NULL;
+        return nullptr;
     }
 
     // copy files
@@ -186,11 +186,7 @@ cbProject* TemplateManager::NewProjectFromUserTemplate(NewFromTemplateDlg& dlg, 
             ++count;
         }
         else
-            #if wxCHECK_VERSION(3, 0, 0)
             Manager::Get()->GetLogManager()->DebugLog(F(_T("Failed copying %s to %s"), src.wx_str(), dst.wx_str()));
-            #else
-            Manager::Get()->GetLogManager()->DebugLog(F(_T("Failed copying %s to %s"), src.c_str(), dst.c_str()));
-            #endif
     }
     if (count != total_count)
         cbMessageBox(_("Some files could not be loaded with the template..."), _("Error"), wxICON_ERROR);
@@ -303,21 +299,13 @@ void TemplateManager::SaveUserTemplate(cbProject* prj)
     {
         wxString src = (*it)->file.GetFullPath();
         wxString dst = templ + (*it)->relativeToCommonTopLevelPath;
-        #if wxCHECK_VERSION(3, 0, 0)
         Manager::Get()->GetLogManager()->DebugLog(F(_T("Copying %s to %s"), src.wx_str(), dst.wx_str()));
-        #else
-        Manager::Get()->GetLogManager()->DebugLog(F(_T("Copying %s to %s"), src.c_str(), dst.c_str()));
-        #endif
         if (!CreateDirRecursively(dst))
             Manager::Get()->GetLogManager()->DebugLog(_T("Failed creating directory for ") + dst);
         if (wxCopyFile(src, dst, true))
             ++count;
         else
-            #if wxCHECK_VERSION(3, 0, 0)
             Manager::Get()->GetLogManager()->DebugLog(F(_T("Failed copying %s to %s"), src.wx_str(), dst.wx_str()));
-            #else
-            Manager::Get()->GetLogManager()->DebugLog(F(_T("Failed copying %s to %s"), src.c_str(), dst.c_str()));
-            #endif
     }
 
     // cbProject doesn't have a GetRelativeToCommonTopLevelPath() function, so we simulate it here

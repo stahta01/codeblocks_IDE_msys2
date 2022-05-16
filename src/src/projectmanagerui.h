@@ -2,17 +2,94 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12190 $
- * $Id: projectmanagerui.h 12190 2020-07-29 21:09:40Z fuscated $
+ * $Revision: 12754 $
+ * $Id: projectmanagerui.h 12754 2022-03-16 23:26:14Z bluehazzard $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/projectmanagerui.h $
  */
 
 #include "projectmanager.h"
 
+#include <wx/dnd.h>
+#include <wx/dataobj.h>
+
 class cbProject;
 class cbAuiNotebook;
 class FilesGroupsAndMasks;
 class wxAuiNotebookEvent;
+class ProjectManagerUI;
+
+/** \brief Class for handling d&d operation in the tree ctrl. Basically it is an empty class
+ * we do not support dragging objects from one codeblocks instance to an other instance. This
+ * this probably fails terrible.
+ */
+class TreeDNDObject : public wxDataObjectSimple
+{
+    // Data object to store current running codeblocks PID
+    struct DNDData {
+        wxThreadIdType m_mainPID;
+    };
+
+    public:
+
+    // With c++17 we could use inline... But this should be fine too for a "fake" static member variable
+    static wxDataFormat GetDnDDataFormat() { static wxDataFormat format("ProjectTreeObject"); return format; }
+
+    TreeDNDObject() : wxDataObjectSimple(GetDnDDataFormat())
+    {
+
+    }
+
+    bool GetDataHere(void *buf) const override
+    {
+        DNDData* data = (DNDData*) buf;
+        data->m_mainPID = wxThread::GetMainId();    // Store the current codeblocks instance id
+        return true;
+    }
+
+    size_t GetDataSize() const override
+    {
+        return sizeof(DNDData);
+    }
+
+    bool SetData(size_t len, const void *buf) override
+    {
+        if(buf == nullptr || len != sizeof(DNDData))
+            return false;
+
+        DNDData* data = (DNDData*) buf;
+        // We support dnd of tree objects only inside the same codeblocks instance
+        if (data->m_mainPID != wxThread::GetMainId())
+            return false;
+
+        return true;
+    }
+
+};
+
+
+/** \brief local class for adding a file to current active project by drag and drop and also handling dragging tree items
+ * outside the tree ctrl and then back in. This does not trigger the default drag & drop handling, but the external
+ */
+class ProjectTreeDropTarget :  public wxDropTarget
+{
+    cbTreeCtrl* m_treeCtrl;
+    ProjectManagerUI* m_ui;
+
+    wxTreeItemId oldItem;   /**< Save the currently highlighted object when dragged over it. This is needed to de-highlight it when the mouse moves on*/
+
+public:
+
+    ProjectTreeDropTarget(cbTreeCtrl* ctrl, ProjectManagerUI* ui);
+    wxDragResult OnData(wxCoord x, wxCoord y, wxDragResult defaultDragResult) override;
+
+    /** \brief Function is called when the user moves the mouse while dragging an object
+     *
+     * If the mouse cursor is over an item label, we highlight it and store the item id.
+     * if the user moves the mouse more, we have to de-highlight the old object, and highlight the new one
+     */
+    wxDragResult OnDragOver(wxCoord x, wxCoord y, wxDragResult defResult) override;
+};
+
 
 class ProjectManagerUI : public wxEvtHandler, public cbProjectManagerUI
 {
@@ -57,6 +134,8 @@ class ProjectManagerUI : public wxEvtHandler, public cbProjectManagerUI
         void ConfigureProjectDependencies(cbProject* base, wxWindow *parent) override;
         void CheckForExternallyModifiedProjects();
 
+
+
     private:
         void InitPane();
         void SwitchToProjectsPage() override;
@@ -69,13 +148,26 @@ class ProjectManagerUI : public wxEvtHandler, public cbProjectManagerUI
         void OpenFilesRecursively(wxTreeItemId& sel_id);
     private:
 
+
         void OnTabContextMenu(wxAuiNotebookEvent& event);
         void OnTabPosition(wxCommandEvent& event);
         void OnProjectFileActivated(wxTreeEvent& event);
         void OnExecParameters(wxCommandEvent& event);
         void OnTreeItemRightClick(wxTreeEvent& event);
         void OnTreeBeginDrag(wxTreeEvent& event);
-        void OnTreeEndDrag(wxTreeEvent& event);
+
+         /** \brief This function handles dropping tree items, previously collected with OnTreeBeginDrag, on the 'to' item
+         *
+         * \param to tree item on what the previously collected items should be dropped
+         */
+        bool HandleDropOnItem(const wxTreeItemId& to);
+
+        /** \brief This function tests if dropping selected tree items is allowed
+         *
+         * \param to tree item on what the previously collected items should be dropped
+         */
+        bool TestDropOnItem(const wxTreeItemId& to) const;
+
         void OnRightClick(wxCommandEvent& event);
         void OnRenameWorkspace(wxCommandEvent& event);
         void OnSaveWorkspace(wxCommandEvent& event);
@@ -100,6 +192,7 @@ class ProjectManagerUI : public wxEvtHandler, public cbProjectManagerUI
         void OnViewCategorize(wxCommandEvent& event);
         void OnViewUseFolders(wxCommandEvent& event);
         void OnViewHideFolderName(wxCommandEvent& event);
+        void OnViewSortAlphabetically(wxCommandEvent& event);
         void OnViewFileMasks(wxCommandEvent& event);
         void OnFindFile(wxCommandEvent& event);
         wxArrayString ListNodes(wxTreeItemId node) const;
@@ -132,7 +225,7 @@ class ProjectManagerUI : public wxEvtHandler, public cbProjectManagerUI
           * @param tree The wxTreeCtrl to use.
           * @param root The tree item to use as root. The project is built as a child of this item.
           * @param ptvs The visual style of the project tree
-          * @param fgam If not NULL, use these file groups and masks for virtual folders.
+          * @param fgam If not nullptr, use these file groups and masks for virtual folders.
           */
         void BuildProjectTree(cbProject* project, cbTreeCtrl* tree, const wxTreeItemId& root,
                               int ptvs, FilesGroupsAndMasks* fgam);
@@ -150,6 +243,8 @@ class ProjectManagerUI : public wxEvtHandler, public cbProjectManagerUI
 
     private:
         DECLARE_EVENT_TABLE()
+
+    friend ProjectTreeDropTarget;
 };
 
 /// Almost empty implementation used in batch mode.

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 9263 $
- * $Id: recentitemslist.cpp 9263 2013-08-17 09:20:28Z mortenmacfly $
+ * $Revision: 12304 $
+ * $Id: recentitemslist.cpp 12304 2021-03-16 23:28:31Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/recentitemslist.cpp $
  */
 
@@ -89,7 +89,6 @@ void RecentItemsList::AskToRemoveFileFromHistory(size_t id, bool cannot_open)
         query << question;
 
     AnnoyingDialog dialog(_("Remove file from list"), query, wxART_QUESTION);
-    PlaceWindow(&dialog);
     if (dialog.ShowModal() == AnnoyingDialog::rtYES)
     {
         m_list->RemoveFileFromHistory(id);
