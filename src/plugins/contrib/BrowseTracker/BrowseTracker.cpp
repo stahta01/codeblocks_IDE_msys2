@@ -16,7 +16,7 @@
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-// RCS-ID: $Id: BrowseTracker.cpp 12254 2020-12-23 19:11:14Z pecanh $
+// RCS-ID: $Id: BrowseTracker.cpp 12797 2022-04-17 19:47:12Z pecanh $
 
 // Notes:
 //
@@ -97,12 +97,13 @@
 
 #include "Version.h"
 #include "BrowseTracker.h"
-#include "BrowseSelector.h"
 #include "BrowseMarks.h"
 #include "BrowseTrackerDefs.h"
 #include "ProjectData.h"
 #include "BrowseTrackerConfPanel.h"
 #include "JumpTracker.h"
+#include "btswitcherdlg.h"      //(2021/04/29)
+#include "cbauibook.h"          //(2021/06/19)
 
 //#define BROWSETRACKER_MARKER        9
 //#define BROWSETRACKER_MARKER_STYLE  wxSCI_MARK_DOTDOTDOT
@@ -177,12 +178,18 @@ BEGIN_EVENT_TABLE(BrowseTracker, cbPlugin)
     EVT_TOOL(idToolMarkPrev,    BrowseTracker::OnMenuBrowseMarkPrevious)
     EVT_TOOL(idToolMarkNext,    BrowseTracker::OnMenuBrowseMarkNext)
     EVT_TOOL(idToolMarksClear,  BrowseTracker::OnMenuClearAllBrowse_Marks)
+    // Activated editor stack maintenance
+    EVT_AUINOTEBOOK_PAGE_CHANGED(ID_NBEditorManager, BrowseTracker::OnPageChanged)
+    EVT_AUINOTEBOOK_PAGE_CLOSE(ID_NBEditorManager, BrowseTracker::OnPageClose)
 
 END_EVENT_TABLE()
 
 // ----------------------------------------------------------------------------
 BrowseTracker::BrowseTracker()
 // ----------------------------------------------------------------------------
+  : m_pNotebookStackHead(new cbNotebookStack),
+    m_pNotebookStackTail(m_pNotebookStackHead),
+    m_nNotebookStackSize(0)
 {
     //ctor
     //-m_nCurrentEditorIndex = 0;
@@ -197,7 +204,7 @@ BrowseTracker::BrowseTracker()
     m_nBrowseMarkNextSentry = 0;
     m_nBrowsedEditorCount = 0;
 
-    m_pCfgFile = 0;
+    m_pCfgFile = nullptr;
 
     m_MouseDownTime = 0;
     m_ToggleKey = Left_Mouse;
@@ -205,14 +212,16 @@ BrowseTracker::BrowseTracker()
     m_ClearAllKey = ClearAllOnSingleClick;
     m_IsMouseDoubleClick = false;
     m_UpdateUIEditorIndex = 0;
-    m_pJumpTracker = 0;
+    m_pJumpTracker = nullptr;
     m_bProjectClosing = false;
     m_bAppShutdown = false;
     m_nProjectClosingFileCount = 0;
     m_LastEbDeactivated = 0;
     m_PreviousEbActivated = 0;
     m_CurrentEbActivated = 0;
-    m_popupWin = 0; //2020/06/21
+    //-m_popupWin = 0; //2020/06/21
+
+    m_pNotebook = Manager::Get()->GetEditorManager()->GetNotebook();    //(2021/06/19)
 
     if (!Manager::LoadResource(_T("BrowseTracker.zip")))
         NotifyMissingFile(_T("BrowseTracker.zip"));
@@ -223,8 +232,13 @@ BrowseTracker::~BrowseTracker()
 {
     //dtor
     m_bProjectClosing = false;
-    m_pMenuBar = 0;
-    m_pToolBar = 0;
+    m_pMenuBar = nullptr;
+    m_pToolBar = nullptr;
+
+    // Activated editor stack maintenance //(2021/06/19)
+    DeleteNotebookStack();
+    if (m_pNotebookStackHead)
+        delete(m_pNotebookStackHead);
 }
 
 // ----------------------------------------------------------------------------
@@ -354,6 +368,7 @@ void BrowseTracker::OnAttach()
     Manager::Get()->RegisterEventSink(cbEVT_PROJECT_OPEN, new cbEventFunctor<BrowseTracker, CodeBlocksEvent>(this, &BrowseTracker::OnProjectOpened));
     // EVT_PROJECT_CLOSE
     Manager::Get()->RegisterEventSink(cbEVT_PROJECT_CLOSE, new cbEventFunctor<BrowseTracker, CodeBlocksEvent>(this, &BrowseTracker::OnProjectClosing));
+    Manager::Get()->RegisterEventSink(cbEVT_WORKSPACE_CHANGED, new cbEventFunctor<BrowseTracker, CodeBlocksEvent>(this, &BrowseTracker::OnWorkspaceChanged));
 
     // EVT_PROJECT_ACTIVATE
     Manager::Get()->RegisterEventSink(cbEVT_PROJECT_ACTIVATE, new cbEventFunctor<BrowseTracker, CodeBlocksEvent>(this, &BrowseTracker::OnProjectActivatedEvent));
@@ -384,7 +399,7 @@ void BrowseTracker::OnRelease(bool appShutDown)
         m_pJumpTracker->OnRelease(appShutDown);
         m_pJumpTracker->m_IsAttached = false;
         delete m_pJumpTracker; //causes crash on CB exit (heap area already freed)
-        m_pJumpTracker = 0;
+        m_pJumpTracker = nullptr;
         m_ToolbarIsShown = IsViewToolbarEnabled();
     }
 
@@ -731,27 +746,85 @@ void BrowseTracker::SetSelection(int index)
     }
 }
 // ----------------------------------------------------------------------------
-void BrowseTracker::OnMenuTrackerSelect(wxCommandEvent& event)
+void BrowseTracker::OnMenuTrackerSelect(wxCommandEvent& WXUNUSED(event))
 // ----------------------------------------------------------------------------
 {
-    // create a selection popup, allow user to choose an editor to activate
 
-    if ( GetEditorBrowsedCount() == 0) return;
+    // Get the notebook from the editormanager:
+    cbAuiNotebook* nb = Manager::Get()->GetEditorManager()->GetNotebook();
+    if (!nb)
+        return;
 
-    EditorBase* eb = Manager::Get()->GetEditorManager()->GetActiveEditor();
-    cbEditor* cbed = Manager::Get()->GetEditorManager()->GetBuiltinActiveEditor();
-    if ((not eb) || (not cbed)) return;
+    // Create container and add all open editors:
+    wxSwitcherItems items;
+    items.AddGroup(_("Open files"), wxT("editors"));
+    // FIXME (ph#): Need to use own stack of editors !!
+    //-if (!Manager::Get()->GetConfigManager(_T("app"))->ReadBool(_T("/environment/tabs_stacked_based_switching")))
+    if (0)  // Force switch tabs editor with last used order
+    {   // Switch tabs editor with tab list order
+        for (size_t i = 0; i < nb->GetPageCount(); ++i)
+        {
+            wxString title = nb->GetPageText(i);
+            wxWindow* window = nb->GetPage(i);
 
-    m_popupWin = new BrowseSelector( wxTheApp->GetTopWindow(), this, event.GetId() );
-    m_popupWin->ShowModal();
-    m_popupWin->Destroy();
-    m_popupWin = 0;
+            // FIXME (ph#): for GetEditorDescriptioin
+            //?items.AddItem(title, title, GetEditorDescription(static_cast<EditorBase*> (window)), i, nb->GetPageBitmap(i)).SetWindow(window);
+            items.AddItem(title, title, "", i, nb->GetPageBitmap(i)).SetWindow(window);
+        }
 
-    //-pCBWin->WarpPointer(pt.x, pt.y); //return the mouse position
+        // Select the focused editor:
+        int idx = items.GetIndexForFocus();
+        if (idx != wxNOT_FOUND)
+            items.SetSelection(idx);
+    }
+    else
+    {   // Switch tabs editor with last used order
+        int index = 0;
+        cbNotebookStack* body;
+        //-for (body = Manager::Get()->GetEditorManager()->GetNotebookStack(); body != NULL; body = body->next)
+        for (body = GetNotebookStack(); body != NULL; body = body->next)
+        {
+            index = nb->GetPageIndex(body->window);
+            if (index == wxNOT_FOUND)
+                continue;
+            wxString title = nb->GetPageText(index);
+            // FIXME (ph#): for GetEditorDescription()
+            //?items.AddItem(title, title, GetEditorDescription(static_cast<EditorBase*> (body->window)), index, nb->GetPageBitmap(index)).SetWindow(body->window);
+            items.AddItem(title, title, "", index, nb->GetPageBitmap(index)).SetWindow(body->window);
+        }
 
-    // BrowseSelector returns the index of the selected editor in m_UpdateUIEditorIndex
-    // Activate the new editor
-    SetSelection( m_UpdateUIEditorIndex );
+        // Select the focused editor:
+        if(items.GetItemCount() > 2)
+            items.SetSelection(2); // CTRL + TAB directly select the last editor, not the current one
+        else
+            items.SetSelection(items.GetItemCount()-1);
+    }
+
+    // Create the switcher dialog
+    // FIXME (ph#): for wxGetApp() ?
+    //?wxSwitcherDialog dlg(items, wxGetApp().GetTopWindow());
+    wxSwitcherDialog dlg(items, Manager::Get()->GetAppWindow());
+
+    // Ctrl+Tab workaround for non windows platforms:
+    if      (platform::cocoa)
+        dlg.SetModifierKey(WXK_ALT);
+    else if (platform::gtk)
+        dlg.SetExtraNavigationKey(wxT(','));
+
+    // Finally show the dialog:
+    int answer = dlg.ShowModal();
+
+    // If necessary change the selected editor:
+    if ((answer == wxID_OK) && (dlg.GetSelection() != -1))
+    {
+        wxSwitcherItem& item = items.GetItem(dlg.GetSelection());
+        wxWindow* win = item.GetWindow();
+        if (win)
+        {
+            nb->SetSelection(item.GetId());
+            win->SetFocus();
+        }
+    }
 }
 // ----------------------------------------------------------------------------
 void BrowseTracker::OnMenuBrowseMarkPrevious(wxCommandEvent& event)
@@ -1428,10 +1501,21 @@ void BrowseTracker::OnEditorActivated(CodeBlocksEvent& event)
 
     if (IsAttached() && m_InitDone) do
     {
-
         EditorBase* eb = event.GetEditor();
+        if (not eb) return;
         wxString editorFullPath = eb->GetFilename();
         cbEditor* cbed = Manager::Get()->GetEditorManager()->GetBuiltinEditor(eb);
+        if (not cbed)
+        {
+            // Since wxAuiNotebook added, there's no cbEditor associated during
+            // an initial cbEVT_EDITOR_ACTIVATED event. So we ignore the inital
+            // call and get OnEditorOpened() to re-issue OnEditorActivated() when
+            // it does have a cbEditor, but no cbProject associated;
+            #if defined(LOGGING)
+            LOGIT( _T("BT [OnEditorActivated ignored:no cbEditor[%s]"), editorFullPath.c_str());
+            #endif
+            return;
+        }
 
         if ( m_bProjectIsLoading )
         {
@@ -1448,23 +1532,10 @@ void BrowseTracker::OnEditorActivated(CodeBlocksEvent& event)
              return;
         }
 
-        if (not cbed)
-        {
-            // Since wxAuiNotebook added, there's no cbEditor associated during
-            // an initial cbEVT_EDITOR_ACTIVATED event. So we ignore the inital
-            // call and get OnEditorOpened() to re-issue OnEditorActivated() when
-            // it does have a cbEditor, but no cbProject associated;
-            #if defined(LOGGING)
-            LOGIT( _T("BT [OnEditorActivated ignored:no cbEditor[%s]"), editorFullPath.c_str());
-            #endif
-            return;
-        }
-
         #if defined(LOGGING)
         cbProject* pcbProject = GetProject( eb );
         LOGIT( _T("BT Editor Activated[%p]proj[%p][%s]"), eb, pcbProject, eb->GetShortName().c_str() );
         #endif
-
 
         // New editor, append to circular queue
         // remove previous entries for this editor first
@@ -1498,7 +1569,11 @@ void BrowseTracker::OnEditorActivated(CodeBlocksEvent& event)
         {   // new editor
             if (cbed)
             {
-                HashAddBrowse_Marks( eb->GetFilename() ); //create hashs and book/browse marks arrays
+                // Careful here! On the initial editor activation, EditorManager will not give us the EditorBase by way of the filename.
+                // It means the Editor is not ready for prime time and not fully registered with the EditorManager.
+                wxString fullPath = eb->GetFilename();
+                if (not m_pEdMgr->GetEditor(fullPath)) return;  // 2021/11/27
+                HashAddBrowse_Marks(eb); //create hashs and book/browse marks arrays
 
                 // Debugging statements
                 //DumpHash(wxT("BrowseMarks"));
@@ -1507,6 +1582,7 @@ void BrowseTracker::OnEditorActivated(CodeBlocksEvent& event)
                 //m_pActiveProjectData->DumpHash(wxT("BookMarks"));
 
                 cbStyledTextCtrl* control = cbed->GetControl();
+                if (not control) return;
                 // Setting the initial browsemark(s)
                 //Connect to mouse to see user setting/clearing browse marks
                 control->GetEventHandler()->Connect(wxEVT_LEFT_UP,
@@ -1556,7 +1632,18 @@ void BrowseTracker::OnEditorActivated(CodeBlocksEvent& event)
                         //LOGIT( _T("BT Project Data[%s]"),pProjectData->GetProjectFilename().c_str() );
                         //pBrowse_MarksArc->Dump();
                         //#endif
-                    if (pBrowse_MarksArc)
+                    if (pBrowse_MarksArc) switch (1)
+                    {
+                        default:
+                        // Let's get paranoid here, since a crash was reported Nov. 2021
+                        // https://forums.codeblocks.org/index.php?topic=24716.msg168611#msg168611
+                        // Note: when eb does not exist in the hash in which case
+                        // wxWidgets will automatically enter it along with a default (0) BrowseMarks ptr.
+                        // HashAddBrowse_Marks() should have added it above and also allocated a BrowseMarks* map;
+                        cbAssertNonFatal(m_EbBrowse_MarksHash.find(eb) != m_EbBrowse_MarksHash.end());
+                        cbAssertNonFatal(m_EbBrowse_MarksHash[eb] != nullptr);
+                        if (m_EbBrowse_MarksHash.find(eb) == m_EbBrowse_MarksHash.end()) break;
+                        if (not m_EbBrowse_MarksHash[eb]) break; //avoid a possible crash here
                         m_EbBrowse_MarksHash[eb]->RecordMarksFrom( *pBrowse_MarksArc);
                             //LOGIT( _T("BT Dumping CURRENT data for[%s]"), eb->GetFilename().c_str());
                             //m_EbBrowse_MarksHash[eb]->Dump();
@@ -1567,6 +1654,7 @@ void BrowseTracker::OnEditorActivated(CodeBlocksEvent& event)
                         //m_pActiveProjectData->DumpBrowse_Marks(wxT("BrowseMarks"));
                         //pBrowse_MarksArc->Dump();
                         //m_pActiveProjectData->DumpHash(wxT("BookMarks"));
+                    }
 
                 }//if project
 
@@ -1621,8 +1709,8 @@ void BrowseTracker::OnIdle(wxIdleEvent& event)
     // This used to be done by the CB editor manager, but someone removed the UI hook.
     if (m_bAppShutdown)
         return;
-    if (m_popupWin) //if selecting editor dialog is active, punt. 2020/06/21
-            return;
+    //-if (m_popupWin) //if selecting editor dialog is active, punt. 2020/06/21
+    // -       return;
 
     if ((not Manager::Get()->IsAppShuttingDown()) && m_UpdateUIFocusEditor)
     {
@@ -1922,14 +2010,19 @@ void BrowseTracker::AddEditor(EditorBase* eb)
     #endif
 }
 // ----------------------------------------------------------------------------
-BrowseMarks* BrowseTracker::HashAddBrowse_Marks( const wxString fullPath)
+BrowseMarks* BrowseTracker::HashAddBrowse_Marks( const EditorBase* pEdBase)
 // ----------------------------------------------------------------------------
 {
     // EditorManager calls fail during the OnEditorClose event
     // eg,EditorBase* eb = Manager::Get()->GetEditorManager()->GetEditor(filename);
 
-    EditorBase* eb = m_pEdMgr->GetEditor(fullPath);
-    if (not eb) return 0;
+    //-EditorBase* eb = m_pEdMgr->GetEditor(fullPath);
+    EditorBase* eb = (EditorBase*)pEdBase;
+    if (not eb) return nullptr;
+
+    wxString fullPath = eb->GetFilename();
+    if (fullPath.empty()) return nullptr;
+
     // don't add duplicates
     EbBrowse_MarksHash& hash = m_EbBrowse_MarksHash;
     BrowseMarks* pBrowse_Marks = GetBrowse_MarksFromHash( eb);
@@ -2128,6 +2221,14 @@ void BrowseTracker::OnProjectOpened(CodeBlocksEvent& event)
     event.Skip();
 
 }//OnProjectOpened
+// ----------------------------------------------------------------------------
+void BrowseTracker::OnWorkspaceChanged(CodeBlocksEvent& event)
+// ----------------------------------------------------------------------------
+{
+    // Clear all waiting conditions
+    m_bProjectClosing   = false;
+    m_bProjectIsLoading = false;
+}
 // ----------------------------------------------------------------------------
 void BrowseTracker::OnProjectClosing(CodeBlocksEvent& event)
 // ----------------------------------------------------------------------------
@@ -2807,30 +2908,151 @@ bool BrowseTracker::IsViewToolbarEnabled()
     else
         return m_ToolbarIsShown = false;
 
-        // ------------------------------------------
-        // Examining a menu checkbox is unreliable - code deprecated
-        // ------------------------------------------
-        //wxMenuBar* mbar = Manager::Get()->GetAppFrame()->GetMenuBar();
-        //int idViewToolMain = XRCID("idViewToolMain");
-        //wxMenu* viewToolbars = 0;
-        //mbar->FindItem(idViewToolMain, &viewToolbars);
-        //if (viewToolbars)
-        //{
-        //    wxMenuItemList menuList = viewToolbars->GetMenuItems();
-        //    for (size_t i = 0; i < viewToolbars->GetMenuItemCount(); ++i)
-        //    {
-        //        wxMenuItem* item = menuList[i];
-        //        wxString itemName = item->GetItemLabel(); //2018/02/6 wx30
-        //        if (itemName == _("BrowseTracker"))
-        //        {
-        //            wxCommandEvent menuEvt(wxEVT_COMMAND_MENU_SELECTED, idViewToolMain);
-        //            Manager::Get()->GetAppWindow()->GetEventHandler()->ProcessEvent(menuEvt);
-        //            m_ToolbarIsShown = item->IsChecked();
-        //            return m_ToolbarIsShown;
-        //        }
-        //    }
-        //}
-        //m_ToolbarIsShown = false;
-        //return m_ToolbarIsShown;
-
 }//ShowBrowseTrackerToolBar
+// ----------------------------------------------------------------------------
+cbNotebookStack* BrowseTracker::GetNotebookStack()
+// ----------------------------------------------------------------------------
+{
+    bool found = false;
+    wxWindow* wnd;
+    cbNotebookStack* body;
+    cbNotebookStack* prev_body;
+
+    while (m_nNotebookStackSize != m_pNotebook->GetPageCount()) // Sync stack with Notebook
+    {
+        if (m_nNotebookStackSize < m_pNotebook->GetPageCount())
+        {
+            for (size_t i = 0; i<m_pNotebook->GetPageCount(); ++i)
+            {
+                wnd = m_pNotebook->GetPage(i);
+                found = false;
+                for (body = m_pNotebookStackHead->next; body != NULL; body = body->next)
+                {
+                    if (wnd == body->window)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    m_pNotebookStackTail->next = new cbNotebookStack(wnd);
+                    m_pNotebookStackTail = m_pNotebookStackTail->next;
+                    ++m_nNotebookStackSize;
+                }
+            }
+        }
+        if (m_nNotebookStackSize > m_pNotebook->GetPageCount())
+        {
+            for (prev_body = m_pNotebookStackHead, body = prev_body->next; body != NULL; prev_body = body, body = body->next)
+            {
+                if (m_pNotebook->GetPageIndex(body->window) == wxNOT_FOUND)
+                {
+                    prev_body->next = body->next;
+                    delete body;
+                    --m_nNotebookStackSize;
+                    body = prev_body;
+                }
+            }
+        }
+    }
+
+    return m_pNotebookStackHead->next;
+}
+// ----------------------------------------------------------------------------
+void BrowseTracker::DeleteNotebookStack()
+// ----------------------------------------------------------------------------
+{
+    cbNotebookStack* tmp;
+    while(m_pNotebookStackHead->next)
+    {
+        tmp = m_pNotebookStackHead->next;
+        m_pNotebookStackHead->next = tmp->next;
+        delete tmp;
+    }
+    m_pNotebookStackTail = m_pNotebookStackHead;
+    m_nNotebookStackSize = 0;
+}
+
+// ----------------------------------------------------------------------------
+void BrowseTracker::RebuildNotebookStack()
+// ----------------------------------------------------------------------------
+{
+    DeleteNotebookStack();
+    for (size_t i = 0; i < m_pNotebook->GetPageCount(); ++i)
+    {
+        m_pNotebookStackTail->next = new cbNotebookStack(m_pNotebook->GetPage(i));
+        m_pNotebookStackTail = m_pNotebookStackTail->next;
+        ++m_nNotebookStackSize;
+    }
+}
+// ----------------------------------------------------------------------------
+void BrowseTracker::OnPageChanged(wxAuiNotebookEvent& event)
+// ----------------------------------------------------------------------------
+{
+    //    EVT_AUINOTEBOOK_PAGE_CHANGED(ID_NBEditorManager, EditorManager::OnPageChanged)
+
+
+    //-if (Manager::Get()->GetConfigManager(_T("app"))->ReadBool(_T("/environment/tabs_stacked_based_switching"))) //(2021/06/19)
+    // Enforced stack based switching for BrowseTracker
+    if (1)
+    {
+        wxWindow*        wnd;
+        cbNotebookStack* body;
+        cbNotebookStack* tmp;
+        wnd = m_pNotebook->GetPage(event.GetSelection());
+        for (body = m_pNotebookStackHead; body->next != nullptr; body = body->next)
+        {
+            if (wnd == body->next->window)
+            {
+                if (m_pNotebookStackTail == body->next)
+                    m_pNotebookStackTail = body;
+                tmp = body->next;
+                body->next = tmp->next;
+                tmp->next = m_pNotebookStackHead->next;
+                m_pNotebookStackHead->next = tmp;
+                break;
+            }
+        }
+        if (   (m_pNotebookStackHead->next == nullptr)
+            || (wnd != m_pNotebookStackHead->next->window) )
+        {
+            body = new cbNotebookStack(wnd);
+            body->next = m_pNotebookStackHead->next;
+            m_pNotebookStackHead->next = body;
+            ++m_nNotebookStackSize;
+        }
+    }
+
+    event.Skip(); // allow others to process it too
+}
+// ----------------------------------------------------------------------------
+void BrowseTracker::OnPageClose(wxAuiNotebookEvent& event)
+// ----------------------------------------------------------------------------
+{
+
+    // EVT_AUINOTEBOOK_PAGE_CLOSE(ID_NBEditorManager, BrowseTracker::OnPageClose)
+
+    //-if (Manager::Get()->GetConfigManager(_T("app"))->ReadBool(_T("/environment/tabs_stacked_based_switching"))) //(2021/06/19)
+    // Enforced stack based switching for BrowseTracker
+    if (1)
+    {
+        wxWindow* wnd;
+        cbNotebookStack* body;
+        cbNotebookStack* tmp;
+        wnd = m_pNotebook->GetPage(event.GetSelection());
+        for (body = m_pNotebookStackHead; body->next != nullptr; body = body->next)
+        {
+            if (wnd == body->next->window)
+            {
+                tmp = body->next;
+                body->next = tmp->next;
+                delete tmp;
+                --m_nNotebookStackSize;
+                break;
+            }
+        }
+    }
+
+    event.Skip(); // allow others to process it too
+}

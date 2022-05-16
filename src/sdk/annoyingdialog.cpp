@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12206 $
- * $Id: annoyingdialog.cpp 12206 2020-09-26 14:23:34Z fuscated $
+ * $Revision: 12736 $
+ * $Id: annoyingdialog.cpp 12736 2022-03-03 20:12:16Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/annoyingdialog.cpp $
  */
 
@@ -52,7 +52,7 @@ void AnnoyingDialog::Init(const wxString &caption, const wxString &id, const wxS
     m_DontAnnoy = false;
     m_Id = id;
 
-    static_assert(wxMinimumVersion<2,8,12>::eval, "wxWidgets 2.8.12 is required");
+    static_assert(wxMinimumVersion<3,0,0>::eval, "wxWidgets 3.0.0 or higher is required");
 
     ConfigManagerContainer::StringSet disabled;
     ConfigManager* cfg = Manager::Get()->GetConfigManager(wxT("an_dlg"));
@@ -156,7 +156,7 @@ void AnnoyingDialog::Init(const wxString &caption, const wxString &id, const wxS
         bTxt3 = b3.IsEmpty() ? wxString(_("&Cancel")) : b3;
     }
     else
-        cbThrow(wxString(_T("Fatal error:\nUndefined style in dialog ")) << caption);
+        cbThrow(_("Fatal error:\nUndefined style in dialog ")+caption);
 
     wxSizer* buttonSizer = nullptr;
     if (style < ONE_BUTTON) // standard buttons? use wxStdDialogButtonSizer
@@ -225,7 +225,7 @@ void AnnoyingDialog::Init(const wxString &caption, const wxString &id, const wxS
 void AnnoyingDialog::OnButton(wxCommandEvent& event)
 {
     if(!m_CheckBox)
-        cbThrow(_T("Ow... null pointer."));
+        cbThrow(_("Ow... null pointer."));
 
     int id = event.GetId();
     // convert IDs from standard buttons to dReturnType

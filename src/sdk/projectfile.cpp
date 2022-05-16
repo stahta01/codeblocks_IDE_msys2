@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12046 $
- * $Id: projectfile.cpp 12046 2020-04-12 16:36:27Z bluehazzard $
+ * $Revision: 12316 $
+ * $Id: projectfile.cpp 12316 2021-05-03 12:02:13Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/projectfile.cpp $
  */
 
@@ -87,17 +87,17 @@ ProjectFile::ProjectFile(cbProject* prj, const ProjectFile &pf) :
 {
 }
 
-void ProjectFile::Rename(const wxString& new_name)
+void ProjectFile::Rename(const wxString& newName)
 {
-    wxString path = file.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR);
-
-    file.Assign(path + new_name);
+    const wxString oldName(file.GetFullName());
+    const wxString path(file.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR));
+    file.Assign(path + newName);
     relativeFilename = relativeFilename.BeforeLast(wxFILE_SEP_PATH);
-    if (!relativeFilename.IsEmpty())
+    if (!relativeFilename.empty())
     {
         relativeFilename.Append(wxFILE_SEP_PATH);
     }
-    relativeFilename.Append(new_name);
+    relativeFilename.Append(newName);
 
     if (project)
     {
@@ -105,7 +105,16 @@ void ProjectFile::Rename(const wxString& new_name)
         project->CalculateCommonTopLevelPath();
         project->SetModified(true);
     }
+
     UpdateFileDetails();
+
+    // Send event
+    CodeBlocksEvent event(cbEVT_PROJECT_FILE_RENAMED);
+    event.SetProject(project);
+    event.SetString(path);
+    event.SetOldFileName(oldName);
+    event.SetNewFileName(newName);
+    Manager::Get()->GetPluginManager()->NotifyPlugins(event);
 }
 
 void ProjectFile::AddBuildTarget(const wxString& targetName)

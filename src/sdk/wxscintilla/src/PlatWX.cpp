@@ -324,10 +324,10 @@ void SurfaceImpl::InitPixMap(int width, int height, Surface *surface, WindowID w
 /* C::B begin */
 #if wxCHECK_VERSION(3, 0, 0)
     bitmap = new wxBitmap();
-    bitmap->CreateScaled(width, height,wxBITMAP_SCREEN_DEPTH,((wxWindow*)winid)->GetContentScaleFactor());
+    bitmap->CreateScaled(width, height, wxBITMAP_SCREEN_DEPTH, ((wxWindow*)winid)->GetContentScaleFactor());
 #else
     bitmap = new wxBitmap(width, height);
-#endif // wxCHECK_VERSION
+#endif  // wxCHECK_VERSION
 /* C::B end */
 #endif // __WXMSW__
     ((wxMemoryDC*)hdc)->SelectObject(*bitmap);
@@ -2022,6 +2022,7 @@ void Window::SetCursor(Cursor curs) {
     case cursorHand:
         cursorId = wxCURSOR_HAND;
         break;
+    case cursorInvalid: // fall-through
     default:
         cursorId = wxCURSOR_ARROW;
         break;
@@ -2125,7 +2126,7 @@ public:
     wxSCIListBoxWin(wxWindow* parent, wxWindowID id, Point WXUNUSED(location)) :
         wxPopupWindow(parent, wxBORDER_SIMPLE)
     {
-        
+
 /* C::B begin */
 #ifdef __WXMSW__
         SetExtraStyle(GetExtraStyle() & ~wxWS_EX_BLOCK_EVENTS);

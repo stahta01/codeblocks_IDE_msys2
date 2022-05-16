@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 11822 $
- * $Id: projectsimporter.cpp 11822 2019-08-01 22:04:41Z fuscated $
+ * $Revision: 12672 $
+ * $Id: projectsimporter.cpp 12672 2022-01-21 13:08:35Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/projectsimporter/projectsimporter.cpp $
  */
 
@@ -61,27 +61,49 @@ void ProjectsImporter::BuildMenu(wxMenuBar* menuBar)
     if (!IsAttached() || !menuBar)
         return;
 
-    m_Menu = Manager::Get()->LoadMenu(_T("project_import_menu"), false);
-    if (!m_Menu)
+    std::unique_ptr <wxMenu> menu(Manager::Get()->LoadMenu("project_import_menu", false));
+    if (!menu)
         return;
 
     wxMenu* fileMenu = menuBar->GetMenu(0);
-    if (fileMenu)
+    if (!fileMenu)
+        return;
+
+    wxMenuItem* importMenuItem;
+    const int importMenuId = fileMenu->FindItem(_("&Import project"));
+    if (importMenuId == wxNOT_FOUND)
     {
-        int menuId = 0, id = 0;
         wxMenuItemList menuItems = fileMenu->GetMenuItems();
-        menuId = fileMenu->FindItem(_("R&ecent files"));
+        const int menuId = fileMenu->FindItem(_("R&ecent files"));
         wxMenuItem* recentFileItem = fileMenu->FindItem(menuId);
-        id = menuItems.IndexOf(recentFileItem);
+        int id = menuItems.IndexOf(recentFileItem);
         if (id == wxNOT_FOUND)
             id = 7;
         else
             ++id;
 
         // The position is hard-coded to "Recent Files" menu. Please adjust it if necessary
-        fileMenu->Insert(++id, wxNewId(), _("&Import project"), m_Menu);
+        importMenuItem = fileMenu->Insert(++id, wxNewId(), _("&Import project"), new wxMenu());
         fileMenu->InsertSeparator(++id);
     }
+    else
+    {
+        importMenuItem = fileMenu->FindItem(importMenuId);
+    }
+
+    if (!importMenuItem)
+        return;
+
+    if (!importMenuItem->IsSubMenu())
+        importMenuItem->SetSubMenu(new wxMenu());
+
+    wxMenu* importSubMenu = importMenuItem->GetSubMenu();
+    if (importSubMenu->GetMenuItemCount())
+        importSubMenu->AppendSeparator();
+
+    wxMenuItemList m_List = menu->GetMenuItems();
+    for (wxMenuItemList::iterator it = m_List.begin(); it != m_List.end(); ++it)
+        importSubMenu->Append(menu->Remove(*it));
 }
 
 bool ProjectsImporter::CanHandleFile(const wxString& filename) const
@@ -138,7 +160,7 @@ int ProjectsImporter::LoadProject(const wxString& filename)
         wxBusyCursor wait;
 
         Manager::Get()->GetLogManager()->Log(F(_("Importing %s: "), filename.wx_str()));
-        IBaseLoader* loader = 0L;
+        IBaseLoader* loader = nullptr;
         FileType ft = FileTypeOf(filename);
         switch (ft)
         {

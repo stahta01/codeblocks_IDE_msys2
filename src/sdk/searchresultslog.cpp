@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 9203 $
- * $Id: searchresultslog.cpp 9203 2013-07-08 23:07:22Z fuscated $
+ * $Revision: 12643 $
+ * $Id: searchresultslog.cpp 12643 2022-01-12 19:40:38Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/searchresultslog.cpp $
  */
 
@@ -71,12 +71,12 @@ void cbSearchResultsLog::SyncEditor(int selIndex)
     file = filename.GetFullPath();
 
     wxListItem li;
-    li.m_itemId = selIndex;
-    li.m_col = 1;
-    li.m_mask = wxLIST_MASK_TEXT;
+    li.SetId(selIndex);
+    li.SetColumn(1);
+    li.SetMask(wxLIST_MASK_TEXT);
     control->GetItem(li);
     long line = 0;
-    li.m_text.ToLong(&line);
+    li.GetText().ToLong(&line);
     cbEditor* ed = Manager::Get()->GetEditorManager()->Open(file);
     if (!line || !ed)
         return;

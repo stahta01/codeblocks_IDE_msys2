@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12274 $
- * $Id: debuggermanager.cpp 12274 2020-12-26 15:14:22Z fuscated $
+ * $Revision: 12605 $
+ * $Id: debuggermanager.cpp 12605 2021-12-22 08:53:19Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/debuggermanager.cpp $
  */
 
@@ -677,7 +677,7 @@ public:
 
         wxFileDialog dialog(this, _("Load script"), path, wxEmptyString,
                             _T("Debugger script files (*.gdb)|*.gdb"), wxFD_OPEN | compatibility::wxHideReadonly);
-
+        PlaceWindow(&dialog);
         if (dialog.ShowModal() == wxID_OK)
         {
             manager->Write(_T("/file_dialogs/file_run_dbg_script/directory"), dialog.GetDirectory());
@@ -935,7 +935,7 @@ wxMenu* DebuggerManager::GetMenu()
 {
     wxMenuBar *menuBar = Manager::Get()->GetAppFrame()->GetMenuBar();
     cbAssert(menuBar);
-    wxMenu *menu = NULL;
+    wxMenu *menu = nullptr;
 
     int menu_pos = menuBar->FindMenu(_("&Debug"));
 
@@ -1190,7 +1190,7 @@ cbDebuggerPlugin* DebuggerManager::GetDebuggerHavingWatch(cb::shared_ptr<cbWatch
         if (it->first->HasWatch(watch))
             return it->first;
     }
-    return NULL;
+    return nullptr;
 }
 
 bool DebuggerManager::ShowValueTooltip(const cb::shared_ptr<cbWatch> &watch, const wxRect &rect)
@@ -1403,7 +1403,13 @@ void DebuggerManager::OnTargetSelected(cb_unused CodeBlocksEvent& event)
 
 void DebuggerManager::OnSettingsChanged(CodeBlocksEvent& event)
 {
-    if (event.GetInt() == cbSettingsType::Compiler || event.GetInt() == cbSettingsType::Debugger)
+    const int value = event.GetInt();
+    if (value < int(cbSettingsType::First) || value >= int(cbSettingsType::Last))
+        return;
+    const cbSettingsType settingType = cbSettingsType(value);
+
+    if (settingType == cbSettingsType::Compiler || settingType == cbSettingsType::Debugger
+        || settingType == cbSettingsType::BuildOptions)
     {
         if (m_useTargetsDefault)
             FindTargetsDebugger();

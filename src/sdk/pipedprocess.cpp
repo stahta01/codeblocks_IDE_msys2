@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12208 $
- * $Id: pipedprocess.cpp 12208 2020-10-04 20:42:14Z d_anselmi $
+ * $Revision: 12763 $
+ * $Id: pipedprocess.cpp 12763 2022-03-25 07:42:10Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/pipedprocess.cpp $
  */
 
@@ -123,23 +123,35 @@ PipedProcess::PipedProcess(PipedProcess** pvThis, wxEvtHandler* parent, int id, 
         wxSetWorkingDirectory(unixDir);
     if (pipe)
         Redirect();
+
+    m_timerPollProcess.SetOwner(this, idTimerPollProcess);
 }
 
 // class destructor
 PipedProcess::~PipedProcess()
 {
-    // insert your code here
+    if (m_timerPollProcess.IsRunning())
+        m_timerPollProcess.Stop();
 }
 
-int PipedProcess::Launch(const wxString& cmd, cb_unused unsigned int pollingInterval)
+int PipedProcess::Launch(const wxString& cmd, int flags)
 {
     m_Stopped = false;
-    m_Pid = wxExecute(cmd, wxEXEC_ASYNC | wxEXEC_MAKE_GROUP_LEADER, this);
+
+    // wxWidgets < 3.1.0 on Unix has a bug in wxExecute() with non-ASCII characters
+    // See https://github.com/wxWidgets/wxWidgets/issues/16206
+#if !defined __WXGTK__ || wxCHECK_VERSION(3, 1, 0)
+    m_Pid = wxExecute(cmd, flags, this);
+#else
+    char* currentLocale = wxStrdup(wxSetlocale(LC_ALL, ""));
+    m_Pid = wxExecute(cmd, flags, this);
+    wxSetlocale(LC_ALL, currentLocale);
+    free(currentLocale);
+#endif
+
     if (m_Pid)
-    {
-//        m_timerPollProcess.SetOwner(this, idTimerPollProcess);
-//        m_timerPollProcess.Start(pollingInterval);
-    }
+        m_timerPollProcess.Start(1000);
+
     return m_Pid;
 }
 

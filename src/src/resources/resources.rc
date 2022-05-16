@@ -99,7 +99,7 @@ VS_VERSION_INFO    VERSIONINFO
       VALUE "FileDescription",  "Code::Blocks IDE\0"
       VALUE "FileVersion",      "20.03.0.0\0"
       VALUE "InternalName",     "Code::Blocks\0"
-      VALUE "LegalCopyright",   "Copyright (C) 2004-2021 Code::Blocks Team\0"
+      VALUE "LegalCopyright",   "Copyright (C) 2004-2022 Code::Blocks Team\0"
       VALUE "LegalTrademarks",  "All rights reserved.\0"
       VALUE "OriginalFilename", "codeblocks.exe\0"
       VALUE "PrivateBuild",     "\0"
@@ -138,8 +138,13 @@ VS_VERSION_INFO    VERSIONINFO
     wxMANIFEST_ID RT_MANIFEST "ia64.manifest"
     #warning Manifest: ia64.manifest
   #elif defined(WX_CPU_X86)
-    wxMANIFEST_ID RT_MANIFEST "x86.manifest"
-    #warning Manifest: x86.manifest
+    #if defined(cbDPI_AWARE_ON)
+        wxMANIFEST_ID RT_MANIFEST "x86_dpi_aware_on.manifest"
+        #warning Manifest: x86_dpi_aware_on.manifest
+    #else
+        wxMANIFEST_ID RT_MANIFEST "x86.manifest"
+        #warning Manifest: x86.manifest
+    #endif
   #else
     #error No platform defined! Unable to embed manifest file.
   #endif

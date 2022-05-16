@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12025 $
- * $Id: pluginmanager.cpp 12025 2020-04-04 16:32:45Z fuscated $
+ * $Revision: 12757 $
+ * $Id: pluginmanager.cpp 12757 2022-03-18 10:01:01Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/pluginmanager.cpp $
  */
 
@@ -272,7 +272,7 @@ bool PluginManager::InstallPlugin(const wxString& pluginName, bool forAllUsers, 
         resourceDir = ConfigManager::GetFolder(sdDataUser);
     }
 
-    wxProgressDialog pd(_("Installing: ") + basename, _T("A description wide enough for the dialog ;)"), 5);
+    wxProgressDialog pd(_("Installing: ") + basename, wxString(L'\u00a0', 150), 5);
 
     wxString localName = basename + FileFilters::DYNAMICLIB_DOT_EXT;
     wxString resourceName = basename + _T(".zip");
@@ -370,6 +370,9 @@ bool PluginManager::UninstallPlugin(cbPlugin* plugin, bool removeFiles)
     wxString settingsOffFilename;
     wxArrayString extrafiles;
 
+    if (not plugin->CanDetach())
+        return false;
+
     // find the plugin element
     for (size_t i = 0; i < m_Plugins.GetCount(); ++i)
     {
@@ -417,7 +420,7 @@ bool PluginManager::UninstallPlugin(cbPlugin* plugin, bool removeFiles)
 //    Manager::Get()->GetLogManager()->DebugLog(F(_T("Plugin resources: ") + resourceFilename));
 
     wxProgressDialog pd(wxString::Format(_("Uninstalling %s"), title.c_str()),
-                        _T("A description wide enough for the dialog ;)"), 3);
+                        wxString(L'\u00a0', 150), 3);
 
     pd.Update(1, _("Detaching plugin"));
     DetachPlugin(plugin);
@@ -668,7 +671,7 @@ void PluginManager::RegisterPlugin(const wxString& name,
                                     PluginSDKVersionProc versionProc)
 {
     // sanity checks
-    if (name.IsEmpty() || !createProc || !freeProc || !versionProc)
+    if (name.empty() || !createProc || !freeProc || !versionProc)
         return;
 
     // first check to see it's not already loaded
@@ -677,10 +680,15 @@ void PluginManager::RegisterPlugin(const wxString& name,
 
     // read manifest file for plugin
     PluginInfo info;
-    if (!ReadManifestFile(m_CurrentlyLoadingFilename, name, &info) ||
-        info.name.IsEmpty())
+    if (!ReadManifestFile(m_CurrentlyLoadingFilename, name, &info))
     {
-        Manager::Get()->GetLogManager()->LogError(_T("Invalid manifest file for: ") + name);
+        Manager::Get()->GetLogManager()->LogError(wxString::Format(_("No manifest file for plugin \"%s\" filename: %s"), name, m_CurrentlyLoadingFilename));
+        return;
+    }
+
+    if (info.name.empty())
+    {
+        Manager::Get()->GetLogManager()->LogError(wxString::Format(_("Invalid manifest file for plugin \"%s\" filename: %s"), name, m_CurrentlyLoadingFilename));
         return;
     }
 
@@ -826,32 +834,53 @@ bool PluginManager::ReadManifestFile(const wxString& pluginFilename,
     while (plugin)
     {
         const char* name = plugin->Attribute("name");
-        if (name && cbC2U(name) == pluginName)
+        if (name)
         {
-            infoOut->name = pluginName;
-            TiXmlElement* value = plugin->FirstChildElement("Value");
-            while (value)
+            const wxString convertedName(cbC2U(name));
+            if (pluginName.IsSameAs(convertedName))
             {
-                if (value->Attribute("title"))
-                    infoOut->title = cbC2U(value->Attribute("title"));
-                if (value->Attribute("version"))
-                    infoOut->version = cbC2U(value->Attribute("version"));
-                if (value->Attribute("description"))
-                    infoOut->description = cbC2U(value->Attribute("description"));
-                if (value->Attribute("author"))
-                    infoOut->author = cbC2U(value->Attribute("author"));
-                if (value->Attribute("authorEmail"))
-                    infoOut->authorEmail = cbC2U(value->Attribute("authorEmail"));
-                if (value->Attribute("authorWebsite"))
-                    infoOut->authorWebsite = cbC2U(value->Attribute("authorWebsite"));
-                if (value->Attribute("thanksTo"))
-                    infoOut->thanksTo = cbC2U(value->Attribute("thanksTo"));
-                if (value->Attribute("license"))
-                    infoOut->license = cbC2U(value->Attribute("license"));
+                infoOut->name = pluginName;
+                TiXmlElement* value = plugin->FirstChildElement("Value");
+                while (value)
+                {
+                    if (value->Attribute("title"))
+                        infoOut->title = cbC2U(value->Attribute("title"));
+                    if (value->Attribute("version"))
+                        infoOut->version = cbC2U(value->Attribute("version"));
+                    if (value->Attribute("description"))
+                    {
+                        wxString tmp = cbC2U(value->Attribute("description"));
+                        // Most manifest*.xml files contain a description item formatted for Windows (with \r\n)
+                        // Remove all \r so that poedit works without complaining
+                        tmp.Replace("\r", "");
+                        // Use the _() macro to be able to translate the tmp string
+                        infoOut->description = _(tmp);
+                    }
 
-                value = value->NextSiblingElement("Value");
+                    if (value->Attribute("author"))
+                        infoOut->author = cbC2U(value->Attribute("author"));
+                    if (value->Attribute("authorEmail"))
+                        infoOut->authorEmail = cbC2U(value->Attribute("authorEmail"));
+                    if (value->Attribute("authorWebsite"))
+                        infoOut->authorWebsite = cbC2U(value->Attribute("authorWebsite"));
+                    if (value->Attribute("thanksTo"))
+                        infoOut->thanksTo = cbC2U(value->Attribute("thanksTo"));
+                    if (value->Attribute("license"))
+                        infoOut->license = cbC2U(value->Attribute("license"));
+
+                    value = value->NextSiblingElement("Value");
+                }
+
+                break;
             }
-            break;
+            else if (pluginName.IsSameAs(convertedName, false))
+            {
+                Manager::Get()->GetLogManager()->DebugLogError(wxString::Format(_("The plugin name \"%s\" case does not match the name in the \"%s\" file."), pluginName, convertedName));
+            }
+            else
+            {
+                Manager::Get()->GetLogManager()->DebugLogError(wxString::Format(_("The plugin name \"%s\" does not match the name in the \"%s\" file."), pluginName, convertedName));
+            }
         }
 
         plugin = plugin->NextSiblingElement("Plugin");
@@ -1507,7 +1536,7 @@ void PluginManager::SetupLocaleDomain(const wxString& DomainName)
     int i = 1;
     for (; i <= catalogNum; ++i)
     {
-        wxString catalogName=Manager::Get()->GetConfigManager(_T("app"))->Read(wxString::Format(_T("/locale/Domain%d"), i), wxEmptyString);
+        wxString catalogName = Manager::Get()->GetConfigManager(_T("app"))->Read(wxString::Format(_T("/locale/Domain%d"), i), wxEmptyString);
         if (catalogName.Cmp(DomainName) == 0)
             break;
     }
@@ -1536,9 +1565,9 @@ void PluginManager::NotifyPlugins(CodeBlocksLayoutEvent& event)
 
 bool cbHasRunningCompilers(const PluginManager *manager)
 {
-    for (const cbCompilerPlugin *p : manager->GetCompilerPlugins())
+    for (const cbCompilerPlugin *compiler : manager->GetCompilerPlugins())
     {
-        if (p && p->IsRunning())
+        if (compiler && compiler->IsRunning())
             return true;
     }
     return false;

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11437 $
- * $Id: pluginsconfigurationdlg.cpp 11437 2018-08-07 07:13:40Z fuscated $
+ * $Revision: 12704 $
+ * $Id: pluginsconfigurationdlg.cpp 12704 2022-02-05 12:24:59Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/pluginsconfigurationdlg.cpp $
  */
 
@@ -65,16 +65,12 @@ static wxString GetInitialInfo()
     return initialInfo;
 }
 
-#if wxCHECK_VERSION(3, 0, 0)
 inline int wxCALLBACK sortByTitle(wxIntPtr item1, wxIntPtr item2, cb_unused wxIntPtr sortData)
-#else
-inline int wxCALLBACK sortByTitle(long item1, long item2, cb_unused long sortData)
-#endif
 {
     const PluginElement* elem1 = (const PluginElement*)item1;
     const PluginElement* elem2 = (const PluginElement*)item2;
 
-    return elem1->info.title.CompareTo(elem2->info.title.wx_str());
+    return elem1->info.title.CmpNoCase(elem2->info.title);
 }
 
 BEGIN_EVENT_TABLE(PluginsConfigurationDlg, wxScrollingDialog)
@@ -156,7 +152,7 @@ void PluginsConfigurationDlg::FillList()
         list->SetItem(idx, 1, elem->info.version);
         list->SetItem(idx, 2, elem->plugin->IsAttached() ? _("Yes") : _("No"));
         list->SetItem(idx, 3, UnixFilename(elem->fileName).AfterLast(wxFILE_SEP_PATH));
-        list->SetItemData(idx, (wxIntPtr)elem);
+        list->SetItemPtrData(idx, (wxUIntPtr)elem);
 
         if (!elem->plugin->IsAttached())
             list->SetItemTextColour(idx, wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT));
@@ -189,7 +185,7 @@ void PluginsConfigurationDlg::OnToggle(wxCommandEvent& event)
     wxBusyCursor busy;
 
     wxProgressDialog pd(wxString::Format(_("%s plugin(s)"), isEnable ? _("Enabling") : _("Disabling")),
-                        _T("A description wide enough for the dialog ;)"),
+                        wxString(L'\u00a0', 150),
                         list->GetSelectedItemCount(),
                         this,
                         wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT);
@@ -197,6 +193,7 @@ void PluginsConfigurationDlg::OnToggle(wxCommandEvent& event)
     int count = 0;
     long sel = -1;
     bool skip = false;
+    wxString failure;
     while (true)
     {
         sel = list->GetNextItem(sel, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
@@ -207,10 +204,16 @@ void PluginsConfigurationDlg::OnToggle(wxCommandEvent& event)
         if (elem && elem->plugin)
         {
             pd.Update(++count,
-                        wxString::Format(_("%s \"%s\"..."), isEnable ? _("Enabling") : _("Disabling"), elem->info.title.c_str()),
+                        wxString::Format("%s \"%s\"...", isEnable ? _("Enabling") : _("Disabling"), elem->info.title),
                         &skip);
             if (skip)
                 break;
+
+            if (elem->plugin->IsAttached() and (not elem->plugin->CanDetach()))
+            {
+                failure << elem->info.title << _T('\n');
+                continue;
+            }
 
             if (!isEnable && elem->plugin->IsAttached())
                 Manager::Get()->GetPluginManager()->DetachPlugin(elem->plugin);
@@ -237,6 +240,8 @@ void PluginsConfigurationDlg::OnToggle(wxCommandEvent& event)
             Manager::Get()->GetConfigManager(_T("plugins"))->Write(baseKey, elem->plugin->IsAttached());
         }
     }
+    if (!failure.IsEmpty())                                                     //(ph 2021/07/15)
+        cbMessageBox(_("One or more plugins were not enabled/disabled successfully:\n\n") + failure, _("Warning"), wxICON_WARNING, this); //(ph 2021/07/15)
 }
 
 void PluginsConfigurationDlg::OnInstall(cb_unused wxCommandEvent& event)
@@ -246,6 +251,7 @@ void PluginsConfigurationDlg::OnInstall(cb_unused wxCommandEvent& event)
                         wxEmptyString, wxEmptyString,
                         _T("Code::Blocks Plugins (*.cbplugin)|*.cbplugin"),
                         wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE | compatibility::wxHideReadonly);
+    PlaceWindow(&fd);
     if (fd.ShowModal() != wxID_OK)
         return;
 
@@ -289,8 +295,9 @@ void PluginsConfigurationDlg::OnUninstall(cb_unused wxCommandEvent& event)
         const PluginElement* elem = (const PluginElement*)list->GetItemData(sel);
         if (elem && elem->plugin)
         {
+            wxString title = elem->info.title; //fetch info before uninstalling
             if (!Manager::Get()->GetPluginManager()->UninstallPlugin(elem->plugin))
-                failure << elem->info.title << _T('\n');
+                failure << title << _T('\n');
         }
     }
 
@@ -309,13 +316,14 @@ void PluginsConfigurationDlg::OnExport(cb_unused wxCommandEvent& event)
 
     ConfigManager* cfg = Manager::Get()->GetConfigManager(_T("plugins_configuration"));
     wxDirDialog dd(this, _("Select directory to export plugin"), cfg->Read(_T("/last_export_path")), wxDD_NEW_DIR_BUTTON);
+    PlaceWindow(&dd);
     if (dd.ShowModal() != wxID_OK)
         return;
     cfg->Write(_T("/last_export_path"), dd.GetPath());
 
     wxBusyCursor busy;
     wxProgressDialog pd(_("Exporting plugin(s)"),
-                        _T("A description wide enough for the dialog ;)"),
+                        wxString(L'\u00a0', 150),
                         list->GetSelectedItemCount(),
                         this,
                         wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT |
@@ -336,7 +344,7 @@ void PluginsConfigurationDlg::OnExport(cb_unused wxCommandEvent& event)
         const PluginElement* elem = (const PluginElement*)list->GetItemData(sel);
         if (!elem || !elem->plugin)
         {
-            failure << list->GetItemText(sel) << _T('\n');
+            failure << list->GetItemText(sel) << '\n';
             continue;
         }
 
@@ -347,23 +355,23 @@ void PluginsConfigurationDlg::OnExport(cb_unused wxCommandEvent& event)
 
         // normalize version
         wxString version = elem->info.version;
-        version.Replace(_T("/"), _T("_"), true);
-        version.Replace(_T("\\"), _T("_"), true);
-        version.Replace(_T("?"), _T("_"), true);
-        version.Replace(_T("*"), _T("_"), true);
-        version.Replace(_T(">"), _T("_"), true);
-        version.Replace(_T("<"), _T("_"), true);
-        version.Replace(_T(" "), _T("_"), true);
-        version.Replace(_T("\t"), _T("_"), true);
-        version.Replace(_T("|"), _T("_"), true);
+        version.Replace("/",  "_", true);
+        version.Replace("\\", "_", true);
+        version.Replace("?",  "_", true);
+        version.Replace("*",  "_", true);
+        version.Replace(">",  "_", true);
+        version.Replace("<",  "_", true);
+        version.Replace(" ",  "_", true);
+        version.Replace("\t", "_", true);
+        version.Replace("|",  "_", true);
 
         wxFileName fname;
         fname.SetPath(dd.GetPath());
-        fname.SetName(wxFileName(elem->fileName).GetName() + _T('-') + version);
+        fname.SetName(wxFileName(elem->fileName).GetName() + "-" + version);
         fname.SetExt(_T("cbplugin"));
 
         pd.Update(++count,
-                    wxString::Format(_("Exporting \"%s\"..."), elem->info.title.c_str()),
+                    wxString::Format(_("Exporting \"%s\"..."), elem->info.title),
                     &skip);
         if (skip)
             break;

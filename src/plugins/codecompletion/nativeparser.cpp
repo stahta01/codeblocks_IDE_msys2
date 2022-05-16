@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 11898 $
- * $Id: nativeparser.cpp 11898 2019-11-04 19:35:16Z fuscated $
+ * $Revision: 12736 $
+ * $Id: nativeparser.cpp 12736 2022-03-03 20:12:16Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/codecompletion/nativeparser.cpp $
  */
 
@@ -679,11 +679,7 @@ bool NativeParser::RemoveFileFromParser(cbProject* project, const wxString& file
 void NativeParser::RereadParserOptions()
 {
     ConfigManager* cfg = Manager::Get()->GetConfigManager(_T("code_completion"));
-#if wxCHECK_VERSION(3, 0, 0)
-    bool useSymbolBrowser = false;
-#else
     bool useSymbolBrowser = cfg->ReadBool(_T("/use_symbols_browser"), true);
-#endif // wxCHECK_VERSION
 
     if (useSymbolBrowser)
     {
@@ -872,7 +868,7 @@ int NativeParser::GetCallTips(wxArrayString& items, int& typedCommas, cbEditor* 
 
     if (!ed || !m_Parser->Done())
     {
-        items.Add(wxT("Parsing at the moment..."));
+        items.Add(_("Parsing at the moment") + "...");
         return wxSCI_INVALID_POSITION;
     }
 
@@ -999,10 +995,6 @@ void NativeParser::SetProjectSearchDirs(cbProject &project, const wxArrayString 
 
 void NativeParser::CreateClassBrowser()
 {
-#if wxCHECK_VERSION(3, 0, 0)
-    return;
-#endif // wxCHECK_VERSION
-
     ConfigManager* cfg = Manager::Get()->GetConfigManager(_T("code_completion"));
     if (m_ClassBrowser || !cfg->ReadBool(_T("/use_symbols_browser"), true))
         return;
@@ -1867,7 +1859,7 @@ bool NativeParser::AddCompilerDirs(cbProject* project, ParserBase* parser)
     Compiler* compiler = CompilerFactory::GetCompiler(project->GetCompilerID());
     cb::shared_ptr<CompilerCommandGenerator> generator(compiler ? compiler->GetCommandGenerator(project) : nullptr);
 
-    // get project include dirs
+    // get project include search dirs
     if (   !parser->Options().platformCheck
         || (parser->Options().platformCheck && project->SupportsCurrentPlatform()) )
     {
@@ -2293,7 +2285,7 @@ const wxArrayString& NativeParser::GetGCCCompilerDirs(const wxString& cpp_path, 
         }
 
         wxFileName fname(path, wxEmptyString);
-        fname.Normalize();
+        fname.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_TILDE | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_LONG | wxPATH_NORM_SHORTCUT);
         fname.SetVolume(fname.GetVolume().MakeUpper());
         if (!fname.DirExists())
             break;

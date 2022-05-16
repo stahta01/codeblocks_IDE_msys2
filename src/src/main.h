@@ -20,7 +20,6 @@
 #include "find_replace.h"
 #include "sdk_events.h"
 #include "recentitemslist.h"
-#include "scripting/bindings/sc_base_types.h"
 #include "scrollingdialog.h"
 
 #include <unordered_map>
@@ -37,7 +36,7 @@ class DebuggerMenuHandler;
 class DebuggerToolbarHandler;
 class InfoPane;
 class wxGauge;
-class ProjectManagerUI;
+class cbProjectManagerUI;
 
 struct ToolbarInfo
 {
@@ -62,22 +61,16 @@ struct ToolbarInfo
 class MainFrame : public wxFrame
 {
     public:
-        // needed for binding with SqPlus
-        MainFrame& operator=(cb_unused const MainFrame& rhs) // prevent assignment operator
-        {
-            cbThrow(_T("Can't use MainFrame's operator="));
-            return *this;
-        }
+        MainFrame& operator=(const MainFrame&) = delete;
+        MainFrame(const MainFrame&) = delete;
     private:
-        MainFrame(cb_unused const MainFrame& rhs); // prevent copy construction
-
         bool LayoutDifferent(const wxString& layout1, const wxString& layout2,
                              const wxString& delimiter);
         bool LayoutMessagePaneDifferent(const wxString& layout1, const wxString& layout2,
                                         bool checkSelection=false);
     public:
 
-        MainFrame(wxWindow* parent = (wxWindow*)NULL);
+        MainFrame(wxWindow* parent = nullptr);
         ~MainFrame();
 
         bool Open(const wxString& filename, bool addToHistory = true);
@@ -98,7 +91,6 @@ class MainFrame : public wxFrame
         // event handlers
 
         void OnEraseBackground(wxEraseEvent& event);
-        void OnSize(wxSizeEvent& event);
         void OnApplicationClose(wxCloseEvent& event);
         void OnStartHereLink(wxCommandEvent& event);
 
@@ -222,6 +214,7 @@ class MainFrame : public wxFrame
         void OnSettingsEnvironment(wxCommandEvent& event);
         void OnSettingsKeyBindings(wxCommandEvent& event);
         void OnGlobalUserVars(wxCommandEvent& event);
+        void OnBackticks(wxCommandEvent& event);
         void OnSettingsEditor(wxCommandEvent& event);
         void OnSettingsCompiler(wxCommandEvent& event);
         void OnSettingsDebugger(wxCommandEvent& event);
@@ -343,7 +336,6 @@ class MainFrame : public wxFrame
         bool DoOpenFile(const wxString& filename, bool addToHistory = true);
         void DoOnFileOpen(bool bProject = false);
 
-        void DoCreateStatusBar();
         void DoUpdateStatusBar();
         void DoUpdateAppTitle();
         void DoUpdateLayout();
@@ -412,7 +404,6 @@ class MainFrame : public wxFrame
         MenuIDToLanguage m_MapMenuIDToLanguage;
 
         wxScrollingDialog* m_pBatchBuildDialog;
-        wxButton*          m_pHighlightButton;
 
         DebuggerMenuHandler*    m_debuggerMenuHandler;
         DebuggerToolbarHandler* m_debuggerToolbarHandler;

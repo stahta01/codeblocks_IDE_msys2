@@ -15,8 +15,8 @@
 * You should have received a copy of the GNU General Public License
 * along with wxSmith. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Revision: 8335 $
-* $Id: wxseditor.cpp 8335 2012-09-03 07:43:04Z ollydbg $
+* $Revision: 12524 $
+* $Id: wxseditor.cpp 12524 2021-09-04 11:32:54Z fuscated $
 * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/contrib/wxSmith/wxseditor.cpp $
 */
 
@@ -27,7 +27,7 @@
 #include <wx/wx.h>
 
 wxsEditor::wxsEditor(wxWindow* parent, const wxString& title,wxsResource* Resource):
-    EditorBase(parent,title),
+    EditorBase(parent, title, true),
     m_Resource(Resource)
 {
     //active the "Resources" Tab in the "Management" Panel

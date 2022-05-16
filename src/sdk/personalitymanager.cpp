@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12076 $
- * $Id: personalitymanager.cpp 12076 2020-05-12 14:51:47Z pecanh $
+ * $Revision: 12451 $
+ * $Id: personalitymanager.cpp 12451 2021-05-22 17:25:13Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/personalitymanager.cpp $
  */
 
@@ -23,19 +23,19 @@
 template<> PersonalityManager* Mgr<PersonalityManager>::instance = nullptr;
 template<> bool  Mgr<PersonalityManager>::isShutdown = false;
 
-PersonalityManager::PersonalityManager()
+PersonalityManager::PersonalityManager() : m_pers("default"), m_ready(false)
 {
-    PersonalityManager::pers = _T("default");
 }
 
 void PersonalityManager::SetPersonality(const wxString& personality, cb_unused bool createIfNotExist)
 {
-    pers = personality;
+    m_pers = personality;
 }
 
 const wxString PersonalityManager::GetPersonality()
 {
-    return pers;
+    cbAssert(m_ready);
+    return m_pers;
 }
 
 const wxArrayString PersonalityManager::GetPersonalitiesList()
@@ -54,5 +54,7 @@ const wxArrayString PersonalityManager::GetPersonalitiesList()
     return list;
 }
 
-wxString PersonalityManager::pers;
-
+void PersonalityManager::MarkAsReady()
+{
+    m_ready = true;
+}

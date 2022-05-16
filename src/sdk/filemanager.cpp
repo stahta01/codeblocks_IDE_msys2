@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12278 $
- * $Id: filemanager.cpp 12278 2020-12-27 14:50:55Z fuscated $
+ * $Revision: 12534 $
+ * $Id: filemanager.cpp 12534 2021-10-06 22:35:21Z bluehazzard $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/filemanager.cpp $
  */
 
@@ -181,22 +181,10 @@ LoaderBase* FileManager::Load(const wxString& file, bool reuseEditors)
 
 namespace platform
 {
-#if defined ( __WIN32__ ) || defined ( _WIN64 )
-    // Yes this is ugly. Feel free to come up with a better idea if you have one.
-    // Using the obvious wxRenameFile (or the underlying wxRename) is no option under Windows, since
-    // wxRename is simply a fuckshit wrapper around a CRT function which does not work the way
-    // the wxRename author assumes (MSVCRT rename fails if the target exists, instead of overwriting).
-    inline bool move(wxString const& old_name, wxString const& new_name)
-    {
-        // hopefully I got the unintellegible conversion stuff correct... at least it seems to work...
-        return ::MoveFileEx(wxFNCONV(old_name), wxFNCONV(new_name), MOVEFILE_REPLACE_EXISTING);
-    }
-#else
     inline bool move(wxString const& old_name, wxString const& new_name)
     {
         return ::wxRenameFile(old_name, new_name, true);
     };
-#endif
 }
 
 

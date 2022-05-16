@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12271 $
- * $Id: editorbase.cpp 12271 2020-12-26 14:35:35Z fuscated $
+ * $Revision: 12524 $
+ * $Id: editorbase.cpp 12524 2021-09-04 11:32:54Z fuscated $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editorbase.cpp $
  */
 
@@ -112,16 +112,15 @@ wxString EditorBase::CreateUniqueFilename()
     }
 }
 
-EditorBase::EditorBase(wxWindow* parent, const wxString& filename)
+EditorBase::EditorBase(wxWindow* parent, const wxString& filename, bool addCustomEditor)
         : wxPanel(parent, -1),
         m_IsBuiltinEditor(false),
-        m_Shortname(_T("")),
-        m_Filename(_T("")),
         m_WinTitle(filename)
 {
     m_pData = new EditorBaseInternalData(this);
 
-    Manager::Get()->GetEditorManager()->AddCustomEditor(this);
+    if (addCustomEditor)
+        Manager::Get()->GetEditorManager()->AddCustomEditor(this);
     InitFilename(filename);
     SetTitle(m_Shortname);
 }

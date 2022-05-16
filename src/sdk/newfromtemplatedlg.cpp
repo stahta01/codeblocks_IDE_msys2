@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11437 $
- * $Id: newfromtemplatedlg.cpp 11437 2018-08-07 07:13:40Z fuscated $
+ * $Revision: 12579 $
+ * $Id: newfromtemplatedlg.cpp 12579 2021-12-14 09:27:57Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/newfromtemplatedlg.cpp $
  */
 
@@ -195,11 +195,7 @@ void NewFromTemplateDlg::BuildCategoriesFor(TemplateOutputType otype, wxChoice* 
     cat->SetSelection(0);
 }
 
-#if wxCHECK_VERSION(3, 0, 0)
 inline int wxCALLBACK SortTemplates(wxIntPtr item1, wxIntPtr item2, cb_unused wxIntPtr sortData)
-#else
-inline int wxCALLBACK SortTemplates(long item1, long item2, cb_unused long sortData)
-#endif
 {
     ListItemData* data1 = reinterpret_cast<ListItemData*>(item1);
     ListItemData* data2 = reinterpret_cast<ListItemData*>(item2);
@@ -259,7 +255,7 @@ void NewFromTemplateDlg::BuildListFor(TemplateOutputType otype, wxListCtrl* list
                 int index = list->InsertItem(0, plugin->GetTitle(w), iconIndex);
                 if (index != -1)
                 {
-                    list->SetItemData(index, (wxIntPtr)(new ListItemData(nullptr, plugin, w)));
+                    list->SetItemPtrData(index, (wxUIntPtr)(new ListItemData(nullptr, plugin, w)));
                     // if the script exists in the user's configuration, mark that it's been customized
                     wxString script = ConfigManager::GetFolder(sdDataUser) + _T("/templates/wizard/") + plugin->GetScriptFilename(w);
                     if (wxFileExists(script))

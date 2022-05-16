@@ -150,10 +150,16 @@ void FileExplorerUpdater::Update(const wxTreeItemId &ti)
     m_path=wxString(m_fe->GetFullPath(ti).c_str());
     m_wildcard=wxString(m_fe->m_WildCards->GetValue().c_str());
     m_vcs_type=wxString(m_fe->m_VCS_Type->GetLabel().c_str());
-    m_vcs_commit_string=wxString(m_fe->m_VCS_Control->GetString(m_fe->m_VCS_Control->GetSelection()).c_str());
+    const int selection = m_fe->m_VCS_Control->GetSelection();
+    if (selection == wxNOT_FOUND)
+        m_vcs_commit_string.clear();
+    else
+        m_vcs_commit_string = wxString(m_fe->m_VCS_Control->GetString(selection).c_str());
+
     m_vcs_changes_only = m_fe->m_VCS_ChangesOnly->IsChecked();
-    if (m_vcs_type != wxEmptyString)
+    if (!m_vcs_type.empty())
         m_repo_path=wxString(m_fe->GetRootFolder().c_str());
+
     GetTreeState(ti);
     if (Create()==wxTHREAD_NO_ERROR)
     {
@@ -218,8 +224,8 @@ bool FileExplorerUpdater::GetCurrentState(const wxString &path)
         flags|=wxDIR_HIDDEN;
     VCSstatearray sa;
     bool is_vcs=false;
-    bool is_cvs=false;
-    bool is_git=false;
+    //bool is_cvs=false;
+    //bool is_git=false;
 
     //If we are browsing a repo we get the tree for the requested commit
     if (m_vcs_type != wxEmptyString && m_vcs_commit_string != _T("Working copy") &&
@@ -299,7 +305,7 @@ bool FileExplorerUpdater::GetCurrentState(const wxString &path)
         if (ParseGITChanges(path,sa))
         {
             is_vcs=true;
-            is_git=true;
+            //is_git=true;
             m_vcs_type = _T("GIT");
         }
     if (m_fe->m_parse_svn)
@@ -1262,11 +1268,17 @@ void VCSFileLoader::Update(const wxString &op, const wxString &source_path, cons
     m_source_path=wxString(source_path.c_str());
     m_destination_path=wxString(destination_path.c_str());
     m_vcs_type=wxString(m_fe->m_VCS_Type->GetLabel().c_str());
-    m_vcs_commit_string=wxString(m_fe->m_VCS_Control->GetString(m_fe->m_VCS_Control->GetSelection()).c_str());
+    const int selection = m_fe->m_VCS_Control->GetSelection();
+    if (selection == wxNOT_FOUND)
+        m_vcs_commit_string.clear();
+    else
+        m_vcs_commit_string = wxString(m_fe->m_VCS_Control->GetString(selection).c_str());
+
     m_vcs_op = wxString(op.c_str());
     m_vcs_comp_commit = wxString(comp_commit.c_str());
-    if (m_vcs_type != wxEmptyString)
+    if (!m_vcs_type.empty())
         m_repo_path=wxString(m_fe->GetRootFolder().c_str());
+
     if (Create()==wxTHREAD_NO_ERROR)
     {
         SetPriority(20);

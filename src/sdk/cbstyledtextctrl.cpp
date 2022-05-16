@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12133 $
- * $Id: cbstyledtextctrl.cpp 12133 2020-05-31 15:54:07Z fuscated $
+ * $Revision: 12812 $
+ * $Id: cbstyledtextctrl.cpp 12812 2022-05-14 20:49:58Z pecanh $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbstyledtextctrl.cpp $
  */
 
@@ -66,25 +66,35 @@ cbStyledTextCtrl::~cbStyledTextCtrl()
         RemoveEventHandler(GetEventHandler());
 }
 
-// Script binding support
-void cbStyledTextCtrl::operator=(const cbStyledTextCtrl& /*rhs*/)
-{
-    cbThrow(_T("Can't assign an cbStyledTextCtrl* !!!"));
-}
-
 // events
 
-void cbStyledTextCtrl::OnKillFocus(wxFocusEvent& event)
+void cbStyledTextCtrl::OnKillAutoCompPopups() //CallAfter
 {
-    // cancel auto-completion list when losing focus
     if ( AutoCompActive() )
         AutoCompCancel();
 
     if ( CallTipActive() )
         CallTipCancel();
-
-    event.Skip();
 }
+
+void cbStyledTextCtrl::OnKillFocus(wxFocusEvent& event)
+{
+     event.Skip();
+
+     // cancel auto-completion list when losing focus
+
+    // But don't kill the popups here. When AutoComplete::Select() does not
+    // find an appropriate string to select it issues a cancel to the popup
+    // which issues a SetFocus() back to this editor. If we kill it here, on return
+    // AutoComplete::Select() will use a popup address of 0x0; CRASH !!
+
+    // Issue a callback to close the popups after this Kill/SetFocus finishes.
+    if ( AutoCompActive() )
+           CallAfter(&cbStyledTextCtrl::OnKillAutoCompPopups);
+
+    if ( CallTipActive() )
+           CallAfter(&cbStyledTextCtrl::OnKillAutoCompPopups);
+ }
 
 void cbStyledTextCtrl::OnSetFocus(wxFocusEvent& event)
 {

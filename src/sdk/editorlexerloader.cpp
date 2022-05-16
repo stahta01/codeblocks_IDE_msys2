@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11482 $
- * $Id: editorlexerloader.cpp 11482 2018-09-29 12:20:40Z fuscated $
+ * $Revision: 12578 $
+ * $Id: editorlexerloader.cpp 12578 2021-12-14 08:57:56Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editorlexerloader.cpp $
  */
 
@@ -229,11 +229,7 @@ void EditorLexerLoader::DoSingleKeywordNode(HighlightLanguage language, TiXmlEle
             wxString value(keywords->Attribute("value"), wxConvUTF8);
             regex.Replace(&value, _T(" "));
 
-            #if wxCHECK_VERSION(3, 0, 0)
             m_pTarget->SetKeywords(language, keyidx, value );
-            #else
-            m_pTarget->SetKeywords(language, keyidx, wxString ( value, wxConvUTF8 ) );
-            #endif
         }
 
         keywords = keywords->NextSiblingElement(nodename.mb_str());

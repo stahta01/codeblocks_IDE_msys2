@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12178 $
- * $Id: workspaceloader.cpp 12178 2020-06-23 21:29:49Z fuscated $
+ * $Revision: 12605 $
+ * $Id: workspaceloader.cpp 12605 2021-12-22 08:53:19Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/workspaceloader.cpp $
  */
 
@@ -65,7 +65,7 @@ bool WorkspaceLoader::Open(const wxString& filename, wxString& Title)
     // If I click close AFTER pMan and pMsg are calculated,
     // I get a segfault.
     // I modified classes projectmanager and logmanager,
-    // so that when self==NULL, they do nothing
+    // so that when self==nullptr, they do nothing
     // (constructors, destructors and static functions excempted from this)
     // This way, we'll use the *manager::Get() functions to check for nulls.
 
@@ -277,7 +277,7 @@ bool WorkspaceLoader::LoadLayout(const wxString& filename)
         return false; // Can't load XML file?!
 
     if ( ! GetpMan() || ! GetpMsg() )
-        return false; // GetpMan or GetpMsg returns NULL?!
+        return false; // GetpMan or GetpMsg returns nullptr?!
 
     TiXmlElement* root = doc.FirstChildElement("CodeBlocks_workspace_layout_file");
     if (!root)

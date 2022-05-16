@@ -2,30 +2,32 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11886 $
- * $Id: compilercommandgenerator.cpp 11886 2019-10-26 09:12:03Z fuscated $
+ * $Revision: 12789 $
+ * $Id: compilercommandgenerator.cpp 12789 2022-04-13 20:36:36Z mortenmacfly $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/compilercommandgenerator.cpp $
  */
 
 #include "sdk_precomp.h"
 #include "compilercommandgenerator.h"
 
-#include <wx/intl.h>
-#include <wx/filename.h>
+#ifndef CB_PRECOMP
+    #include <wx/intl.h>
+    #include <wx/filename.h>
 
-#include "cbexception.h"
-#include "cbproject.h"
-#include "compilerfactory.h"
-#include "compiler.h"
-#include "manager.h"
-#include "configmanager.h"
-#include "logmanager.h"
-#include "macrosmanager.h"
-#include "scriptingmanager.h"
+    #include "cbexception.h"
+    #include "cbproject.h"
+    #include "compilerfactory.h"
+    #include "compiler.h"
+    #include "manager.h"
+    #include "configmanager.h"
+    #include "logmanager.h"
+    #include "macrosmanager.h"
+    #include "scriptingmanager.h"
+#endif // CB_PRECOMP
+
 #include "filefilters.h"
-
-#include "scripting/bindings/sc_base_types.h"
-#include "scripting/sqplus/sqplus.h"
+#include "scripting/bindings/sc_utils.h"
+#include "scripting/bindings/sc_typeinfo_all.h"
 
 // move this to globals if needed
 inline wxString UnquoteStringIfNeeded(const wxString& str)
@@ -417,6 +419,12 @@ void CompilerCommandGenerator::GenerateCommandLine(Result &result, const Params 
     wxFileName tmpFname(UnquoteStringIfNeeded(tmpFile));
     wxFileName tmpOutFname;
 
+    if (platform::windows && compiler->GetSwitches().Use83Paths && tmpFname.Exists())
+    {
+        tmpFile = tmpFname.GetShortPath();
+        tmpFname.Assign(tmpFile);
+    }
+
 #ifdef command_line_generation
     Manager::Get()->GetLogManager()->DebugLog(F(_T("GenerateCommandLine[2]: tmpFile='%s', tmpDeps='%s', tmpObject='%s', tmpFlatObject='%s',\ntmpFname.GetName='%s', tmpFname.GetPath='%s', tmpFname.GetExt='%s'."),
                                                 tmpFile.wx_str(), tmpDeps.wx_str(),
@@ -584,43 +592,42 @@ void CompilerCommandGenerator::GenerateCommandLine(Result &result, const Params 
 }
 
 /// Apply pre-build scripts for @c base.
-void CompilerCommandGenerator::DoBuildScripts(cbProject* project, CompileTargetBase* target, const wxString& funcName)
+void CompilerCommandGenerator::DoBuildScripts(cbProject* project, CompileTargetBase* target,
+                                              const wxString& funcName)
 {
     ProjectBuildTarget* bt = dynamic_cast<ProjectBuildTarget*>(target);
-    static const wxString clearout_buildscripts = _T("SetBuildOptions <- null;");
     const wxArrayString& scripts = target->GetBuildScripts();
     for (size_t i = 0; i < scripts.GetCount(); ++i)
     {
-        wxString script_nomacro = scripts[i];
-        Manager::Get()->GetMacrosManager()->ReplaceMacros(script_nomacro, bt);
-        script_nomacro = wxFileName(script_nomacro).IsAbsolute() ? script_nomacro : project->GetBasePath() + wxFILE_SEP_PATH + script_nomacro;
+        wxString scriptNoMacro = scripts[i];
+        Manager::Get()->GetMacrosManager()->ReplaceMacros(scriptNoMacro, bt);
+        if (!wxFileName(scriptNoMacro).IsAbsolute())
+            scriptNoMacro = project->GetBasePath() + wxFILE_SEP_PATH + scriptNoMacro;
 
         // if the script has failed before, skip it
-        if (m_NotLoadedScripts.Index(script_nomacro) != wxNOT_FOUND ||
-            m_ScriptsWithErrors.Index(script_nomacro) != wxNOT_FOUND)
+        if (m_NotLoadedScripts.Index(scriptNoMacro) != wxNOT_FOUND ||
+            m_ScriptsWithErrors.Index(scriptNoMacro) != wxNOT_FOUND)
         {
             continue;
         }
+
+        ScriptingManager *scriptMgr = Manager::Get()->GetScriptingManager();
 
         // clear previous script's context
-        Manager::Get()->GetScriptingManager()->LoadBuffer(clearout_buildscripts);
+        scriptMgr->LoadBuffer("SetBuildOptions <- null;");
 
         // if the script doesn't exist, just return
-        if (!Manager::Get()->GetScriptingManager()->LoadScript(script_nomacro))
+        if (!scriptMgr->LoadScript(scriptNoMacro))
         {
-            m_NotLoadedScripts.Add(script_nomacro);
+            m_NotLoadedScripts.Add(scriptNoMacro);
             continue;
         }
 
-        try
+        ScriptBindings::Caller caller(scriptMgr->GetVM());
+        if (!caller.CallByName1(cbU2C(funcName), target))
         {
-            SqPlus::SquirrelFunction<void> f(cbU2C(funcName));
-            f(target);
-        }
-        catch (SquirrelError& e)
-        {
-            Manager::Get()->GetScriptingManager()->DisplayErrors(&e);
-            m_ScriptsWithErrors.Add(script_nomacro);
+            scriptMgr->DisplayErrors(true);
+            m_ScriptsWithErrors.Add(scriptNoMacro);
         }
     }
 }
@@ -1017,7 +1024,7 @@ wxString CompilerCommandGenerator::SetupCompilerOptions(Compiler* compiler, Proj
 
     Manager::Get()->GetMacrosManager()->ReplaceMacros(result, target);
 
-    wxString bt = ExpandBackticks(result);
+    wxString bt = cbExpandBackticks(result);
     SearchDirsFromBackticks(compiler, target, bt);
 
     // add in array
@@ -1046,7 +1053,7 @@ wxString CompilerCommandGenerator::SetupLinkerOptions(Compiler* compiler, Projec
 
     Manager::Get()->GetMacrosManager()->ReplaceMacros(result, target);
 
-    wxString bt = ExpandBackticks(result);
+    wxString bt = cbExpandBackticks(result);
     SearchDirsFromBackticks(compiler, target, bt);
 
     // add in array
@@ -1161,7 +1168,7 @@ wxString CompilerCommandGenerator::SetupResourceCompilerOptions(cb_unused Compil
 
     Manager::Get()->GetMacrosManager()->ReplaceMacros(result, target);
 
-    wxString bt = ExpandBackticks(result);
+    wxString bt = cbExpandBackticks(result);
     SearchDirsFromBackticks(compiler, target, bt);
 
     // add in array

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12208 $
- * $Id: toolsmanager.cpp 12208 2020-10-04 20:42:14Z d_anselmi $
+ * $Revision: 12656 $
+ * $Id: toolsmanager.cpp 12656 2022-01-16 09:56:14Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/toolsmanager.cpp $
  */
 
@@ -129,11 +129,7 @@ bool ToolsManager::Execute(const cbTool* tool)
 
     // log info so user can troubleshoot
     dir = wxGetCwd(); // read in the actual working dir
-    #if wxCHECK_VERSION(3, 0, 0)
     Manager::Get()->GetLogManager()->Log(F(_("Launching tool '%s': %s (in %s)"), tool->GetName().wx_str(), cmdline.wx_str(), dir.wx_str()));
-    #else
-    Manager::Get()->GetLogManager()->Log(F(_("Launching tool '%s': %s (in %s)"), tool->GetName().c_str(), cmdline.c_str(), dir.c_str()));
-    #endif
 
     bool pipe = true;
     int flags = wxEXEC_ASYNC;
@@ -251,20 +247,20 @@ cbTool* ToolsManager::GetToolByIndex(int index)
 
 void ToolsManager::LoadTools()
 {
-    ConfigManager* cfg = Manager::Get()->GetConfigManager(_T("tools"));
-    wxArrayString list = cfg->EnumerateSubPaths(_("/"));
+    ConfigManager* cfg = Manager::Get()->GetConfigManager("tools");
+    wxArrayString list = cfg->EnumerateSubPaths("/");
     for (unsigned int i = 0; i < list.GetCount(); ++i)
     {
         cbTool tool;
-        tool.SetName( cfg->Read(_T("/") + list[i] + _T("/name")));
-        if (tool.GetName().IsEmpty())
+        tool.SetName( cfg->Read("/" + list[i] + "/name"));
+        if (tool.GetName().empty())
             continue;
-        tool.SetCommand(cfg->Read(_T("/") + list[i] + _T("/command")));
-        if (tool.GetCommand().IsEmpty())
+        tool.SetCommand(cfg->Read("/" + list[i] + "/command"));
+        if (tool.GetCommand().empty())
             continue;
-        tool.SetParams(cfg->Read(_T("/") + list[i] + _T("/params")));
-        tool.SetWorkingDir(cfg->Read(_T("/") + list[i] + _T("/workingDir")));
-        tool.SetLaunchOption(static_cast<cbTool::eLaunchOption>(cfg->ReadInt(_T("/") + list[i] + _T("/launchOption"))));
+        tool.SetParams(cfg->Read("/" + list[i] + "/params"));
+        tool.SetWorkingDir(cfg->Read("/" + list[i] + "/workingDir"));
+        tool.SetLaunchOption(static_cast<cbTool::eLaunchOption>(cfg->ReadInt("/" + list[i] + "/launchOption")));
 
         AddTool(&tool, false);
     }
@@ -273,8 +269,8 @@ void ToolsManager::LoadTools()
 
 void ToolsManager::SaveTools()
 {
-    ConfigManager* cfg = Manager::Get()->GetConfigManager(_T("tools"));
-    wxArrayString list = cfg->EnumerateSubPaths(_("/"));
+    ConfigManager* cfg = Manager::Get()->GetConfigManager("tools");
+    wxArrayString list = cfg->EnumerateSubPaths("/");
     for (unsigned int i = 0; i < list.GetCount(); ++i)
     {
         cfg->DeleteSubPath(list[i]);
@@ -290,12 +286,12 @@ void ToolsManager::SaveTools()
         wxString tmp;
         tmp.Printf(_T("tool%2.2d"), count++);
 
-        elem << _T("/") << tmp  << _T("/");
-        cfg->Write(elem + _T("name"), tool->GetName());
-        cfg->Write(elem + _T("command"), tool->GetCommand());
-        cfg->Write(elem + _T("params"), tool->GetParams());
-        cfg->Write(elem + _T("workingDir"), tool->GetWorkingDir());
-        cfg->Write(elem + _T("launchOption"), static_cast<int>(tool->GetLaunchOption()));
+        elem << '/' << tmp << '/';
+        cfg->Write(elem + "name", tool->GetName());
+        cfg->Write(elem + "command", tool->GetCommand());
+        cfg->Write(elem + "params", tool->GetParams());
+        cfg->Write(elem + "workingDir", tool->GetWorkingDir());
+        cfg->Write(elem + "launchOption", static_cast<int>(tool->GetLaunchOption()));
     }
 }
 

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12044 $
- * $Id: uservarmanager.cpp 12044 2020-04-11 11:21:46Z fuscated $
+ * $Revision: 12719 $
+ * $Id: uservarmanager.cpp 12719 2022-02-18 19:45:18Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/uservarmanager.cpp $
  */
 
@@ -18,6 +18,7 @@
     #include "manager.h"
     #include "cbexception.h"
     #include "infowindow.h"
+    #include <tinyxml.h>
 
     #include <wx/button.h>
     #include "scrollingdialog.h"
@@ -31,11 +32,10 @@
 #endif
 
 #include "annoyingdialog.h"
+#include "filemanager.h"
 
-#if wxCHECK_VERSION(3, 0, 0)
+#include <wx/filedlg.h>
 #include <wx/unichar.h>
-#endif
-
 #include <ctype.h>
 
 template<> UserVariableManager* Mgr<UserVariableManager>::instance   = nullptr;
@@ -179,6 +179,8 @@ wxString UserVariableManager::Replace(const wxString& variable)
             d.AddVar(package);
             PlaceWindow(&d);
             d.ShowModal();
+
+            base = m_CfgMan->Read(path + cBase);
         }
     }
 
@@ -228,7 +230,7 @@ bool UserVariableManager::Exists(const wxString& variable) const
         return false;
 
     wxString member(variable.AfterLast(wxT('#')).BeforeFirst(wxT('.')).BeforeFirst(wxT(')')).MakeLower());
-    return !m_CfgMan->Exists(cSets + m_ActiveSet + _T('/') + member + _T("/base"));
+    return m_CfgMan->Exists(cSets + m_ActiveSet + _T('/') + member + _T("/base"));
 }
 
 void UserVariableManager::Arrogate()
@@ -308,6 +310,7 @@ void UserVariableManager::Migrate()
 wxString UserVariableManager::GetVariable(wxWindow *parent, const wxString &old)
 {
     GetUserVariableDialog dlg(parent, old);
+    PlaceWindow(&dlg);
     dlg.ShowModal();
     return dlg.GetVariable();
 }
@@ -634,11 +637,7 @@ void UsrGlblMgrEditDialog::Sanitise(wxString& s)
     }
 
     for (unsigned int i = 0; i < s.length(); ++i)
-#if wxCHECK_VERSION(3, 0, 0)
         s[i] = wxIsalnum(s.GetChar(i)) ? s.GetChar(i) : wxUniChar('_');
-#else
-        s[i] = wxIsalnum(s.GetChar(i)) ? s.GetChar(i) : _T('_');
-#endif
 
     if (s.GetChar(0) == _T('_'))
         s.Prepend(_T("set"));

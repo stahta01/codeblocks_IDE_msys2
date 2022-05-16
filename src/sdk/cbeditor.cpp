@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12116 $
- * $Id: cbeditor.cpp 12116 2020-05-31 15:52:39Z fuscated $
+ * $Revision: 12660 $
+ * $Id: cbeditor.cpp 12660 2022-01-17 23:47:00Z bluehazzard $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbeditor.cpp $
  */
 
@@ -768,7 +768,7 @@ static int DetectLineEnds(cbStyledTextCtrl* control)
 
 // class constructor
 cbEditor::cbEditor(wxWindow* parent, const wxString& filename, EditorColourSet* theme)
-    : EditorBase(parent, filename),
+    : EditorBase(parent, filename, false),
     m_pSplitter(nullptr),
     m_pSizer(nullptr),
     m_pControl(nullptr),
@@ -786,7 +786,7 @@ cbEditor::cbEditor(wxWindow* parent, const wxString& filename, EditorColourSet* 
 
 // class constructor
 cbEditor::cbEditor(wxWindow* parent, LoaderBase* fileLdr, const wxString& filename, EditorColourSet* theme)
-    : EditorBase(parent, filename),
+    : EditorBase(parent, filename, false),
     m_pSplitter(nullptr),
     m_pSizer(nullptr),
     m_pControl(nullptr),
@@ -823,6 +823,82 @@ cbEditor::~cbEditor()
     delete m_pData;
 }
 
+
+/** \brief Local class used for opening files if they are dropped on an editor
+ */
+class EditorDropTarget :  public wxDropTarget
+{
+    cbEditor* editor;
+public:
+
+    EditorDropTarget(cbEditor* ed)
+    {
+        editor = ed;
+
+        wxDataObjectComposite* dataobj = new wxDataObjectComposite();
+        dataobj->Add(new wxTextDataObject(), true);
+        dataobj->Add(new wxFileDataObject());
+        SetDataObject(dataobj);
+    }
+
+    wxDragResult OnData(wxCoord x, wxCoord y, wxDragResult defaultDragResult) override
+    {
+        GetData();
+        wxDataObjectComposite *dataobjComp = static_cast<wxDataObjectComposite *>(GetDataObject());
+        wxDataFormat format = dataobjComp->GetReceivedFormat();
+        wxDataObject *dataobj = dataobjComp->GetObject(format);
+        switch ( format.GetType() )
+        {
+        case wxDF_TEXT:
+        case wxDF_UNICODETEXT:
+        {
+            // Normal text is handled with editor default handler
+            wxTextDataObject *dataobjTxt = static_cast<wxTextDataObject *>(dataobj);
+            if (!dataobjTxt)
+                return wxDragError;
+
+            editor->GetControl()->DoDropText(x, y, dataobjTxt->GetText());
+            return wxDragMove;
+        }
+        break;
+        case wxDF_FILENAME:
+        {
+            // In case a file is dropped, the file is opened
+            wxFileDataObject *
+            dataobjFile = static_cast<wxFileDataObject *>(dataobj);
+            if (Manager::Get()->GetEditorManager() == nullptr)
+                return wxDragError;
+
+            // go trough all files and open them in editor
+            for (const wxString& file : dataobjFile->GetFilenames())
+                Manager::Get()->GetEditorManager()->Open(file);
+
+            return wxDragCopy;
+        }
+        break;
+        default:
+            wxFAIL_MSG( "unexpected data object format" );
+        }
+        return wxDragNone;
+    }
+
+    wxDragResult OnEnter(wxCoord x, wxCoord y, wxDragResult def)
+    {
+        return editor->GetControl()->DoDragEnter(x, y, def);
+    }
+
+    wxDragResult OnDragOver(wxCoord x, wxCoord y, wxDragResult def)
+    {
+        return editor->GetControl()->DoDragOver(x, y, def);
+    }
+
+    void  OnLeave()
+    {
+        editor->GetControl()->DoDragLeave();
+    }
+};
+
+
 void cbEditor::DoInitializations(const wxString& filename, LoaderBase* fileLdr)
 {
     // first thing to do!
@@ -857,6 +933,8 @@ void cbEditor::DoInitializations(const wxString& filename, LoaderBase* fileLdr)
     m_pControl = CreateEditor();
     m_pSizer->Add(m_pControl, 1, wxEXPAND);
     SetSizer(m_pSizer);
+
+    GetControl()->SetDropTarget(new EditorDropTarget(this));
 
     // the following two lines make the editors behave strangely in linux:
     // when resizing other docked windows, the editors do NOT resize too
@@ -1005,7 +1083,7 @@ void cbEditor::SetProjectFile(ProjectFile* project_file, bool preserve_modified)
 
         m_pProjectFile->editorOpen = true;
 
-        if (Manager::Get()->GetConfigManager(_T("editor"))->ReadBool(_T("/tab_text_relative"), true))
+        if (Manager::Get()->GetConfigManager(_T("editor"))->ReadBool(_T("/tab_text_relative"), false))
             m_Shortname = m_pProjectFile->relativeToCommonTopLevelPath;
         else
             m_Shortname = m_pProjectFile->file.GetFullName();
@@ -1186,8 +1264,14 @@ void cbEditor::Split(cbEditor::SplitType split)
     m_pSplitter = new wxSplitterWindow(this, wxNewId(), wxDefaultPosition, wxDefaultSize, wxSP_NOBORDER | wxSP_LIVE_UPDATE);
     m_pSplitter->SetMinimumPaneSize(32);
 
+    // save current encoding
+    const wxFontEncoding currentEncoding(m_pData->m_encoding);
+
     // create the right control
     m_pControl2 = CreateEditor();
+
+    // restore encoding
+    m_pData->m_encoding = currentEncoding;
 
     // update controls' look'n'feel
     // do it here (before) document is attached, speeds up syntaxhighlighting
@@ -1217,13 +1301,13 @@ void cbEditor::Split(cbEditor::SplitType split)
     m_pControl2->SetDocPointer(m_pControl->GetDocPointer());
 
     // on wxGTK > 2.9 we need to thaw before reparent and refreeze the editor here or the whole app stays frozen
-    #if defined ( __WXGTK__ ) && wxCHECK_VERSION(3, 0, 0)
+    #if defined ( __WXGTK__ )
     Thaw();
     #endif
     // parent both controls under the splitter
     m_pControl->Reparent(m_pSplitter);
     m_pControl2->Reparent(m_pSplitter);
-    #if defined ( __WXGTK__ ) && wxCHECK_VERSION(3, 0, 0)
+    #if defined ( __WXGTK__ )
     Freeze();
     #endif
 
@@ -1283,12 +1367,12 @@ void cbEditor::Unsplit()
     m_pSizer->Detach(m_pSplitter);
 
     // on wxGTK > 2.9 we need to thaw before reparent and refreeze the editor here or the whole app stays frozen
-    #if defined ( __WXGTK__ ) && wxCHECK_VERSION(3, 0, 0)
+    #if defined ( __WXGTK__ )
     Thaw();
     #endif
     // parent the left control under this
     m_pControl->Reparent(this);
-    #if defined ( __WXGTK__ ) && wxCHECK_VERSION(3, 0, 0)
+    #if defined ( __WXGTK__ )
     Freeze();
     #endif
     // add it in the sizer
@@ -1375,7 +1459,7 @@ void cbEditor::SetEditorStyleBeforeFileOpen()
     // update the tab text based on preferences
     if (m_pProjectFile)
     {
-        if (mgr->ReadBool(_T("/tab_text_relative"), true))
+        if (mgr->ReadBool(_T("/tab_text_relative"), false))
             m_Shortname = m_pProjectFile->relativeToCommonTopLevelPath;
         else
             m_Shortname = m_pProjectFile->file.GetFullName();
@@ -1617,9 +1701,9 @@ void cbEditor::InternalSetEditorStyleBeforeFileOpen(cbStyledTextCtrl* control)
                                | (1 << wxSCI_MARKNUM_CHANGESAVED) );
 
         control->MarkerDefine(wxSCI_MARKNUM_CHANGEUNSAVED, wxSCI_MARK_FULLRECT);
-        control->MarkerSetBackground(wxSCI_MARKNUM_CHANGEUNSAVED, wxColour(0xFF, 0xE6, 0x04));
+        control->MarkerSetBackground(wxSCI_MARKNUM_CHANGEUNSAVED, Manager::Get()->GetColourManager()->GetColour(wxT("changebar_unsaved")));
         control->MarkerDefine(wxSCI_MARKNUM_CHANGESAVED, wxSCI_MARK_FULLRECT);
-        control->MarkerSetBackground(wxSCI_MARKNUM_CHANGESAVED,   wxColour(0x04, 0xFF, 0x50));
+        control->MarkerSetBackground(wxSCI_MARKNUM_CHANGESAVED, Manager::Get()->GetColourManager()->GetColour(wxT("changebar_saved")));
     }
     else
         control->SetMarginWidth(C_CHANGEBAR_MARGIN, 0);
@@ -2710,10 +2794,10 @@ void cbEditor::GotoMatchingBrace()
     // else look for a matching preprocessor command
     if (matchingBrace == wxSCI_INVALID_POSITION)
     {
-        wxRegEx ppIf(wxT("^[ \t]*#[ \t]*if"));
-        wxRegEx ppElse(wxT("^[ \t]*#[ \t]*el"));
-        wxRegEx ppEnd(wxT("^[ \t]*#[ \t]*endif"));
-        wxRegEx pp(wxT("^[ \t]*#[ \t]*[a-z]*")); // generic match to get length
+        wxRegEx ppIf("^[[:blank:]]*#[[:blank:]]*if");
+        wxRegEx ppElse("^[[:blank:]]*#[[:blank:]]*el");
+        wxRegEx ppEnd("^[[:blank:]]*#[[:blank:]]*endif");
+        wxRegEx pp("^[[:blank:]]*#[[:blank:]]*[a-z]*"); // generic match to get length
         if (ppIf.Matches(control->GetCurLine()) || ppElse.Matches(control->GetCurLine()))
         {
             int depth = 1; // search forwards
