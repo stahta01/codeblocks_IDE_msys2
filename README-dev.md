@@ -15,7 +15,7 @@ pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-boost;
 # Run from MSys2 *Mingw prompt*
 ```
 pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-drmingw;
-pacman -U ~/devel/MINGW-packages/mingw-w64-wxWidgets3.1/${MINGW_PACKAGE_PREFIX}-wxmsw3.1-*-any.pkg.tar.zst;
+pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-wxmsw3.1;
 ```
 
 ```
