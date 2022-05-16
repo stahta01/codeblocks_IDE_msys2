@@ -116,3 +116,4 @@ README.rst
 *.ini
 *.bmp
 *.mp4
+*.cmake
