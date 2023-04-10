@@ -15,7 +15,8 @@ pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-boost;
 # Run from MSys2 *Mingw prompt*
 ```
 pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-drmingw;
-pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-wxmsw3.1;
+pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-wxwidgets3.2-msw;
+pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-wxwidgets3.2-msw-cb_headers;
 ```
 
 ```
