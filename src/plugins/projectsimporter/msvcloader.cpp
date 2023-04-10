@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 8680 $
- * $Id: msvcloader.cpp 8680 2012-12-16 14:58:35Z mortenmacfly $
+ * $Revision: 12999 $
+ * $Id: msvcloader.cpp 12999 2022-11-01 13:12:28Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/projectsimporter/msvcloader.cpp $
  */
 
@@ -211,7 +211,7 @@ bool MSVCLoader::ReadConfigurations()
             {
                 m_Configurations.Add(tmp);
                 m_ConfigurationsLineIndex.Add(currentLine);
-                Manager::Get()->GetLogManager()->DebugLog(F(_T("Detected configuration '%s' at line %d"), tmp.wx_str(), currentLine));
+                Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Detected configuration '%s' at line %d", tmp, currentLine));
             }
         }
     }

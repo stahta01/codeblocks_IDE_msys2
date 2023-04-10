@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12736 $
- * $Id: configmanager.cpp 12736 2022-03-03 20:12:16Z wh11204 $
+ * $Revision: 13003 $
+ * $Id: configmanager.cpp 13003 2022-11-08 08:50:45Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/configmanager.cpp $
  */
 
@@ -442,7 +442,7 @@ ConfigManager* CfgMgrBldr::Build(const wxString& name_space)
         if (!docroot)
         {
             wxString err(_("Fatal error parsing supplied configuration file.\nParser error message:\n"));
-            err << wxString::Format(_("%s\nAt row %d, column: %d."), cbC2U(doc->ErrorDesc()).c_str(), doc->ErrorRow(), doc->ErrorCol());
+            err << wxString::Format(_("%s\nAt row %d, column %d."), cbC2U(doc->ErrorDesc()), doc->ErrorRow(), doc->ErrorCol());
             cbThrow(err);
         }
     }

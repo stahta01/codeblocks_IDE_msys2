@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12672 $
- * $Id: projectsimporter.cpp 12672 2022-01-21 13:08:35Z wh11204 $
+ * $Revision: 12995 $
+ * $Id: projectsimporter.cpp 12995 2022-10-28 07:22:31Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/projectsimporter/projectsimporter.cpp $
  */
 
@@ -159,7 +159,7 @@ int ProjectsImporter::LoadProject(const wxString& filename)
     {
         wxBusyCursor wait;
 
-        Manager::Get()->GetLogManager()->Log(F(_("Importing %s: "), filename.wx_str()));
+        Manager::Get()->GetLogManager()->Log(wxString::Format(_("Importing %s: "), filename));
         IBaseLoader* loader = nullptr;
         FileType ft = FileTypeOf(filename);
         switch (ft)
@@ -256,7 +256,7 @@ int ProjectsImporter::LoadWorkspace(const wxString& filename)
         return -1;
     }
 
-    Manager::Get()->GetLogManager()->Log(F(_("Importing %s: "), filename.wx_str()));
+    Manager::Get()->GetLogManager()->Log(wxString::Format(_("Importing %s: "), filename));
     FileType ft = FileTypeOf(filename);
     IBaseWorkspaceLoader* pWsp = 0;
     switch (ft)

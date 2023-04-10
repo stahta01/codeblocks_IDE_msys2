@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12435 $
- * $Id: scriptingmanager.cpp 12435 2021-05-09 12:51:26Z fuscated $
+ * $Revision: 12999 $
+ * $Id: scriptingmanager.cpp 12999 2022-11-01 13:12:28Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/scriptingmanager.cpp $
  */
 
@@ -349,7 +349,7 @@ bool ScriptingManager::LoadBuffer(const wxString& buffer, const wxString& debugN
     wxString incName = UnixFilename(debugName);
     if (m_data->m_IncludeSet.find(incName) != m_data->m_IncludeSet.end())
     {
-        Manager::Get()->GetLogManager()->LogWarning(F(_T("Ignoring Include(\"%s\") because it would cause recursion..."), incName.wx_str()));
+        Manager::Get()->GetLogManager()->LogWarning(wxString::Format(_("Ignoring Include(\"%s\") because it would cause recursion..."), incName));
         return true;
     }
     m_data->m_IncludeSet.insert(incName);
@@ -503,8 +503,8 @@ bool ScriptingManager::RegisterScriptMenu(const wxString& menuPath, const wxStri
         m_data->m_MenuIDToScript.insert(m_data->m_MenuIDToScript.end(), std::make_pair(id, mbs));
 
 
-        Manager::Get()->GetLogManager()->Log(F(_("Script/function '%s' registered under menu '%s'"),
-                                               scriptOrFunc.wx_str(), menuPath.wx_str()));
+        Manager::Get()->GetLogManager()->Log(wxString::Format(_("Script/function '%s' registered under menu '%s'"),
+                                                              scriptOrFunc, menuPath));
         return true;
     }
 

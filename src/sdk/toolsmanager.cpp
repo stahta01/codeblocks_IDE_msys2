@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12656 $
- * $Id: toolsmanager.cpp 12656 2022-01-16 09:56:14Z wh11204 $
+ * $Revision: 12998 $
+ * $Id: toolsmanager.cpp 12998 2022-10-30 16:47:04Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/toolsmanager.cpp $
  */
 
@@ -129,7 +129,7 @@ bool ToolsManager::Execute(const cbTool* tool)
 
     // log info so user can troubleshoot
     dir = wxGetCwd(); // read in the actual working dir
-    Manager::Get()->GetLogManager()->Log(F(_("Launching tool '%s': %s (in %s)"), tool->GetName().wx_str(), cmdline.wx_str(), dir.wx_str()));
+    Manager::Get()->GetLogManager()->Log(wxString::Format(_("Launching tool '%s': %s (in %s)"), tool->GetName(), cmdline, dir));
 
     bool pipe = true;
     int flags = wxEXEC_ASYNC;
@@ -264,7 +264,8 @@ void ToolsManager::LoadTools()
 
         AddTool(&tool, false);
     }
-    Manager::Get()->GetLogManager()->Log(F(_("Configured %d tools"), m_Tools.GetCount()));
+
+    Manager::Get()->GetLogManager()->Log(wxString::Format(_("Configured %zu tools"), m_Tools.GetCount()));
 }
 
 void ToolsManager::SaveTools()
@@ -360,7 +361,7 @@ void ToolsManager::OnToolClick(wxCommandEvent& event)
 {
     cbTool* tool = GetToolByMenuId(event.GetId());
     if (!Execute(tool))
-        cbMessageBox(_("Could not execute ") + tool->GetName());
+        cbMessageBox(wxString::Format(_("Could not execute %s"), tool->GetName()));
 }
 
 void ToolsManager::OnIdle(wxIdleEvent& event)
@@ -377,12 +378,12 @@ void ToolsManager::OnIdle(wxIdleEvent& event)
 
 void ToolsManager::OnToolStdOutput(CodeBlocksEvent& event)
 {
-    Manager::Get()->GetLogManager()->Log(_T("stdout> ") + event.GetString());
+    Manager::Get()->GetLogManager()->Log("stdout> "+event.GetString());
 }
 
 void ToolsManager::OnToolErrOutput(CodeBlocksEvent& event)
 {
-    Manager::Get()->GetLogManager()->Log(_T("stderr> ") + event.GetString());
+    Manager::Get()->GetLogManager()->Log("stderr> "+event.GetString());
 }
 
 void ToolsManager::OnToolTerminated(CodeBlocksEvent& event)
@@ -390,5 +391,5 @@ void ToolsManager::OnToolTerminated(CodeBlocksEvent& event)
     m_Pid = 0;
     m_pProcess = nullptr;
 
-    Manager::Get()->GetLogManager()->Log(F(_T("Tool execution terminated with status %d"), event.GetInt()));
+    Manager::Get()->GetLogManager()->Log(wxString::Format(_("Tool execution terminated with status %d"), event.GetInt()));
 }

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 10912 $
- * $Id: dlgaboutplugin.cpp 10912 2016-09-25 16:10:13Z fuscated $
+ * $Revision: 13097 $
+ * $Id: dlgaboutplugin.cpp 13097 2022-12-06 09:25:14Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/dlgaboutplugin.cpp $
  */
 
@@ -23,7 +23,7 @@
 // class constructor
 dlgAboutPlugin::dlgAboutPlugin(wxWindow* parent, const PluginInfo* pi)
 {
-	wxXmlResource::Get()->LoadObject(this, parent, _T("dlgAboutPlugin"),_T("wxScrollingDialog"));
+	wxXmlResource::Get()->LoadObject(this, parent, "dlgAboutPlugin", "wxScrollingDialog");
     XRCCTRL(*this, "wxID_CANCEL", wxButton)->SetDefault();
 
 	XRCCTRL(*this, "lblTitle", wxStaticText)->SetLabel(pi->title);

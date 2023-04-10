@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12491 $
- * $Id: sc_wxtypes.cpp 12491 2021-08-05 23:50:26Z fuscated $
+ * $Revision: 13002 $
+ * $Id: sc_wxtypes.cpp 13002 2022-11-08 07:06:34Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/scripting/bindings/sc_wxtypes.cpp $
  */
 
@@ -1118,7 +1118,7 @@ void Register_wxTypes(HSQUIRRELVM v)
     }
 
     {
-        // Register wxSize
+        // Register wxArrayString
         const SQInteger classDecl = CreateClassDecl<wxArrayString>(v);
         BindEmptyCtor<wxArrayString>(v);
         BindDefaultClone<wxArrayString>(v);

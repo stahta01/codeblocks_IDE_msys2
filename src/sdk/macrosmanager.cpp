@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12514 $
- * $Id: macrosmanager.cpp 12514 2021-08-15 11:51:19Z fuscated $
+ * $Revision: 12816 $
+ * $Id: macrosmanager.cpp 12816 2022-05-21 03:18:55Z ollydbg $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/macrosmanager.cpp $
  */
 
@@ -394,6 +394,10 @@ void MacrosManager::RecalcVars(const cbProject* project, EditorBase* editor, con
             wxFileName MasterPath;
             MasterPath.SetPath(c->GetMasterPath(), wxPATH_NATIVE);
             m_Macros[_T("TARGET_COMPILER_DIR")] = MasterPath.GetPathWithSep(wxPATH_NATIVE);
+
+            // support wx-config in MSYS2 MinGW
+            m_Macros[_T("TARGET_COMPILER_UNIX_PATH")] = MasterPath.GetVolume() +
+                MasterPath.GetVolumeSeparator() + MasterPath.GetPath(wxPATH_GET_VOLUME, wxPATH_UNIX);
         }
         m_Macros[_T("TARGET_OBJECT_DIR")] = target->GetObjectOutput();
     }

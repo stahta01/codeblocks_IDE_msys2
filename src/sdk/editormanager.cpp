@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12736 $
- * $Id: editormanager.cpp 12736 2022-03-03 20:12:16Z wh11204 $
+ * $Revision: 13191 $
+ * $Id: editormanager.cpp 13191 2023-02-03 23:06:49Z bluehazzard $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editormanager.cpp $
  */
 
@@ -109,7 +109,11 @@ struct EditorManagerInternalData
     /* Static data */
 
     EditorManager* m_pOwner;
+#if wxCHECK_VERSION(3, 1, 6)
+    wxBitmapBundle m_ReadonlyIcon;
+#else
     wxBitmap m_ReadonlyIcon;
+#endif
     bool m_SetFocusFlag;
 };
 
@@ -861,11 +865,12 @@ void EditorManager::CheckForExternallyModifiedFiles()
 {
     if (m_isCheckingForExternallyModifiedFiles) // for some reason, a mutex locker does not work???
         return;
+
     m_isCheckingForExternallyModifiedFiles = true;
 
     bool reloadAll = false; // flag to stop bugging the user
     wxArrayString failedFiles; // list of files failed to reload
-    for (size_t i = 0; i < m_pNotebook->GetPageCount(); ++i)
+    for (int i = (int)m_pNotebook->GetPageCount()-1; i >= 0; --i)
     {
         cbEditor* ed = InternalGetBuiltinEditor(i);
         bool b_modified = false;
@@ -902,35 +907,33 @@ void EditorManager::CheckForExternallyModifiedFiles()
                                          "Do you wish to try to save the file to disk?\n"
                                          "If you close it, it will most likely be lost !\n"
                                          "If you cancel this dialog, you have to take care yourself !\n"
-                                         "Yes: save the file, No: close it, Cancel: keep your fingers crossed."), eb->GetFilename().c_str());
-                            int ret = cbMessageBox(msg, _("File changed!"), wxICON_QUESTION | wxYES_NO | wxCANCEL );
+                                         "Yes: save the file, No: close it, Cancel: keep your fingers crossed."), eb->GetFilename());
+
+                            const int ret = cbMessageBox(msg, _("File changed!"), wxICON_QUESTION | wxYES_NO | wxCANCEL );
                             switch (ret)
                             {
                                 case wxID_YES:
-                                {
                                     eb->Save();
                                     break;
-                                }
                                 case wxID_NO:
-                                {
                                     pf->SetFileState(fvsMissing);
                                     eb->Close();
                                     break;
-                                }
                                 case wxID_CANCEL: // fall through
                                 default:
                                     eb->SetModified(true); // some editors might implement it
                                     pf->SetFileState(fvsMissing);
-                                    break;
                             }
                         }
                     }
                     else
                         pf->SetFileState(readOnly?fvsReadOnly:fvsNormal);
                 }
+
                 continue;
             }
         }
+
         if (!ed->IsOK())
             continue;
 
@@ -957,15 +960,18 @@ void EditorManager::CheckForExternallyModifiedFiles()
             wxString msg;
             msg.Printf(_("%s has been deleted, or is no longer available.\n"
                          "Do you wish to keep the file open?\n"
-                         "Yes to keep the file, No to close it."), ed->GetFilename().c_str());
+                         "Yes to keep the file, No to close it."), ed->GetFilename());
+
             if (cbMessageBox(msg, _("File changed!"), wxICON_QUESTION | wxYES_NO) == wxID_YES)
                 ed->SetModified(true);
             else
             {
                 if (pf)
                     pf->SetFileState(fvsMissing);
+
                 ed->Close();
             }
+
             continue;
         }
 
@@ -982,6 +988,7 @@ void EditorManager::CheckForExternallyModifiedFiles()
             if (pf)
                 pf->SetFileState(fvsNormal);
         }
+
         //File changed from RW -> RO?
         if (!ed->GetControl()->GetReadOnly() &&
                 !wxFile::Access(ed->GetFilename().c_str(), wxFile::write))
@@ -992,6 +999,7 @@ void EditorManager::CheckForExternallyModifiedFiles()
             if (pf)
                 pf->SetFileState(fvsReadOnly);
         }
+
         //File content changed?
         if (last.IsLaterThan(ed->GetLastModificationTime()))
             b_modified = true;
@@ -1004,7 +1012,8 @@ void EditorManager::CheckForExternallyModifiedFiles()
             {
                 wxString msg;
                 msg.Printf(_("File %s is modified outside the IDE...\nDo you want to reload it (you will lose any unsaved work)?"),
-                           ed->GetFilename().c_str());
+                           ed->GetFilename());
+
                 ConfirmReplaceDlg dlg(Manager::Get()->GetAppWindow(), false, msg);
                 dlg.SetTitle(_("Reload file?"));
                 dlg.GetSizer()->SetSizeHints(&dlg);
@@ -1036,7 +1045,7 @@ void EditorManager::CheckForExternallyModifiedFiles()
     // (we're interested in updating read-write state)
     SetActiveEditor(GetActiveEditor());
 
-    if (failedFiles.GetCount())
+    if (!failedFiles.IsEmpty())
     {
         // Find the window, that actually has the mouse-focus and force a release
         // prevents crash on windows or hang on wxGTK
@@ -1045,9 +1054,11 @@ void EditorManager::CheckForExternallyModifiedFiles()
             win->ReleaseMouse();
 
         wxString msg;
-        msg.Printf(_("Could not reload all files:\n\n%s"), GetStringFromArray(failedFiles, _T("\n")).c_str());
+
+        msg.Printf(_("Could not reload all files:\n\n%s"), GetStringFromArray(failedFiles, "\n"));
         cbMessageBox(msg, _("Error"), wxICON_ERROR);
     }
+
     m_isCheckingForExternallyModifiedFiles = false;
 }
 
@@ -1058,17 +1069,24 @@ void EditorManager::MarkReadOnly(int page, bool readOnly)
         // The file is read-only and we don't have an image loaded - load it now.
         if (readOnly && !m_pData->m_ReadonlyIcon.IsOk())
         {
-            const int targetHeight = floor(16 * cbGetActualContentScaleFactor(*m_pNotebook));
+            wxString prefix(ConfigManager::GetDataFolder() + "/manager_resources.zip#zip:/images/");
+#if wxCHECK_VERSION(3, 1, 6)
+            prefix << "svg/";
+            m_pData->m_ReadonlyIcon = cbLoadBitmapBundleFromSVG(prefix + "readonly.svg", wxSize(16, 16));
+#else
+            const int targetHeight = wxRound(16 * cbGetActualContentScaleFactor(*m_pNotebook));
             const int size = cbFindMinSize16to64(targetHeight);
-
-            const wxString path = ConfigManager::GetDataFolder()
-                                + wxString::Format(wxT("/manager_resources.zip#zip:/images/%dx%d/readonly.png"),
-                                                   size, size);
-
-            m_pData->m_ReadonlyIcon = cbLoadBitmapScaled(path, wxBITMAP_TYPE_PNG,
-                                                         cbGetContentScaleFactor(*m_pNotebook));
+            prefix << wxString::Format("%dx%d/", size, size);
+            m_pData->m_ReadonlyIcon = cbLoadBitmap(prefix + "readonly.png");
+#endif
         }
+
+#if wxCHECK_VERSION(3, 1, 6)
+        wxBitmapBundle bmp = readOnly ? m_pData->m_ReadonlyIcon : wxBitmapBundle();
+#else
         wxBitmap bmp = readOnly ? m_pData->m_ReadonlyIcon : wxNullBitmap;
+#endif
+
         if (m_pNotebook)
             m_pNotebook->SetPageBitmap(page, bmp);
     }
@@ -1177,7 +1195,7 @@ static OpenContainingFolderData detectNautilus(const wxString &command, ConfigMa
     else
         fileManager = command;
 
-    Manager::Get()->GetLogManager()->DebugLog(F(wxT("File manager is: '%s'"), fileManager.wx_str()));
+    Manager::Get()->GetLogManager()->DebugLog(wxString::Format("File manager is: '%s'", fileManager));
     if (fileManager.find(wxT("nautilus")) == wxString::npos)
         return OpenContainingFolderData(command, false);
     // If the file manager ends with desktop then this is produced by xdg-mime.
@@ -1193,7 +1211,7 @@ static OpenContainingFolderData detectNautilus(const wxString &command, ConfigMa
     const wxString prefix(wxT("GNOME nautilus "));
 
     const wxString firstLine = output[0].Trim(true).Trim(false);
-    Manager::Get()->GetLogManager()->DebugLog(F(wxT("Nautilus version is: '%s'"), firstLine.wx_str()));
+    Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Nautilus version is: '%s'", firstLine));
 
     if (firstLine.StartsWith(prefix))
     {
@@ -1399,7 +1417,7 @@ bool EditorManager::SwapActiveHeaderSource()
             if (!dname.IsAbsolute())
             {
                 dname.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_TILDE | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_LONG | wxPATH_NORM_SHORTCUT, project->GetBasePath());
-    //            Manager::Get()->GetLogManager()->DebugLog(F(_T("Normalizing dir to '%s'."), dname.GetFullPath().c_str()));
+    //            Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Normalizing dir to '%s'.", dname.GetFullPath()));
             }
 
             fileArray.Clear();
@@ -1729,7 +1747,8 @@ void EditorManager::OnPageContextMenu(wxAuiNotebookEvent& event)
             ProjectFile *projectFile = ed->GetProjectFile();
             if (projectFile)
             {
-                pop->Append(idNBRemoveFileFromProject, _("Remove file from project"));
+                if (!projectFile->IsGlobValid())
+                    pop->Append(idNBRemoveFileFromProject, _("Remove file from project"));
                 pop->Append(idNBShowFileInTree, _("Show file in the project tree"));
             }
             else

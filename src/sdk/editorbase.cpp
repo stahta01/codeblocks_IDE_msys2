@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12524 $
- * $Id: editorbase.cpp 12524 2021-09-04 11:32:54Z fuscated $
+ * $Revision: 13003 $
+ * $Id: editorbase.cpp 13003 2022-11-08 08:50:45Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editorbase.cpp $
  */
 
@@ -295,11 +295,11 @@ void EditorBase::DisplayContextMenu(const wxPoint& position, ModuleType type, wx
 
         if (!text.IsEmpty())
         {
-            popup->Append(idGoogle,        _("Search the Internet for \"")  + text + _T("\""));
-            popup->Append(idMsdn,          _("Search MSDN for \"")          + text + _T("\""));
-            popup->Append(idStackOverflow, _("Search StackOverflow for \"") + text + _T("\""));
-            popup->Append(idCodeProject,   _("Search CodeProject for \"")   + text + _T("\""));
-            popup->Append(idCPlusPlusCom,  _("Search CplusPlus.com for \"") + text + _T("\""));
+            popup->Append(idGoogle,        wxString::Format(_("Search the Internet for \"%s\""),  text));
+            popup->Append(idMsdn,          wxString::Format(_("Search MSDN for \"%s\""),          text));
+            popup->Append(idStackOverflow, wxString::Format(_("Search StackOverflow for \"%s\""), text));
+            popup->Append(idCodeProject,   wxString::Format(_("Search CodeProject for \"%s\""),   text));
+            popup->Append(idCPlusPlusCom,  wxString::Format(_("Search CplusPlus.com for \"%s\""), text));
         }
         lastWord = text;
 

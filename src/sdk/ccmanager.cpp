@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12773 $
- * $Id: ccmanager.cpp 12773 2022-03-30 08:09:27Z wh11204 $
+ * $Revision: 13238 $
+ * $Id: ccmanager.cpp 13238 2023-03-19 14:03:37Z mortenmacfly $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/ccmanager.cpp $
  */
 
@@ -33,6 +33,7 @@
 #include "cbcolourmanager.h"
 #include "cbstyledtextctrl.h"
 #include "editor_hooks.h"
+#include "debuggermanager.h"
 
 namespace CCManagerHelper
 {
@@ -516,13 +517,18 @@ void CCManager::OnCompleteCode(CodeBlocksEvent& event)
 
     cbStyledTextCtrl* stc = ed->GetControl();
     int tknEnd = stc->GetCurrentPos();
+    int tknStart = stc->WordStartPosition(tknEnd, true);
+    wxString trigger = stc->GetTextRange(tknStart, tknEnd);
     if (tknEnd == m_LastACLaunchState.caretStart && stc->GetZoom() == m_LastACLaunchState.editorZoom && !m_AutocompTokens.empty())
     {
         DoBufferedCC(stc);
-        return;
+        // If the completion trigger is the same as last, the cached completions have already been shown
+        // else they've just been cached, but not yet shown.
+        if (m_LastACLaunchState.trigger.Length() and (m_LastACLaunchState.trigger == trigger))
+            return;
     }
-
-    int tknStart = stc->WordStartPosition(tknEnd, true);
+    // Record the new completion trigger
+    m_LastACLaunchState.trigger = stc->GetTextRange(tknStart,tknEnd);
 
     m_AutocompTokens = ccPlugin->GetAutocompList(event.GetInt() == FROM_TIMER, ed, tknStart, tknEnd);
     if (m_AutocompTokens.empty())
@@ -676,6 +682,18 @@ void CCManager::OnEditorClose(CodeBlocksEvent& event)
     if (ed == m_pLastEditor)
         m_pLastEditor = nullptr;
 
+    #if defined(__WXMSW__)
+    // If the closing editor holds a popup wxEVT_MOUSEWHEEL connect, disconnect it.
+    // DoHidePopup() above may have disconnected m_LastEditor but not the closing editor.
+    // This happens when a non-active editor is closed while m_pLastEditor == the active editor.
+    // This may not happen anymore, but it's happened in the past and CB hung. 2022/09/17
+    if (ed and ed->GetControl() and m_EdAutocompMouseTraps.count(ed) )
+    {
+        ed->GetControl()->Disconnect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(CCManager::OnPopupScroll), nullptr, this);
+        m_EdAutocompMouseTraps.erase(ed);
+    }
+    #endif
+
     if (ed && ed->GetControl())
     {
         // TODO: is this ever called?
@@ -727,6 +745,14 @@ void CCManager::OnEditorTooltip(CodeBlocksEvent& event)
         uniqueTips.insert(tokens[i].displayName);
 
     wxStringVec tips(uniqueTips.begin(), uniqueTips.end());
+
+    // If user specified "~NoSort~" as first token entry, reset tips as the user specified them.
+    if (tokens.size() and (tokens[0].displayName == "~NoSort~"))
+    {
+        tips.clear();
+        for (size_t i = 1; i < tokens.size(); ++i)
+            tips.push_back( tokens[i].displayName);
+    }
 
     const int style = event.GetInt();
     if (!tips.empty())
@@ -1150,14 +1176,20 @@ void CCManager::OnPopupScroll(wxMouseEvent& event)
         event.Skip();
         return;
     }
+    if (not editor->AutoCompActive())
+    {
+        event.Skip();
+        return;
+    }
 
     const wxPoint& pos = editor->ClientToScreen(event.GetPosition());
-    if (m_pPopup && m_pPopup->GetScreenRect().Contains(pos))
+    // Scroll when the current mouse position is within a shown popup window
+    if (m_pPopup && m_pPopup->IsShown() && m_pPopup->GetScreenRect().Contains(pos))
     {
         if (m_pHtml)
             m_pHtml->GetEventHandler()->ProcessEvent(event);
     }
-    else if (m_pAutocompPopup && m_pAutocompPopup->GetScreenRect().Contains(pos))
+    else if (m_pAutocompPopup && m_pAutocompPopup->IsShown() && m_pAutocompPopup->GetScreenRect().Contains(pos))
     {
         m_pAutocompPopup->ScrollList(0, event.GetWheelRotation() / -4); // TODO: magic number... can we hook to the actual event?
     }
@@ -1300,18 +1332,39 @@ void CCManager::DoBufferedCC(cbStyledTextCtrl* stc)
 
 void CCManager::DoHidePopup()
 {
+#ifdef __WXMSW__
+    if (m_pLastEditor && m_pLastEditor->GetControl() and (not m_pLastEditor->GetControl()->AutoCompActive()))
+    {
+        // Does this editor have a wxEVT_MOUSEWHEEL event connection? If so, disconnect it.
+        if (m_EdAutocompMouseTraps.count(m_pLastEditor))
+        {
+            m_pLastEditor->GetControl()->Disconnect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(CCManager::OnPopupScroll), nullptr, this);
+            // Remove this editor from the map indicating there is no longer a connection.
+            m_EdAutocompMouseTraps.erase(m_pLastEditor);
+        }
+    }
+#endif // __WXMSW__
     if (!m_pPopup->IsShown())
         return;
 
     m_pPopup->Hide();
-#ifdef __WXMSW__
-    if (m_pLastEditor && m_pLastEditor->GetControl())
-        m_pLastEditor->GetControl()->Disconnect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(CCManager::OnPopupScroll), nullptr, this);
-#endif // __WXMSW__
 }
 
 void CCManager::DoShowDocumentation(cbEditor* ed)
 {
+#ifdef __WXMSW__
+    if (ed->GetControl() and ed->GetControl()->AutoCompActive())
+    {
+        if (not m_EdAutocompMouseTraps.count(ed))
+        {
+            ed->GetControl()->Connect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(CCManager::OnPopupScroll), nullptr, this);
+            // Enter this editor into the map indicating that a connection exists.
+            m_EdAutocompMouseTraps.insert(ed);
+        }
+    }
+#endif // __WXMSW__
+
+
     if (!Manager::Get()->GetConfigManager("ccmanager")->ReadBool("/documentation_popup", true))
         return;
 
@@ -1322,11 +1375,25 @@ void CCManager::DoShowDocumentation(cbEditor* ed)
     if (m_LastAutocompIndex == wxNOT_FOUND || m_LastAutocompIndex >= (int)m_AutocompTokens.size())
         return;
 
+    // If the AutoCompPopup is not shown, don't show the html documentation popup either (ticket 1168)
+    cbStyledTextCtrl* stc = ed->GetControl();
+    if ((not stc) or (not stc->AutoCompActive()) )
+        return;
+
     const wxString& html = ccPlugin->GetDocumentation(m_AutocompTokens[m_LastAutocompIndex]);
     if (html.empty())
     {
         DoHidePopup();
         return;
+    }
+
+    cbDebuggerPlugin *plugin = Manager::Get()->GetDebuggerManager()->GetActiveDebugger();
+    if (plugin)
+    {
+        if (plugin->IsRunning() && plugin->ShowValueTooltip(0))
+        {
+            return; // Do not Show doc popup when the debigger is running
+        }
     }
 
     m_pPopup->Freeze();
@@ -1338,9 +1405,6 @@ void CCManager::DoShowDocumentation(cbEditor* ed)
     if (!m_pPopup->IsShown())
     {
         m_pPopup->Show();
-#ifdef __WXMSW__
-        ed->GetControl()->Connect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(CCManager::OnPopupScroll), nullptr, this);
-#endif // __WXMSW__
     }
 }
 

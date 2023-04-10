@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12304 $
- * $Id: recentitemslist.cpp 12304 2021-03-16 23:28:31Z fuscated $
+ * $Revision: 13119 $
+ * $Id: recentitemslist.cpp 13119 2022-12-15 11:24:09Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/recentitemslist.cpp $
  */
 
@@ -161,8 +161,7 @@ void RecentItemsList::BuildMenu(wxMenu *menu)
         menu->InsertSeparator(0);
         for (size_t i = 0; i < m_list->GetCount(); ++i)
         {
-            const wxString &name = wxString::Format(_T("&%lu "), static_cast<unsigned long>(i + 1))
-                                   + m_list->GetHistoryFile(i);
+            const wxString &name = wxString::Format("&%zu ", i + 1) + m_list->GetHistoryFile(i);
             menu->Insert(menu->GetMenuItemCount() - 2, m_firstMenuItemID + i, name);
         }
     }
@@ -191,7 +190,7 @@ wxMenu* RecentItemsList::GetMenu()
 void RecentItemsList::RefreshStartHerePage()
 {
     // update start here page
-    EditorBase* sh = Manager::Get()->GetEditorManager()->GetEditor(g_StartHereTitle);
+    EditorBase* sh = Manager::Get()->GetEditorManager()->GetEditor(GetStartHereTitle());
     if (sh)
         ((StartHerePage*)sh)->Reload();
 }

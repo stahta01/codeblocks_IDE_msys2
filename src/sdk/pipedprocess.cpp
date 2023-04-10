@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12763 $
- * $Id: pipedprocess.cpp 12763 2022-03-25 07:42:10Z wh11204 $
+ * $Revision: 13049 $
+ * $Id: pipedprocess.cpp 13049 2022-11-19 02:18:52Z ollydbg $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/pipedprocess.cpp $
  */
 
@@ -50,11 +50,12 @@ class cbTextInputStream : public wxTextInputStream
             memset((void*)m_lastBytes, 0, 10);
             for (size_t inlen = 0; inlen < 9; inlen++)
             {
-                // actually read the next character
+                // actually read the next character byte
                 m_lastBytes[inlen] = m_input.GetC();
 
                 if (m_input.LastRead() <= 0)
                     return wxEOT;
+                // inlen is the byte index we get copied from the input byte stream
                 if (m_allowMBconversion)
                 {
                     int retlen = (int) m_conv->MB2WC(wbuf, m_lastBytes, 2); // returns -1 for failure
@@ -82,9 +83,11 @@ class cbTextInputStream : public wxTextInputStream
         {
             wxString line;
 
+            std::string lineBytes;
+
             while ( m_input.CanRead() && !m_input.Eof() )
             {
-                wxChar c = NextChar();
+                char c = m_input.GetC();
                 if (m_input.LastRead() <= 0)
                     break;
 
@@ -94,7 +97,18 @@ class cbTextInputStream : public wxTextInputStream
                 if (EatEOL(c))
                     break;
 
-                line += c;
+                lineBytes += c;
+            }
+            // for the compiler output, it could be either the file content and the file path
+            // the file content could be in any encoding, mostly the utf-8 format.
+            // for the file path, it usually contains the legacy MBCS encoding(ANSI string).
+            // so, we firstly try to convert from UTF8, if failed, try the wxConvLocal
+            line = wxString::FromUTF8(lineBytes.c_str());
+            if (line.empty())
+            {
+                line = wxString(lineBytes.c_str()); // use the wxConvLocal(the default)
+                if (line.empty())
+                    return lineBytes; // if wxConvLocal still fails, return the raw byte string
             }
             return line;
         }

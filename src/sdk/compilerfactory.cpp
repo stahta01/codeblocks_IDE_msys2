@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12601 $
- * $Id: compilerfactory.cpp 12601 2021-12-20 20:05:33Z wh11204 $
+ * $Revision: 12999 $
+ * $Id: compilerfactory.cpp 12999 2022-11-01 13:12:28Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/compilerfactory.cpp $
  */
 
@@ -184,7 +184,7 @@ Compiler* CompilerFactory::CreateCompilerCopy(Compiler* compiler, const wxString
     newC->ReloadOptions();
     RegisterCompiler(newC);
     newC->LoadSettings(_T("/user_sets"));
-    Manager::Get()->GetLogManager()->DebugLog(F(_T("Added compiler \"%s\""), newC->GetName().wx_str()));
+    Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Added compiler \"%s\"", newC->GetName()));
     return newC; // return the index for the new compiler
 }
 
@@ -195,7 +195,7 @@ void CompilerFactory::RemoveCompiler(Compiler* compiler)
     Manager::Get()->GetConfigManager(_T("compiler"))->DeleteSubPath(_T("/user_sets/") + compiler->GetID());
 
     Compilers.Remove(compiler);
-    Manager::Get()->GetLogManager()->DebugLog(F(_T("Compiler \"%s\" removed"), compiler->GetName().wx_str()));
+    Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Compiler \"%s\" removed", compiler->GetName()));
 
     Compiler::m_CompilerIDs.Remove(compiler->GetID());
     delete compiler;
@@ -279,7 +279,7 @@ void CompilerFactory::LoadSettings()
 
         if (Compilers[i]->GetMasterPath().IsEmpty())
         {
-            Manager::Get()->GetLogManager()->DebugLog(F(_T("Master path of compiler ID \"%s\" is empty -> triggers auto-detection."), Compilers[i]->GetID().wx_str()));
+            Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Master path of compiler ID \"%s\" is empty -> triggers auto-detection.", Compilers[i]->GetID()));
             needAutoDetection = true;
         }
     }

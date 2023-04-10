@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12736 $
- * $Id: nativeparser.cpp 12736 2022-03-03 20:12:16Z wh11204 $
+ * $Revision: 13117 $
+ * $Id: nativeparser.cpp 13117 2022-12-15 02:34:00Z ollydbg $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/codecompletion/nativeparser.cpp $
  */
 
@@ -125,65 +125,73 @@ int idTimerParsingOneByOne = wxNewId();
 /** if this option is enabled, there will be many log messages when doing semantic match */
 bool s_DebugSmartSense = false;
 
-static void AddToImageList(wxImageList *list, const wxString &path)
+static void AddToImageList(wxImageList* list, const wxString &path, int size)
 {
-    wxBitmap bmp = cbLoadBitmap(path, wxBITMAP_TYPE_PNG);
+#if wxCHECK_VERSION(3, 1, 6)
+    wxBitmap bmp = cbLoadBitmapBundleFromSVG(path, wxSize(size, size)).GetBitmap(wxDefaultSize);
+#else
+    wxBitmap bmp = cbLoadBitmap(path);
+#endif
+
     if (!bmp.IsOk())
-    {
         printf("failed to load: %s\n", path.utf8_str().data());
-    }
+
     list->Add(bmp);
 }
 
 static wxImageList* LoadImageList(int size)
 {
-    wxImageList *list = new wxImageList(size, size);
-    wxBitmap bmp;
-    const wxString prefix = ConfigManager::GetDataFolder()
-                          + wxString::Format(_T("/codecompletion.zip#zip:images/%dx%d/"), size,
-                                             size);
+    wxImageList* list = new wxImageList(size, size);
+    wxString prefix(ConfigManager::GetDataFolder() + "/codecompletion.zip#zip:images/");
+#if wxCHECK_VERSION(3, 1, 6)
+    prefix << "svg/";
+    const wxString ext(".svg");
+#else
+    prefix << wxString::Format("%dx%d/", size, size);
+    const wxString ext(".png");
+#endif
 
     // Bitmaps must be added by order of PARSER_IMG_* consts.
-    AddToImageList(list, prefix + _T("class_folder.png")); // PARSER_IMG_CLASS_FOLDER
-    AddToImageList(list, prefix + _T("class.png")); // PARSER_IMG_CLASS
-    AddToImageList(list, prefix + _T("class_private.png")); // PARSER_IMG_CLASS_PRIVATE
-    AddToImageList(list, prefix + _T("class_protected.png")); // PARSER_IMG_CLASS_PROTECTED
-    AddToImageList(list, prefix + _T("class_public.png")); // PARSER_IMG_CLASS_PUBLIC
-    AddToImageList(list, prefix + _T("ctor_private.png")); // PARSER_IMG_CTOR_PRIVATE
-    AddToImageList(list, prefix + _T("ctor_protected.png")); // PARSER_IMG_CTOR_PROTECTED
-    AddToImageList(list, prefix + _T("ctor_public.png")); // PARSER_IMG_CTOR_PUBLIC
-    AddToImageList(list, prefix + _T("dtor_private.png")); // PARSER_IMG_DTOR_PRIVATE
-    AddToImageList(list, prefix + _T("dtor_protected.png")); // PARSER_IMG_DTOR_PROTECTED
-    AddToImageList(list, prefix + _T("dtor_public.png")); // PARSER_IMG_DTOR_PUBLIC
-    AddToImageList(list, prefix + _T("method_private.png")); // PARSER_IMG_FUNC_PRIVATE
-    AddToImageList(list, prefix + _T("method_protected.png")); // PARSER_IMG_FUNC_PRIVATE
-    AddToImageList(list, prefix + _T("method_public.png")); // PARSER_IMG_FUNC_PUBLIC
-    AddToImageList(list, prefix + _T("var_private.png")); // PARSER_IMG_VAR_PRIVATE
-    AddToImageList(list, prefix + _T("var_protected.png")); // PARSER_IMG_VAR_PROTECTED
-    AddToImageList(list, prefix + _T("var_public.png")); // PARSER_IMG_VAR_PUBLIC
-    AddToImageList(list, prefix + _T("macro_def.png")); // PARSER_IMG_MACRO_DEF
-    AddToImageList(list, prefix + _T("enum.png")); // PARSER_IMG_ENUM
-    AddToImageList(list, prefix + _T("enum_private.png")); // PARSER_IMG_ENUM_PRIVATE
-    AddToImageList(list, prefix + _T("enum_protected.png")); // PARSER_IMG_ENUM_PROTECTED
-    AddToImageList(list, prefix + _T("enum_public.png")); // PARSER_IMG_ENUM_PUBLIC
-    AddToImageList(list, prefix + _T("enumerator.png")); // PARSER_IMG_ENUMERATOR
-    AddToImageList(list, prefix + _T("namespace.png")); // PARSER_IMG_NAMESPACE
-    AddToImageList(list, prefix + _T("typedef.png")); // PARSER_IMG_TYPEDEF
-    AddToImageList(list, prefix + _T("typedef_private.png")); // PARSER_IMG_TYPEDEF_PRIVATE
-    AddToImageList(list, prefix + _T("typedef_protected.png")); // PARSER_IMG_TYPEDEF_PROTECTED
-    AddToImageList(list, prefix + _T("typedef_public.png")); // PARSER_IMG_TYPEDEF_PUBLIC
-    AddToImageList(list, prefix + _T("symbols_folder.png")); // PARSER_IMG_SYMBOLS_FOLDER
-    AddToImageList(list, prefix + _T("vars_folder.png")); // PARSER_IMG_VARS_FOLDER
-    AddToImageList(list, prefix + _T("funcs_folder.png")); // PARSER_IMG_FUNCS_FOLDER
-    AddToImageList(list, prefix + _T("enums_folder.png")); // PARSER_IMG_ENUMS_FOLDER
-    AddToImageList(list, prefix + _T("macro_def_folder.png")); // PARSER_IMG_MACRO_DEF_FOLDER
-    AddToImageList(list, prefix + _T("others_folder.png")); // PARSER_IMG_OTHERS_FOLDER
-    AddToImageList(list, prefix + _T("typedefs_folder.png")); // PARSER_IMG_TYPEDEF_FOLDER
-    AddToImageList(list, prefix + _T("macro_use.png")); // PARSER_IMG_MACRO_USE
-    AddToImageList(list, prefix + _T("macro_use_private.png")); // PARSER_IMG_MACRO_USE_PRIVATE
-    AddToImageList(list, prefix + _T("macro_use_protected.png")); // PARSER_IMG_MACRO_USE_PROTECTED
-    AddToImageList(list, prefix + _T("macro_use_public.png")); // PARSER_IMG_MACRO_USE_PUBLIC
-    AddToImageList(list, prefix + _T("macro_use_folder.png")); // PARSER_IMG_MACRO_USE_FOLDER
+    AddToImageList(list, prefix + "class_folder" + ext, size); // PARSER_IMG_CLASS_FOLDER
+    AddToImageList(list, prefix + "class" + ext, size); // PARSER_IMG_CLASS
+    AddToImageList(list, prefix + "class_private" + ext, size); // PARSER_IMG_CLASS_PRIVATE
+    AddToImageList(list, prefix + "class_protected" + ext, size); // PARSER_IMG_CLASS_PROTECTED
+    AddToImageList(list, prefix + "class_public" + ext, size); // PARSER_IMG_CLASS_PUBLIC
+    AddToImageList(list, prefix + "ctor_private" + ext, size); // PARSER_IMG_CTOR_PRIVATE
+    AddToImageList(list, prefix + "ctor_protected" + ext, size); // PARSER_IMG_CTOR_PROTECTED
+    AddToImageList(list, prefix + "ctor_public" + ext, size); // PARSER_IMG_CTOR_PUBLIC
+    AddToImageList(list, prefix + "dtor_private" + ext, size); // PARSER_IMG_DTOR_PRIVATE
+    AddToImageList(list, prefix + "dtor_protected" + ext, size); // PARSER_IMG_DTOR_PROTECTED
+    AddToImageList(list, prefix + "dtor_public" + ext, size); // PARSER_IMG_DTOR_PUBLIC
+    AddToImageList(list, prefix + "method_private" + ext, size); // PARSER_IMG_FUNC_PRIVATE
+    AddToImageList(list, prefix + "method_protected" + ext, size); // PARSER_IMG_FUNC_PRIVATE
+    AddToImageList(list, prefix + "method_public" + ext, size); // PARSER_IMG_FUNC_PUBLIC
+    AddToImageList(list, prefix + "var_private" + ext, size); // PARSER_IMG_VAR_PRIVATE
+    AddToImageList(list, prefix + "var_protected" + ext, size); // PARSER_IMG_VAR_PROTECTED
+    AddToImageList(list, prefix + "var_public" + ext, size); // PARSER_IMG_VAR_PUBLIC
+    AddToImageList(list, prefix + "macro_def" + ext, size); // PARSER_IMG_MACRO_DEF
+    AddToImageList(list, prefix + "enum" + ext, size); // PARSER_IMG_ENUM
+    AddToImageList(list, prefix + "enum_private" + ext, size); // PARSER_IMG_ENUM_PRIVATE
+    AddToImageList(list, prefix + "enum_protected" + ext, size); // PARSER_IMG_ENUM_PROTECTED
+    AddToImageList(list, prefix + "enum_public" + ext, size); // PARSER_IMG_ENUM_PUBLIC
+    AddToImageList(list, prefix + "enumerator" + ext, size); // PARSER_IMG_ENUMERATOR
+    AddToImageList(list, prefix + "namespace" + ext, size); // PARSER_IMG_NAMESPACE
+    AddToImageList(list, prefix + "typedef" + ext, size); // PARSER_IMG_TYPEDEF
+    AddToImageList(list, prefix + "typedef_private" + ext, size); // PARSER_IMG_TYPEDEF_PRIVATE
+    AddToImageList(list, prefix + "typedef_protected" + ext, size); // PARSER_IMG_TYPEDEF_PROTECTED
+    AddToImageList(list, prefix + "typedef_public" + ext, size); // PARSER_IMG_TYPEDEF_PUBLIC
+    AddToImageList(list, prefix + "symbols_folder" + ext, size); // PARSER_IMG_SYMBOLS_FOLDER
+    AddToImageList(list, prefix + "vars_folder" + ext, size); // PARSER_IMG_VARS_FOLDER
+    AddToImageList(list, prefix + "funcs_folder" + ext, size); // PARSER_IMG_FUNCS_FOLDER
+    AddToImageList(list, prefix + "enums_folder" + ext, size); // PARSER_IMG_ENUMS_FOLDER
+    AddToImageList(list, prefix + "macro_def_folder" + ext, size); // PARSER_IMG_MACRO_DEF_FOLDER
+    AddToImageList(list, prefix + "others_folder" + ext, size); // PARSER_IMG_OTHERS_FOLDER
+    AddToImageList(list, prefix + "typedefs_folder" + ext, size); // PARSER_IMG_TYPEDEF_FOLDER
+    AddToImageList(list, prefix + "macro_use" + ext, size); // PARSER_IMG_MACRO_USE
+    AddToImageList(list, prefix + "macro_use_private" + ext, size); // PARSER_IMG_MACRO_USE_PRIVATE
+    AddToImageList(list, prefix + "macro_use_protected" + ext, size); // PARSER_IMG_MACRO_USE_PROTECTED
+    AddToImageList(list, prefix + "macro_use_public" + ext, size); // PARSER_IMG_MACRO_USE_PUBLIC
+    AddToImageList(list, prefix + "macro_use_folder" + ext, size); // PARSER_IMG_MACRO_USE_FOLDER
 
     return list;
 }
@@ -512,9 +520,9 @@ wxArrayString NativeParser::GetAllPathsByFilename(const wxString& filename)
         }
     }
 
-    CCLogger::Get()->DebugLog(F(_T("NativeParser::GetAllPathsByFilename: Found %lu files:"), static_cast<unsigned long>(files.GetCount())));
+    CCLogger::Get()->DebugLog(wxString::Format("NativeParser::GetAllPathsByFilename: Found %zu files:", files.GetCount()));
     for (size_t i=0; i<files.GetCount(); i++)
-        CCLogger::Get()->DebugLog(F(_T("- %s"), files[i].wx_str()));
+        CCLogger::Get()->DebugLog(wxString::Format("- %s", files[i]));
 
     if (!files.IsEmpty())
         AddPaths(dirs, files[0], fn.HasExt());
@@ -566,7 +574,7 @@ ParserBase* NativeParser::CreateParser(cbProject* project)
     m_ParserList.push_back(std::make_pair(project, parser));
 
     wxString prj = (project ? project->GetTitle() : _T("*NONE*"));
-    wxString log(F(_("NativeParser::CreateParser: Finish creating a new parser for project '%s'"), prj.wx_str()));
+    wxString log(wxString::Format(_("NativeParser::CreateParser: Finish creating a new parser for project '%s'"), prj));
     CCLogger::Get()->Log(log);
     CCLogger::Get()->DebugLog(log);
 
@@ -591,7 +599,7 @@ bool NativeParser::DeleteParser(cbProject* project)
 
     if (it == m_ParserList.end())
     {
-        CCLogger::Get()->DebugLog(F(_T("NativeParser::DeleteParser: Parser does not exist for delete '%s'!"), prj.wx_str()));
+        CCLogger::Get()->DebugLog(wxString::Format("NativeParser::DeleteParser: Parser does not exist for delete '%s'!", prj));
         return false;
     }
 
@@ -601,7 +609,7 @@ bool NativeParser::DeleteParser(cbProject* project)
 
     if (m_ParsedProjects.empty()) // this indicates we are in one parser per one project mode
     {
-        wxString log(F(_("NativeParser::DeleteParser: Deleting parser for project '%s'!"), prj.wx_str()));
+        wxString log(wxString::Format(_("NativeParser::DeleteParser: Deleting parser for project '%s'!"), prj));
         CCLogger::Get()->Log(log);
         CCLogger::Get()->DebugLog(log);
 
@@ -845,7 +853,7 @@ size_t NativeParser::MarkItemsByAI(TokenIdxSet& result,
                                    int          caretPos)
 {
     if (s_DebugSmartSense)
-        CCLogger::Get()->DebugLog(F(_T("MarkItemsByAI_1()")));
+        CCLogger::Get()->DebugLog("MarkItemsByAI_1()");
 
     cbEditor* editor = Manager::Get()->GetEditorManager()->GetBuiltinActiveEditor();
     if (!editor)
@@ -1132,8 +1140,8 @@ bool NativeParser::DoFullParsing(cbProject* project, ParserBase* parser)
 
     if (!localSources.empty())
     {
-        CCLogger::Get()->DebugLog(F(_T("NativeParser::DoFullParsing: Added %lu source file(s) for project '%s' to batch-parser..."),
-                                    static_cast<unsigned long>( localSources.size()), prj.wx_str()));
+        CCLogger::Get()->DebugLog(wxString::Format("NativeParser::DoFullParsing: Added %zu source file(s) for project '%s' to batch-parser...",
+                                                   localSources.size(), prj));
 
         // local source files added to Parser
         parser->AddBatchParse(localSources);
@@ -1143,8 +1151,7 @@ bool NativeParser::DoFullParsing(cbProject* project, ParserBase* parser)
 
     long time = timer.Time();
     if (time >= 50)
-        Manager::Get()->GetLogManager()->Log(F(wxT("NativeParser::DoFullParsing took: %.3f seconds."),
-                                               time / 1000.0f));
+        Manager::Get()->GetLogManager()->Log(wxString::Format(_("NativeParser::DoFullParsing took: %.3f seconds."), time / 1000.0f));
     return true;
 }
 
@@ -1161,7 +1168,7 @@ bool NativeParser::SwitchParser(cbProject* project, ParserBase* parser)
     SetParser(parser); // Also updates class browser
 
     wxString prj = (project ? project->GetTitle() : _T("*NONE*"));
-    wxString log(F(_("Switch parser to project '%s'"), prj.wx_str()));
+    wxString log(wxString::Format(_("Switch parser to project '%s'"), prj));
     CCLogger::Get()->Log(log);
     CCLogger::Get()->DebugLog(log);
 
@@ -1240,7 +1247,7 @@ void NativeParser::RemoveObsoleteParsers()
 
     for (size_t i = 0; i < removedProjectNames.GetCount(); ++i)
     {
-        wxString log(F(_("NativeParser::RemoveObsoleteParsers:Removed obsolete parser of '%s'"), removedProjectNames[i].wx_str()));
+        wxString log(wxString::Format(_("NativeParser::RemoveObsoleteParsers:Removed obsolete parser of '%s'"), removedProjectNames[i]));
         CCLogger::Get()->Log(log);
         CCLogger::Get()->DebugLog(log);
     }
@@ -1301,8 +1308,8 @@ size_t NativeParser::AI(TokenIdxSet&    result,
     // Do the whole job here
     if (s_DebugSmartSense)
     {
-        CCLogger::Get()->DebugLog(_T("AI() ========================================================="));
-        CCLogger::Get()->DebugLog(F(_T("AI() Doing AI for '%s':"), actual_search.wx_str()));
+        CCLogger::Get()->DebugLog("AI() =========================================================");
+        CCLogger::Get()->DebugLog(wxString::Format("AI() Doing AI for '%s':", actual_search));
     }
     TRACE(_T("NativeParser::AI()"));
 
@@ -1349,7 +1356,7 @@ size_t NativeParser::AI(TokenIdxSet&    result,
     ResolveExpression(tree, components, *search_scope, result, caseSensitive, isPrefix);
 
     if (s_DebugSmartSense)
-        CCLogger::Get()->DebugLog(F(_T("AI() AI leave, returned %lu results"),static_cast<unsigned long>(result.size())));
+        CCLogger::Get()->DebugLog(wxString::Format("AI() AI leave, returned %zu results", result.size()));
 
     return result.size();
 }
@@ -1416,8 +1423,8 @@ int NativeParser::FindCurrentFunctionStart(ccSearchData* searchData,
     if ((pos < 0) || (pos > searchData->control->GetLength()))
     {
         if (s_DebugSmartSense)
-            CCLogger::Get()->DebugLog(F(_T("FindCurrentFunctionStart() Cannot determine position. caretPos=%d, control=%d"),
-                                        caretPos, searchData->control->GetCurrentPos()));
+            CCLogger::Get()->DebugLog(wxString::Format("FindCurrentFunctionStart() Cannot determine position. caretPos=%d, control=%d",
+                                                       caretPos, searchData->control->GetCurrentPos()));
         return -1;
     }
 
@@ -1433,15 +1440,14 @@ int NativeParser::FindCurrentFunctionStart(ccSearchData* searchData,
         if (functionIndex) *functionIndex = m_LastFunctionIndex;
 
         if (s_DebugSmartSense)
-            CCLogger::Get()->DebugLog(F(_T("FindCurrentFunctionStart() Cached namespace='%s', cached proc='%s' (returning %d)"),
-                                        m_LastNamespace.wx_str(), m_LastPROC.wx_str(), m_LastResult));
+            CCLogger::Get()->DebugLog(wxString::Format("FindCurrentFunctionStart() Cached namespace='%s', cached proc='%s' (returning %d)",
+                                                       m_LastNamespace, m_LastPROC, m_LastResult));
 
         return m_LastResult;
     }
 
     if (s_DebugSmartSense)
-        CCLogger::Get()->DebugLog(F(_T("FindCurrentFunctionStart() Looking for tokens in '%s'"),
-                                    searchData->file.wx_str()));
+        CCLogger::Get()->DebugLog(wxString::Format("FindCurrentFunctionStart() Looking for tokens in '%s'", searchData->file));
     m_LastFile    = searchData->file;
     m_LastControl = searchData->control;
     m_LastLine    = curLine;
@@ -1451,7 +1457,7 @@ int NativeParser::FindCurrentFunctionStart(ccSearchData* searchData,
     TokenIdxSet result;
     size_t num_results = m_Parser->FindTokensInFile(searchData->file, result, tkAnyFunction | tkClass);
     if (s_DebugSmartSense)
-        CCLogger::Get()->DebugLog(F(_T("FindCurrentFunctionStart() Found %lu results"), static_cast<unsigned long>(num_results)));
+        CCLogger::Get()->DebugLog(wxString::Format("FindCurrentFunctionStart() Found %zu results", num_results));
 
     TokenTree* tree = m_Parser->GetTokenTree();
 
@@ -1463,9 +1469,8 @@ int NativeParser::FindCurrentFunctionStart(ccSearchData* searchData,
     {
         // got it :)
         if (s_DebugSmartSense)
-            CCLogger::Get()->DebugLog(F(_T("FindCurrentFunctionStart() Current function: '%s' (at line %u)"),
-                                        token->DisplayName().wx_str(),
-                                        token->m_ImplLine));
+            CCLogger::Get()->DebugLog(wxString::Format("FindCurrentFunctionStart() Current function: '%s' (at line %u)",
+                                                       token->DisplayName(), token->m_ImplLine));
 
         m_LastNamespace      = token->GetNamespace();
         m_LastPROC           = token->m_Name;
@@ -1498,8 +1503,8 @@ int NativeParser::FindCurrentFunctionStart(ccSearchData* searchData,
         if (functionIndex) *functionIndex = token->m_Index;
 
         if (s_DebugSmartSense)
-            CCLogger::Get()->DebugLog(F(_T("FindCurrentFunctionStart() Namespace='%s', proc='%s' (returning %d)"),
-                                        m_LastNamespace.wx_str(), m_LastPROC.wx_str(), m_LastResult));
+            CCLogger::Get()->DebugLog(wxString::Format("FindCurrentFunctionStart() Namespace='%s', proc='%s' (returning %d)",
+                                                       m_LastNamespace, m_LastPROC, m_LastResult));
 
         CC_LOCKER_TRACK_TT_MTX_UNLOCK(s_TokenTreeMutex)
         return m_LastResult;
@@ -1508,7 +1513,7 @@ int NativeParser::FindCurrentFunctionStart(ccSearchData* searchData,
     CC_LOCKER_TRACK_TT_MTX_UNLOCK(s_TokenTreeMutex)
 
     if (s_DebugSmartSense)
-        CCLogger::Get()->DebugLog(_T("FindCurrentFunctionStart() Can't determine current function..."));
+        CCLogger::Get()->DebugLog("FindCurrentFunctionStart() Can't determine current function...");
 
     m_LastResult = -1;
     return -1;
@@ -1563,8 +1568,8 @@ bool NativeParser::ParseBufferForUsingNamespace(const wxString& buffer, TokenIdx
         {
             const Token* token = tree->at(parentIdx);
             if (token)
-                CCLogger::Get()->DebugLog(F(_T("ParseUsingNamespace() Found %s%s"),
-                                            token->GetNamespace().wx_str(), token->m_Name.wx_str()));
+                CCLogger::Get()->DebugLog(wxString::Format("ParseUsingNamespace() Found %s%s",
+                                                           token->GetNamespace(), token->m_Name));
         }
         search_scope.insert(parentIdx);
     }
@@ -1634,7 +1639,7 @@ bool NativeParser::ParseFunctionArguments(ccSearchData* searchData, int caretPos
             buffer.Trim();
 
             if (s_DebugSmartSense)
-                CCLogger::Get()->DebugLog(F(_T("ParseFunctionArguments() Parsing arguments: \"%s\""), buffer.wx_str()));
+                CCLogger::Get()->DebugLog(wxString::Format("ParseFunctionArguments() Parsing arguments: \"%s\"", buffer));
 
             if (!buffer.IsEmpty())
             {
@@ -1715,8 +1720,8 @@ bool NativeParser::ParseLocalBlock(ccSearchData* searchData, TokenIdxSet& search
         {
             if (s_DebugSmartSense)
             {
-                CCLogger::Get()->DebugLog(F(_T("ParseLocalBlock() ERROR blockEnd=%d and edLength=%d?!"),
-                                            blockEnd, stc->GetLength()));
+                CCLogger::Get()->DebugLog(wxString::Format("ParseLocalBlock() ERROR blockEnd=%d and edLength=%d?!",
+                                                           blockEnd, stc->GetLength()));
             }
             return false;
         }
@@ -1802,8 +1807,8 @@ bool NativeParser::ParseLocalBlock(ccSearchData* searchData, TokenIdxSet& search
         {
             if (s_DebugSmartSense)
             {
-                CCLogger::Get()->DebugLog(F(_T("ParseLocalBlock() Block:\n%s"), buffer.wx_str()));
-                CCLogger::Get()->DebugLog(_T("ParseLocalBlock() Local tokens:"));
+                CCLogger::Get()->DebugLog(wxString::Format("ParseLocalBlock() Block:\n%s", buffer));
+                CCLogger::Get()->DebugLog("ParseLocalBlock() Local tokens:");
 
                 TokenTree* tree = m_Parser->GetTokenTree();
 
@@ -1814,10 +1819,10 @@ bool NativeParser::ParseLocalBlock(ccSearchData* searchData, TokenIdxSet& search
                     const Token* token = tree->at(i);
                     if (token && token->m_IsTemp)
                     {
-                        wxString log(wxString::Format(_T(" + %s (%d)"), token->DisplayName().wx_str(), token->m_Index));
+                        wxString log(wxString::Format(" + %s (%d)", token->DisplayName(), token->m_Index));
                         const Token* parent = tree->at(token->m_ParentIndex);
                         if (parent)
-                            log += wxString::Format(_T("; Parent = %s (%d)"), parent->m_Name.wx_str(), token->m_ParentIndex);
+                            log += wxString::Format("; Parent = %s (%d)", parent->m_Name, token->m_ParentIndex);
                         CCLogger::Get()->DebugLog(log);
                     }
                 }
@@ -1987,7 +1992,7 @@ bool NativeParser::AddCompilerPredefinedMacrosGCC(const wxString& compilerId, cb
 #endif
 
         wxArrayString output, error;
-        if ( !SafeExecute(compiler->GetMasterPath(), compiler->GetPrograms().CPP, args, output, error) )
+        if ( !SafeExecute(compiler->GetMasterPath(), compiler->GetExtraPaths(), compiler->GetPrograms().CPP, args, output, error) )
             return false;
 
         // wxExecute can be a long action and C::B might have been shutdown in the meantime...
@@ -2074,7 +2079,7 @@ bool NativeParser::AddCompilerPredefinedMacrosVC(const wxString& compilerId, wxS
     }
 
     wxArrayString output, error;
-    if ( !SafeExecute(compiler->GetMasterPath(), compiler->GetPrograms().C, wxEmptyString, output, error) )
+    if ( !SafeExecute(compiler->GetMasterPath(), compiler->GetExtraPaths(), compiler->GetPrograms().C, wxEmptyString, output, error) )
         return false;
 
     // wxExecute can be a long action and C::B might have been shutdown in the meantime...
@@ -2224,14 +2229,14 @@ void NativeParser::AddCompilerIncludeDirsToParser(const Compiler* compiler, Pars
         // to find it's internal include paths
         // but do only once per C::B session, thus cache for later calls
         if (compiler->GetID().Contains(_T("gcc")))
-            AddGCCCompilerDirs(compiler->GetMasterPath(), compiler->GetPrograms().CPP, parser);
+            AddGCCCompilerDirs(compiler->GetMasterPath(), compiler->GetExtraPaths(), compiler->GetPrograms().CPP, parser);
     }
 }
 
 // These dirs are the built-in search dirs of the compiler itself (GCC).
 // Such as when you install your MinGW GCC in E:/code/MinGW/bin
 // The built-in search dir may contain: E:/code/MinGW/include
-const wxArrayString& NativeParser::GetGCCCompilerDirs(const wxString& cpp_path, const wxString& cpp_executable)
+const wxArrayString& NativeParser::GetGCCCompilerDirs(const wxString& cpp_path, const wxArrayString& extra_path, const wxString& cpp_executable)
 {
     wxString sep = (platform::windows ? _T("\\") : _T("/"));
     wxString cpp_compiler = cpp_path + sep + _T("bin") + sep + cpp_executable;
@@ -2262,7 +2267,7 @@ const wxArrayString& NativeParser::GetGCCCompilerDirs(const wxString& cpp_path, 
 #endif
 
     wxArrayString output, error;
-    if ( !SafeExecute(cpp_path, cpp_executable, args, output, error) )
+    if ( !SafeExecute(cpp_path, extra_path, cpp_executable, args, output, error) )
         return cached_result;
 
     // wxExecute can be a long action and C::B might have been shutdown in the meantime...
@@ -2299,10 +2304,10 @@ const wxArrayString& NativeParser::GetGCCCompilerDirs(const wxString& cpp_path, 
     return dirs[cpp_compiler];
 }
 
-void NativeParser::AddGCCCompilerDirs(const wxString& masterPath, const wxString& compilerCpp, ParserBase* parser)
+void NativeParser::AddGCCCompilerDirs(const wxString& masterPath, const wxArrayString& extraPath, const wxString& compilerCpp, ParserBase* parser)
 {
-    const wxArrayString& gccDirs = GetGCCCompilerDirs(masterPath, compilerCpp);
-    TRACE(_T("NativeParser::AddGCCCompilerDirs: Adding %lu cached gcc dirs to parser..."), static_cast<unsigned long>(gccDirs.GetCount()));
+    const wxArrayString& gccDirs = GetGCCCompilerDirs(masterPath, extraPath, compilerCpp);
+    TRACE(wxString::Format("NativeParser::AddGCCCompilerDirs: Adding %zu cached gcc dirs to parser...", gccDirs.GetCount()));
     for (size_t i=0; i<gccDirs.GetCount(); ++i)
     {
         parser->AddIncludeDir(gccDirs[i]);
@@ -2325,14 +2330,14 @@ void NativeParser::AddIncludeDirsToParser(const wxArrayString& dirs, const wxStr
                 TRACE(_T("NativeParser::AddIncludeDirsToParser: Adding directory to parser: ") + fn.GetFullPath());
             }
             else
-                CCLogger::Get()->DebugLog(F(_T("NativeParser::AddIncludeDirsToParser: Error normalizing path: '%s' from '%s'"), dir.wx_str(), base.wx_str()));
+                CCLogger::Get()->DebugLog(wxString::Format("NativeParser::AddIncludeDirsToParser: Error normalizing path: '%s' from '%s'", dir, base));
         }
         else
             parser->AddIncludeDir(dir); // no base path, nothing to normalise
     }
 }
 
-bool NativeParser::SafeExecute(const wxString& app_path, const wxString& app, const wxString& args, wxArrayString& output, wxArrayString& error)
+bool NativeParser::SafeExecute(const wxString& app_path, const wxArrayString& extra_path, const wxString& app, const wxString& args, wxArrayString& output, wxArrayString& error)
 {
     wxString sep = (platform::windows ? _T("\\") : _T("/"));
     wxString pth = (app_path.IsEmpty() ? _T("") : (app_path + sep + _T("bin") + sep));
@@ -2359,7 +2364,24 @@ bool NativeParser::SafeExecute(const wxString& app_path, const wxString& app, co
     wxString path_env;
     if ( !pth.IsEmpty() && wxGetEnv(_T("PATH"), &path_env) )
     {
-        wxString tmp_path_env = pth + (platform::windows ? _T(";") : _T(":")) + path_env;
+        wxString tmp_path_env = pth + (platform::windows ? _T(";") : _T(":"));
+        if ( extra_path.GetCount() > 0 )
+        {
+            for (size_t i = 0; i < extra_path.GetCount(); ++i)
+            {
+                wxString expth = extra_path[i];
+                if ( !expth.IsEmpty() )
+                {
+                    Manager::Get()->GetMacrosManager()->ReplaceMacros(expth);
+                    while (!expth.IsEmpty() && (expth.Last() == '\\' || expth.Last() == '/'))
+                        expth.RemoveLast();
+
+                    if (!expth.Trim().IsEmpty())
+                        tmp_path_env = tmp_path_env + expth + (platform::windows ? _T(";") : _T(":"));
+                }
+            }
+        }
+        tmp_path_env = tmp_path_env + path_env;
         if ( !wxSetEnv(_T("PATH"), tmp_path_env) )
         {   CCLogger::Get()->DebugLog(_T("NativeParser::SafeExecute: Could not set PATH environment variable: ") + tmp_path_env); }
     }
@@ -2390,30 +2412,30 @@ void NativeParser::OnParserStart(wxCommandEvent& event)
     switch (state)
     {
         case ParserCommon::ptCreateParser:
-            CCLogger::Get()->DebugLog(F(_("NativeParser::OnParserStart: Starting batch parsing for project '%s'..."), prj.wx_str()));
+            CCLogger::Get()->DebugLog(wxString::Format(_("NativeParser::OnParserStart: Starting batch parsing for project '%s'..."), prj));
             {
                 std::pair<cbProject*, ParserBase*> info = GetParserInfoByCurrentEditor();
                 if (info.second && m_Parser != info.second)
                 {
-                    CCLogger::Get()->DebugLog(_T("NativeParser::OnParserStart: Start switch from OnParserStart::ptCreateParser"));
+                    CCLogger::Get()->DebugLog("NativeParser::OnParserStart: Start switch from OnParserStart::ptCreateParser");
                     SwitchParser(info.first, info.second); // Calls SetParser() which also calls UpdateClassBrowserView()
                 }
             }
             break;
 
         case ParserCommon::ptAddFileToParser:
-            CCLogger::Get()->DebugLog(F(_("NativeParser::OnParserStart: Starting add file parsing for project '%s'..."), prj.wx_str()));
+            CCLogger::Get()->DebugLog(wxString::Format(_("NativeParser::OnParserStart: Starting add file parsing for project '%s'..."), prj));
             break;
 
         case ParserCommon::ptReparseFile:
-            CCLogger::Get()->DebugLog(F(_("NativeParser::OnParserStart: Starting re-parsing for project '%s'..."), prj.wx_str()));
+            CCLogger::Get()->DebugLog(wxString::Format(_("NativeParser::OnParserStart: Starting re-parsing for project '%s'..."), prj));
             break;
 
         case ParserCommon::ptUndefined:
             if (event.GetString().IsEmpty())
-                CCLogger::Get()->DebugLog(F(_("NativeParser::OnParserStart: Batch parsing error in project '%s'"), prj.wx_str()));
+                CCLogger::Get()->DebugLog(wxString::Format(_("NativeParser::OnParserStart: Batch parsing error in project '%s'"), prj));
             else
-                CCLogger::Get()->DebugLog(F(_("NativeParser::OnParserStart: %s in project '%s'"), event.GetString().wx_str(), prj.wx_str()));
+                CCLogger::Get()->DebugLog(wxString::Format(_("NativeParser::OnParserStart: %s in project '%s'"), event.GetString(), prj));
             return;
 
         default:
@@ -2438,7 +2460,7 @@ void NativeParser::OnParserEnd(wxCommandEvent& event)
     {
         case ParserCommon::ptCreateParser:
             {
-                wxString log(F(_("NativeParser::OnParserEnd: Project '%s' parsing stage done!"), prj.wx_str()));
+                wxString log(wxString::Format(_("NativeParser::OnParserEnd: Project '%s' parsing stage done!"), prj));
                 CCLogger::Get()->Log(log);
                 CCLogger::Get()->DebugLog(log);
             }
@@ -2460,7 +2482,7 @@ void NativeParser::OnParserEnd(wxCommandEvent& event)
             break;
 
         case ParserCommon::ptUndefined:
-            CCLogger::Get()->DebugLog(F(_T("NativeParser::OnParserEnd: Parser event handling error of project '%s'"), prj.wx_str()));
+            CCLogger::Get()->DebugLog(wxString::Format("NativeParser::OnParserEnd: Parser event handling error of project '%s'", prj));
             return;
 
         default:
@@ -2521,7 +2543,7 @@ void NativeParser::OnParsingOneByOneTimer(cb_unused wxTimerEvent& event)
                         // AddProjectToParser return true means there are something need to parse, otherwise, it is false
                         if (!AddProjectToParser(projs->Item(i)))
                         {
-                            CCLogger::Get()->Log(_T("NativeParser::OnParsingOneByOneTimer: nothing need to parse in this project, try next project."));
+                            CCLogger::Get()->Log(_("NativeParser::OnParsingOneByOneTimer: nothing need to parse in this project, try next project."));
                             continue;
                         }
 
@@ -2658,7 +2680,7 @@ bool NativeParser::AddProjectToParser(cbProject* project)
     }
 
     // TODO (ollydbg#1#) did exactly the same thing as the function NativeParser::DoFullParsing()?
-    wxString log(F(_("NativeParser::AddProjectToParser: Add project (%s) to parser"), prj.wx_str()));
+    wxString log(wxString::Format(_("NativeParser::AddProjectToParser: Add project (%s) to parser"), prj));
     CCLogger::Get()->Log(log);
     CCLogger::Get()->DebugLog(log);
 
@@ -2702,7 +2724,8 @@ bool NativeParser::AddProjectToParser(cbProject* project)
             }
         }
 
-        CCLogger::Get()->DebugLog(F(_("NativeParser::AddProjectToParser: Done adding %lu files of project (%s) to parser."), static_cast<unsigned long>(fileCount), prj.wx_str()));
+        CCLogger::Get()->DebugLog(wxString::Format(_("NativeParser::AddProjectToParser: Done adding %zu files of project (%s) to parser."),
+                                                   fileCount, prj));
 
         // in some cases, all the files were already be parsed, so fileCount is still 0
         return ((fileCount>0) || needParseMacros);
@@ -2716,7 +2739,7 @@ bool NativeParser::AddProjectToParser(cbProject* project)
             parser->AddIncludeDir(file.GetPath());
             m_StandaloneFiles.Add(editor->GetFilename());
 
-            CCLogger::Get()->DebugLog(F(_("NativeParser::AddProjectToParser: Done adding stand-alone file (%s) of editor to parser."), editor->GetFilename().wx_str()));
+            CCLogger::Get()->DebugLog(wxString::Format(_("NativeParser::AddProjectToParser: Done adding stand-alone file (%s) of editor to parser."), editor->GetFilename()));
             return true;
         }
     }
@@ -2736,7 +2759,7 @@ bool NativeParser::RemoveProjectFromParser(cbProject* project)
         return true;
 
     wxString prj = (project ? project->GetTitle() : _T("*NONE*"));
-    wxString log(F(_("Remove project (%s) from parser"), prj.wx_str()));
+    wxString log(wxString::Format(_("Remove project (%s) from parser"), prj));
     CCLogger::Get()->Log(log);
     CCLogger::Get()->DebugLog(log);
 

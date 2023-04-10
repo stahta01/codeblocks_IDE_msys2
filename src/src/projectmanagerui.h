@@ -2,12 +2,15 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12754 $
- * $Id: projectmanagerui.h 12754 2022-03-16 23:26:14Z bluehazzard $
+ * $Revision: 13191 $
+ * $Id: projectmanagerui.h 13191 2023-02-03 23:06:49Z bluehazzard $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/projectmanagerui.h $
  */
 
 #include "projectmanager.h"
+#include <wx/fswatcher.h>
+#include <wx/timer.h>
+#include "cbproject.h"
 
 #include <wx/dnd.h>
 #include <wx/dataobj.h>
@@ -176,6 +179,8 @@ class ProjectManagerUI : public wxEvtHandler, public cbProjectManagerUI
         void OnSetActiveProject(wxCommandEvent& event);
         void OnAddFilesToProjectRecursively(wxCommandEvent& event);
         void OnAddFileToProject(wxCommandEvent& event);
+        void OnManageGlobs(wxCommandEvent& event);
+        void OnManageGlobsContext(cb_unused wxCommandEvent& event);
         void OnRemoveFileFromProject(wxCommandEvent& event);
         void OnRenameFile(wxCommandEvent& event);
         void OnSaveProject(wxCommandEvent& event);
@@ -186,6 +191,7 @@ class ProjectManagerUI : public wxEvtHandler, public cbProjectManagerUI
         void OnOpenFolderFiles(wxCommandEvent& event);
         void OnOpenWith(wxCommandEvent& event);
         void OnProperties(wxCommandEvent& event);
+        void OnOpenFileInSystemBrowser(wxCommandEvent& event);
         void OnFileOptions(wxCommandEvent &event);
         void OnNotes(wxCommandEvent& event);
         void OnGotoFile(wxCommandEvent& event);
@@ -204,6 +210,7 @@ class ProjectManagerUI : public wxEvtHandler, public cbProjectManagerUI
         void OnUpdateUI(wxUpdateUIEvent& event);
         void OnIdle(wxIdleEvent& event);
         void OnKeyDown(wxTreeEvent& event);
+
 
 
         /** Move a project up in the project manager tree. This effectively
@@ -230,7 +237,33 @@ class ProjectManagerUI : public wxEvtHandler, public cbProjectManagerUI
         void BuildProjectTree(cbProject* project, cbTreeCtrl* tree, const wxTreeItemId& root,
                               int ptvs, FilesGroupsAndMasks* fgam);
 
+        /** Reload the File system watcher for the project prj **/
+        void ReloadFileSystemWatcher(cbProject* prj);
+
     private:
+
+        struct FileSystemWatcher
+        {
+            std::unique_ptr<wxFileSystemWatcher> watcher;
+            std::function<void(wxFileSystemWatcherEvent&)> handler;
+        };
+
+        struct FileSystemEventObject : public wxObject
+        {
+            FileSystemEventObject(cbProject* pj,ProjectGlob gl) : project(pj), glob(gl) {};
+            cbProject* project;
+            ProjectGlob glob;
+
+            bool operator==(const FileSystemEventObject& rhs) const
+            {
+                return project == rhs.project && glob == rhs.glob;
+            }
+        };
+
+        void OnFileSystemEvent(wxFileSystemWatcherEvent& evt);
+        void OnFileSystemTimer(wxTimerEvent& evt);
+        std::vector<FileSystemEventObject> m_globsToUpdate;
+
         cbAuiNotebook*       m_pNotebook;
         cbTreeCtrl*          m_pTree;
         wxTreeItemId         m_TreeRoot;
@@ -240,6 +273,8 @@ class ProjectManagerUI : public wxEvtHandler, public cbProjectManagerUI
         wxArrayTreeItemIds   m_DraggingSelection;
         wxTreeItemId         m_RightClickItem;
         bool                 m_isCheckingForExternallyModifiedProjects;
+        std::map<cbProject*, std::vector<FileSystemWatcher>> m_FileSystemWatcherMap;
+        wxTimer              m_fileSystemTimer;
 
     private:
         DECLARE_EVENT_TABLE()
@@ -292,4 +327,6 @@ class BatchProjectManagerUI : public cbProjectManagerUI
         void ConfigureProjectDependencies(cb_unused cbProject* base,
                                           cb_unused wxWindow *parent) override {}
         void SwitchToProjectsPage() override {}
+        void ReloadFileSystemWatcher(cbProject* prj) override {}
 };
+

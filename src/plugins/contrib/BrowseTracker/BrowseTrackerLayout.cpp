@@ -16,7 +16,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-// RCS-ID: $Id: BrowseTrackerLayout.cpp 12602 2021-12-21 07:26:04Z wh11204 $
+// RCS-ID: $Id: BrowseTrackerLayout.cpp 13103 2022-12-09 14:16:20Z wh11204 $
 
 /*
 * This file is part of Code::Bocks, an open-source cross-platform IDE
@@ -25,8 +25,8 @@
 * This program is distributed under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 *
-* $Revision: 12602 $
-* $Id: BrowseTrackerLayout.cpp 12602 2021-12-21 07:26:04Z wh11204 $
+* $Revision: 13103 $
+* $Id: BrowseTrackerLayout.cpp 13103 2022-12-09 14:16:20Z wh11204 $
 * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/contrib/BrowseTracker/BrowseTrackerLayout.cpp $
 */
 
@@ -284,18 +284,17 @@ void BrowseTrackerLayout::DumpBrowse_Marks( const wxString /*hashType*/, FileBro
 // ----------------------------------------------------------------------------
 {
     #if defined(LOGGING)
-    LOGIT( _T("--- DumpBrowseData ---[%s]"), hashType.c_str()  );
+    LOGIT(wxString::Format("--- DumpBrowseData ---[%s]", hashType));
 
     FileBrowse_MarksHash* phash = &m_FileBrowse_MarksArchive;
     #if defined(LOGGING)
-    LOGIT( _T("Dump_%s Size[%lu]"), hashType.wx_str(), static_cast<unsigned long>(phash->size()) );
+    LOGIT(wxString::Format("Dump_%s Size[%zu]", hashType, phash->size()));
     #endif
     for (FileBrowse_MarksHash::iterator it = phash->begin(); it != phash->end(); ++it)
     {
         wxString filename = it->first;
         BrowseMarks* p = it->second;
-        LOGIT( _T("Filename[%s]%s*[%p]name[%s]"), filename.c_str(), hashType.c_str(), p,
-              (p ? p->GetFilePath().c_str() : ""));
+        LOGIT(wxString::Format("Filename[%s]%s*[%p]name[%s]"), filename, hashType, p, (p ? p->GetFilePath() : wxString()));
         if (p)
         {
             //dump the browse marks

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12578 $
- * $Id: editorlexerloader.cpp 12578 2021-12-14 08:57:56Z wh11204 $
+ * $Revision: 12995 $
+ * $Id: editorlexerloader.cpp 12995 2022-10-28 07:22:31Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editorlexerloader.cpp $
  */
 
@@ -35,7 +35,7 @@ EditorLexerLoader::~EditorLexerLoader()
 
 void EditorLexerLoader::Load(LoaderBase* loader)
 {
-    Manager::Get()->GetLogManager()->Log(_("Loading ") + wxFileName(loader->FileName()).GetName());
+    Manager::Get()->GetLogManager()->Log(wxString::Format(_("Loading %s"), wxFileName(loader->FileName()).GetName()));
 
     TiXmlDocument doc;
     doc.Parse(loader->GetData());

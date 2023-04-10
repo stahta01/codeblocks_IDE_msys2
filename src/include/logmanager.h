@@ -53,14 +53,17 @@
     }
 //} // namespace cb
 
-
 struct DLLIMPORT LogSlot
 {
     friend class LogManager;
 
     Logger*   log;
     size_t    index;
+#if wxCHECK_VERSION(3, 1, 6)
+    wxBitmapBundle* icon;
+#else
     wxBitmap* icon;
+#endif
     wxString  title;
 
     LogSlot();

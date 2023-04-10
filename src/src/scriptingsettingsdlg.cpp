@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12088 $
- * $Id: scriptingsettingsdlg.cpp 12088 2020-05-18 22:43:59Z fuscated $
+ * $Revision: 12999 $
+ * $Id: scriptingsettingsdlg.cpp 12999 2022-11-01 13:12:28Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/scriptingsettingsdlg.cpp $
  */
 
@@ -226,7 +226,7 @@ void ScriptingSettingsDlg::SaveItem(long item)
 
 void ScriptingSettingsDlg::OnListSelection(wxListEvent& event)
 {
-//    Manager::Get()->GetLogManager()->DebugLog(F(_T("Selected %d"), event.GetIndex()));
+//    Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Selected %d", event.GetIndex()));
 
     // load
     long sel = event.GetIndex();
@@ -237,7 +237,7 @@ void ScriptingSettingsDlg::OnListSelection(wxListEvent& event)
 
 void ScriptingSettingsDlg::OnListDeselection(wxListEvent& event)
 {
-//    Manager::Get()->GetLogManager()->DebugLog(F(_T("Deselected %d"), event.GetIndex()));
+//    Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Deselected %d", event.GetIndex()));
 
     // save
     long sel = event.GetIndex();

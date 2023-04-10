@@ -15,8 +15,8 @@
 * You should have received a copy of the GNU General Public License
 * along with wxSmith. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Revision: 10681 $
-* $Id: wxsfontfaceeditordlg.h 10681 2016-01-22 10:45:30Z mortenmacfly $
+* $Revision: 13182 $
+* $Id: wxsfontfaceeditordlg.h 13182 2023-02-01 03:15:11Z ollydbg $
 * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/contrib/wxSmith/wxwidgets/properties/wxsfontfaceeditordlg.h $
 */
 
@@ -24,10 +24,6 @@
 #define WXSFONTFACEEDITORDLG_H
 
 #include <wx/wxprec.h>
-
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
 
 //(*Headers(wxsFontFaceEditorDlg)
 #include <wx/sizer.h>

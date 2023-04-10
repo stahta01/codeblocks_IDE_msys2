@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12660 $
- * $Id: cbeditor.cpp 12660 2022-01-17 23:47:00Z bluehazzard $
+ * $Revision: 13204 $
+ * $Id: cbeditor.cpp 13204 2023-02-11 11:37:59Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbeditor.cpp $
  */
 
@@ -129,7 +129,7 @@ struct cbEditorInternalData
                 m_encoding            = enc.GetFontEncoding();
             }
 #ifdef fileload_measuring
-            Manager::Get()->GetLogManager()->DebugLog(F(_T("Encoding via fileloader took : %d ms"),(int)sw.Time()));
+            Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Encoding via fileloader took : %ld ms", sw.Time()));
 #endif
         }
     }
@@ -355,15 +355,23 @@ struct cbEditorInternalData
 
     static void SetupBreakpointMarkers(cbStyledTextCtrl* control, int size)
     {
-        wxString basepath = ConfigManager::GetDataFolder() + wxT("/manager_resources.zip#zip:/images/");
-        basepath += wxString::Format(wxT("%dx%d/"), size, size);
-        ConfigManager* mgr = Manager::Get()->GetConfigManager(_T("editor"));
-        bool imageBP = mgr->ReadBool(_T("/margin_1_image_bp"), true);
+        ConfigManager* mgr = Manager::Get()->GetConfigManager("editor");
+        bool imageBP = mgr->ReadBool("/margin_1_image_bp", true);
         if (imageBP)
         {
-            wxBitmap iconBP    = cbLoadBitmap(basepath + wxT("breakpoint.png"),          wxBITMAP_TYPE_PNG);
-            wxBitmap iconBPDis = cbLoadBitmap(basepath + wxT("breakpoint_disabled.png"), wxBITMAP_TYPE_PNG);
-            wxBitmap iconBPOth = cbLoadBitmap(basepath + wxT("breakpoint_other.png"),    wxBITMAP_TYPE_PNG);
+            wxString prefix(ConfigManager::GetDataFolder() + wxT("/manager_resources.zip#zip:/images/"));
+#if wxCHECK_VERSION(3, 1, 6)
+            prefix << "svg/";
+            const wxSize sz(size, size);
+            wxBitmap iconBP    = cbLoadBitmapBundleFromSVG(prefix + "breakpoint.svg", sz).GetBitmap(wxDefaultSize);
+            wxBitmap iconBPDis = cbLoadBitmapBundleFromSVG(prefix + "breakpoint_disabled.svg", sz).GetBitmap(wxDefaultSize);
+            wxBitmap iconBPOth = cbLoadBitmapBundleFromSVG(prefix + "breakpoint_other.svg", sz).GetBitmap(wxDefaultSize);
+#else
+            prefix << wxString::Format("%dx%d/", size, size);
+            wxBitmap iconBP    = cbLoadBitmap(prefix + "breakpoint.png");
+            wxBitmap iconBPDis = cbLoadBitmap(prefix + "breakpoint_disabled.png");
+            wxBitmap iconBPOth = cbLoadBitmap(prefix + "breakpoint_other.png");
+#endif
             if (iconBP.IsOk() && iconBPDis.IsOk() && iconBPOth.IsOk())
             {
                 control->MarkerDefineBitmap(BREAKPOINT_MARKER,          iconBP   );
@@ -373,6 +381,7 @@ struct cbEditorInternalData
             else
                 imageBP = false; // apply default markers
         }
+
         if (!imageBP)
         {
             control->MarkerDefine(BREAKPOINT_MARKER,                 BREAKPOINT_STYLE);
@@ -761,7 +770,7 @@ static int DetectLineEnds(cbStyledTextCtrl* control)
     {
         //In mixed EOL file, give the user a beep and InfoWindow notification.
         wxBell();
-        InfoWindow::Display(_("Mixed Line Endings"), _("Mixed line endings found, setting mode ") + eolModeStr, delay);
+        InfoWindow::Display(_("Mixed Line Endings"), wxString::Format(_("Mixed line endings found, setting mode %s"), eolModeStr), delay);
     }
     return eolMode;
 }
@@ -917,12 +926,12 @@ void cbEditor::DoInitializations(const wxString& filename, LoaderBase* fileLdr)
     else
     {
         static int untitledCounter = 1;
-        wxString f;
         cbProject* prj = Manager::Get()->GetProjectManager()->GetActiveProject();
+        wxString f;
         if (prj)
-            f.Printf(_("%sUntitled%d"), prj->GetBasePath().c_str(), untitledCounter++);
-        else
-            f.Printf(_("Untitled%d"), untitledCounter++);
+            f = prj->GetBasePath();
+
+        f << _("Untitled") << untitledCounter++;
 
         InitFilename(f);
     }
@@ -1934,7 +1943,7 @@ bool cbEditor::Open(bool detectEncoding)
 
     ConfigManager* mgr = Manager::Get()->GetConfigManager(_T("editor"));
 #ifdef fileload_measuring
-    Manager::Get()->GetLogManager()->DebugLog(F(_T("cbEditor::Open() => Encoding detection and conversion took : %d ms"),(int)sw.Time()));
+    Manager::Get()->GetLogManager()->DebugLog(wxString::Format("cbEditor::Open() => Encoding detection and conversion took : %ld ms", sw.Time()));
     sw.Start();
 #endif
 
@@ -1959,7 +1968,7 @@ bool cbEditor::Open(bool detectEncoding)
         m_pData->m_pFileLoader = nullptr;
     }
 #ifdef fileload_measuring
-    Manager::Get()->GetLogManager()->DebugLog(F(_T("loading into editor needs : %d ms"),(int)sw.Time()));
+    Manager::Get()->GetLogManager()->DebugLog(wxString::Format("loading into editor needs : %ld ms", sw.Time()));
 #endif
     return true;
 }
@@ -2163,7 +2172,7 @@ bool cbEditor::FixFoldState()
 
 void cbEditor::AutoComplete()
 {
-    Manager::Get()->GetLogManager()->Log(_T("cbEditor::AutoComplete() is obsolete.\nUse AutoComplete(cbEditor &ed) from the Abbreviations plugin instead."));
+    Manager::Get()->GetLogManager()->Log(_("cbEditor::AutoComplete() is obsolete.\nUse AutoComplete(cbEditor &ed) from the Abbreviations plugin instead."));
 }
 
 void cbEditor::DoFoldAll(FoldMode fold)

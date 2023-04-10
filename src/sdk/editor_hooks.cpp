@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12605 $
- * $Id: editor_hooks.cpp 12605 2021-12-22 08:53:19Z wh11204 $
+ * $Revision: 12999 $
+ * $Id: editor_hooks.cpp 12999 2022-11-01 13:12:28Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editor_hooks.cpp $
  */
 
@@ -141,7 +141,7 @@ void EditorHooks::CallHooks(cbEditor* editor, wxScintillaEvent& event)
 
             wxEventType type = event.GetEventType();
             txt << GetScintillaEventName(type);
-            Manager::Get()->GetLogManager()->DebugLog(F(wxT("%s take %ld ms"), txt.wx_str(), sw.Time()));
+            Manager::Get()->GetLogManager()->DebugLog(wxString::Format("%s take %ld ms", txt, sw.Time()));
 #endif // EDITOR_HOOK_PERFORMANCE_MEASURE
         }
 

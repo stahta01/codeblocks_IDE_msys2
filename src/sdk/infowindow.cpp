@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 11564 $
- * $Id: infowindow.cpp 11564 2019-02-09 19:57:58Z fuscated $
+ * $Revision: 12839 $
+ * $Id: infowindow.cpp 12839 2022-06-17 12:18:29Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/infowindow.cpp $
  */
 
@@ -294,8 +294,7 @@ void InfoWindow::OnClick(cb_unused wxMouseEvent& e)
 // static
 void InfoWindow::Display(const wxString& title, const wxString& message, unsigned int delay, unsigned int hysteresis)
 {
-    Manager::Get()->GetLogManager()->Log(wxString::Format(_("Info[%s]: %s"), title.wx_str(),
-                                                          message.wx_str()));
+    Manager::Get()->GetLogManager()->Log(wxString::Format(_("Info[%s]: %s"), title, message));
 
     if (std::find(active_messages.begin(), active_messages.end(), message) != active_messages.end())
     {
