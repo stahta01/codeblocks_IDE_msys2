@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12679 $
- * $Id: projectmanager.cpp 12679 2022-01-25 09:15:00Z bluehazzard $
+ * $Revision: 13191 $
+ * $Id: projectmanager.cpp 13191 2023-02-03 23:06:49Z bluehazzard $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/projectmanager.cpp $
  */
 
@@ -70,6 +70,7 @@ class NullProjectManagerUI : public cbProjectManagerUI
         void ConfigureProjectDependencies(cb_unused cbProject* base,
                                           cb_unused wxWindow *parent) override {}
         void SwitchToProjectsPage() override {}
+        void ReloadFileSystemWatcher(cbProject* prj) override {}
 };
 
 // class constructor
@@ -188,8 +189,8 @@ void ProjectManager::SetProject(cbProject* project, bool refresh)
 
     long time = timer.Time();
     if (time >= 50)
-        Manager::Get()->GetLogManager()->Log(F(wxT("ProjectManager::SetProject took: %.3f seconds."),
-                                               time / 1000.0f));
+        Manager::Get()->GetLogManager()->Log(wxString::Format(_("ProjectManager::SetProject() took: %.3f seconds."),
+                                                              time / 1000.0f));
 }
 
 cbProject* ProjectManager::IsOpen(const wxString& filename)
@@ -290,8 +291,8 @@ cbProject* ProjectManager::LoadProject(const wxString& filename, bool activateIt
     long time = timer.Time();
     if (time >= 100)
     {
-        LogManager *log = Manager::Get()->GetLogManager();
-        log->Log(F(wxT("ProjectManager::LoadProject took: %.3f seconds."), time / 1000.0f));
+        LogManager* log = Manager::Get()->GetLogManager();
+        log->Log(wxString::Format(_("ProjectManager::LoadProject took: %.3f seconds."), time / 1000.0f));
     }
 
     return result;
@@ -435,7 +436,7 @@ bool ProjectManager::CloseAllProjects(bool dontsave)
     if (time >= 100)
     {
         LogManager *log = Manager::Get()->GetLogManager();
-        log->Log(F(wxT("ProjectManager::CloseAllProjects took: %.3f seconds."), time / 1000.0f));
+        log->Log(wxString::Format(_("ProjectManager::CloseAllProjects took: %.3f seconds."), time / 1000.0f));
     }
 
     return true;
@@ -841,7 +842,7 @@ int ProjectManager::AddMultipleFilesToProject(const wxArrayString& filelist, cbP
         if (time >= 100)
         {
             LogManager *log = Manager::Get()->GetLogManager();
-            log->Log(wxString::Format("ProjectManager::AddMultipleFilesToProject took: %.3f seconds for %d files.",
+            log->Log(wxString::Format(_("ProjectManager::AddMultipleFilesToProject took: %.3f seconds for %d files."),
                                       time / 1000.0f, int(addedFiles.GetCount())));
         }
     }
@@ -899,7 +900,10 @@ bool ProjectManager::AddProjectDependency(cbProject* base, cbProject* dependsOn)
         arr->Add(dependsOn);
         if (m_pWorkspace)
             m_pWorkspace->SetModified(true);
-        Manager::Get()->GetLogManager()->DebugLog(F(_T("%s now depends on %s (%lu deps)"), base->GetTitle().wx_str(), dependsOn->GetTitle().wx_str(), static_cast<unsigned long>(arr->GetCount())));
+        Manager::Get()->GetLogManager()->DebugLog(wxString::Format("%s now depends on %s (%zu deps)",
+                                                                   base->GetTitle(),
+                                                                   dependsOn->GetTitle(),
+                                                                   arr->GetCount()));
     }
     return true;
 }
@@ -916,7 +920,10 @@ void ProjectManager::RemoveProjectDependency(cbProject* base, cbProject* doesNot
     ProjectsArray* arr = it->second;
     arr->Remove(doesNotDependOn);
 
-    Manager::Get()->GetLogManager()->DebugLog(F(_T("%s now does not depend on %s (%lu deps)"), base->GetTitle().wx_str(), doesNotDependOn->GetTitle().wx_str(), static_cast<unsigned long>(arr->GetCount())));
+    Manager::Get()->GetLogManager()->DebugLog(wxString::Format("%s now does not depend on %s (%lu deps)",
+                                              base->GetTitle(),
+                                              doesNotDependOn->GetTitle(),
+                                              arr->GetCount()));
     // if it was the last dependency, delete the array
     if (!arr->GetCount())
     {
@@ -981,7 +988,7 @@ void ProjectManager::RemoveProjectFromAllDependencies(cbProject* base)
         else
             ++it;
     }
-    Manager::Get()->GetLogManager()->DebugLog(F(_T("Removed %s from all deps"), base->GetTitle().wx_str()));
+    Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Removed %s from all deps", base->GetTitle()));
 }
 
 const ProjectsArray* ProjectManager::GetDependenciesForProject(cbProject* base)

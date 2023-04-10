@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 11437 $
- * $Id: astyleplugin.cpp 11437 2018-08-07 07:13:40Z fuscated $
+ * $Revision: 12833 $
+ * $Id: astyleplugin.cpp 12833 2022-06-10 14:59:28Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/astyle/astyleplugin.cpp $
  */
 
@@ -155,7 +155,7 @@ void AStylePlugin::OnFormatProject( wxCommandEvent& /*event*/ )
                     if ( fileType == ftSource || fileType == ftHeader || fileType == ftTemplateSource )
                     {
                         FormatFile( filename );
-                        if ( false == progressDlg.Update( i++, wxString(_("Formatting ")) + pf->relativeFilename ) )
+                        if (!progressDlg.Update(i++, wxString::Format(_("Formatting %s"), pf->relativeFilename)))
                             break;
                     }
                 }

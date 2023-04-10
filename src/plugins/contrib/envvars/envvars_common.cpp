@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12537 $
- * $Id: envvars_common.cpp 12537 2021-10-24 22:27:25Z bluehazzard $
+ * $Revision: 13103 $
+ * $Id: envvars_common.cpp 13103 2022-12-09 14:16:20Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/contrib/envvars/envvars_common.cpp $
  */
 
@@ -222,9 +222,7 @@ wxArrayString nsEnvVars::GetEnvvarsBySetPath(const wxString& set_path)
             EV_DBGLOG("Warning: empty envvar '%s' detected and skipped.", envvars_keys[i]);
     }
 
-    EV_DBGLOG("Read %lu/%u envvars in path '%s'.",
-              static_cast <unsigned long> (envvars.GetCount()),
-              num_envvars, set_path);
+    EV_DBGLOG("Read %lu/%u envvars in path '%s'.", static_cast<unsigned long>(envvars.GetCount()), num_envvars, set_path.wx_str());
 
     return envvars;
 }// GetEnvvarsBySetPath

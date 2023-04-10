@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12607 $
- * $Id: projectoptionsdlg.cpp 12607 2021-12-23 08:50:04Z wh11204 $
+ * $Revision: 13072 $
+ * $Id: projectoptionsdlg.cpp 13072 2022-11-26 10:46:56Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/projectoptionsdlg.cpp $
  */
 
@@ -101,7 +101,7 @@ ProjectOptionsDlg::ProjectOptionsDlg(wxWindow* parent, cbProject* project)
     m_Current_Sel(-1),
     m_pCompiler(nullptr)
 {
-    wxXmlResource::Get()->LoadObject(this, parent, _T("dlgProjectOptions"),_T("wxScrollingDialog"));
+    wxXmlResource::Get()->LoadObject(this, parent, "dlgProjectOptions", "wxScrollingDialog");
     XRCCTRL(*this, "wxID_OK", wxButton)->SetDefault();
 
     wxCheckListBox* list = XRCCTRL(*this, "lstFiles", wxCheckListBox);
@@ -322,15 +322,15 @@ void ProjectOptionsDlg::DoTargetChange(bool saveOld)
 
             case ttCommandsOnly: // fall-through
             default: // for commands-only targets
-                txt->SetValue(_T(""));
+                txt->SetValue("");
                 txt->Enable(false);
-                txtI->SetValue(_T(""));
+                txtI->SetValue("");
                 txtI->Enable(false);
-                txtD->SetValue(_T(""));
+                txtD->SetValue("");
                 txtD->Enable(false);
-                txtW->SetValue(_T(""));
+                txtW->SetValue("");
                 txtW->Enable(false);
-                txtO->SetValue(_T(""));
+                txtO->SetValue("");
                 txtO->Enable(false);
                 browse->Enable(false);
                 browseI->Enable(false);
@@ -479,7 +479,7 @@ void ProjectOptionsDlg::OnProjectTypeChanged(cb_unused wxCommandEvent& event)
     wxString extD = fname.GetExt();
     wxString libext = compiler ? compiler->GetSwitches().libExtension : _T("");
     wxString libextI = compiler ? compiler->GetSwitches().libExtension : _T(""); // TODO: add specialized compiler option for this
-    wxString libextD = _T("def");                                                // TODO: add specialized compiler option for this
+    wxString libextD = "def";                                                    // TODO: add specialized compiler option for this
     wxString libpre = compiler ? compiler->GetSwitches().libPrefix : _T("");
     wxString libpreI = compiler ? compiler->GetSwitches().libPrefix : _T("");    // TODO: add specialized compiler option for this
     wxString libpreD = compiler ? compiler->GetSwitches().libPrefix : _T("");    // TODO: add specialized compiler option for this
@@ -496,16 +496,16 @@ void ProjectOptionsDlg::OnProjectTypeChanged(cb_unused wxCommandEvent& event)
                 fname.SetName(name);
             }
             txt->SetValue(fname.GetFullPath());
-            txtI->SetValue(_T(""));
-            txtD->SetValue(_T(""));
+            txtI->SetValue("");
+            txtD->SetValue("");
             break;
         case ttDynamicLib:
             if (ext != FileFilters::DYNAMICLIB_EXT)
                 fname.SetExt(FileFilters::DYNAMICLIB_EXT);
             if (extI != FileFilters::STATICLIB_EXT)
                 fnameI.SetExt(FileFilters::STATICLIB_EXT);
-            if (extD != _T("def"))
-                fnameD.SetExt(_T("def"));
+            if (extD != "def")
+                fnameD.SetExt("def");
             if (!libpre.IsEmpty() && name.StartsWith(libpre))
             {
                 name.Remove(0, libpre.Length());
@@ -534,8 +534,8 @@ void ProjectOptionsDlg::OnProjectTypeChanged(cb_unused wxCommandEvent& event)
                 fname.SetName(name);
             }
             txt->SetValue(fname.GetFullPath());
-            txtI->SetValue(_T(""));
-            txtD->SetValue(_T(""));
+            txtI->SetValue("");
+            txtD->SetValue("");
             break;
         case ttNative:
             if (ext != FileFilters::NATIVE_EXT)
@@ -546,16 +546,16 @@ void ProjectOptionsDlg::OnProjectTypeChanged(cb_unused wxCommandEvent& event)
                 fname.SetName(name);
             }
             txt->SetValue(fname.GetFullPath());
-            txtI->SetValue(_T(""));
-            txtD->SetValue(_T(""));
+            txtI->SetValue("");
+            txtD->SetValue("");
             break;
         case ttCommandsOnly: // fall-through
         default:
-            txt->SetValue(_T(""));
-            txtI->SetValue(_T(""));
-            txtD->SetValue(_T(""));
-            txtW->SetValue(_T(""));
-            txtO->SetValue(_T(""));
+            txt->SetValue("");
+            txtI->SetValue("");
+            txtD->SetValue("");
+            txtW->SetValue("");
+            txtO->SetValue("");
             txt->Enable(false);
             txtI->Enable(false);
             txtD->Enable(false);
@@ -918,7 +918,7 @@ void ProjectOptionsDlg::OnFileToggleMarkClick(cb_unused wxCommandEvent& event)
 void ProjectOptionsDlg::OnFileMarkOnClick(cb_unused wxCommandEvent& event)
 {
     wxString wildcard = cbGetTextFromUser(_("Select wildcard (file mask) to toggle on:"),
-                                          _("Select files"), _T("*.*"), this);
+                                          _("Select files"), "*.*", this);
     if (wildcard.IsEmpty()) return; // user pressed Cancel
 
     wxListBox* lstTargets = XRCCTRL(*this, "lstBuildTarget", wxListBox);
@@ -942,7 +942,7 @@ void ProjectOptionsDlg::OnFileMarkOnClick(cb_unused wxCommandEvent& event)
 void ProjectOptionsDlg::OnFileMarkOffClick(cb_unused wxCommandEvent& event)
 {
     wxString wildcard = cbGetTextFromUser(_("Select wildcard (file mask) to toggle off:"),
-                                          _("Select files"), _T("*.*"), this);
+                                          _("Select files"), "*.*", this);
     if (wildcard.IsEmpty()) return; // user pressed Cancel
 
     wxListBox* lstTargets = XRCCTRL(*this, "lstBuildTarget", wxListBox);
@@ -1031,7 +1031,7 @@ bool ProjectOptionsDlg::ValidateTargetName(const wxString& name)
         return false;
     }
 
-    const wxString forbidden = _T(";,!@#$%^&*\"':`~=?\\><");
+    const wxString forbidden(";,!@#$%^&*\"':`~=?\\><");
     if (name.find_first_of(forbidden, 0) != wxString::npos)
     {
         cbMessageBox(_("The name contains at least one invalid character:\n\n") + forbidden,
@@ -1052,10 +1052,9 @@ bool ProjectOptionsDlg::DoCheckScripts(CompileTargetBase* base)
         if (!IsScriptValid(bt, scripts[i], errorMsg))
         {
             wxString msg;
-            msg << _("Invalid build script: ") + scripts[i] << _T('\n');
-            msg << _("First seen in: ") + base->GetTitle() << _T('\n');
-            msg << _T("Error:\n  ");
-            msg << errorMsg;
+            msg << _("Invalid build script: ") + scripts[i] << '\n';
+            msg << _("First seen in: ") + base->GetTitle() << '\n';
+            msg << _("Error") << ":\n  " << errorMsg;
             cbMessageBox(msg, _("Error"), wxICON_ERROR, this);
             return false;
         }
@@ -1148,7 +1147,7 @@ void ProjectOptionsDlg::OnPlatform(wxCommandEvent& event)
         txtP = XRCCTRL(*this, "txtPlatform",     wxTextCtrl);
     else
         txtP = XRCCTRL(*this, "txtPlatformProj", wxTextCtrl);
-    bool isAll = txtP->GetValue().Contains(_("All"));
+    bool isAll = txtP->GetValue().Contains("All");
 
     wxArrayString arr = GetArrayFromString(GetStringFromPlatforms(spAll, true));
     MultiSelectDlg dlg(this, arr, isAll, _("Select supported platforms:"), _("Build target platforms"));
@@ -1164,7 +1163,7 @@ void ProjectOptionsDlg::OnPlatform(wxCommandEvent& event)
     {
         wxArrayString ret = dlg.GetSelectedStrings();
         if (ret.GetCount() == 3)
-            txtP->SetValue(_("All"));
+            txtP->SetValue("All");
         else
         {
             wxString platform = GetStringFromArray(ret);

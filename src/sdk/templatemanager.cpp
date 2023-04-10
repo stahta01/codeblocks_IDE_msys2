@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12605 $
- * $Id: templatemanager.cpp 12605 2021-12-22 08:53:19Z wh11204 $
+ * $Revision: 12999 $
+ * $Id: templatemanager.cpp 12999 2022-11-01 13:12:28Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/templatemanager.cpp $
  */
 
@@ -78,7 +78,7 @@ void TemplateManager::LoadUserTemplates()
         ok = dir.GetNext(&filename);
     }
 
-    Manager::Get()->GetLogManager()->DebugLog(F(_T("%d user templates loaded"), m_UserTemplates.GetCount()));
+    Manager::Get()->GetLogManager()->DebugLog(wxString::Format("%zu user templates loaded", m_UserTemplates.GetCount()));
 }
 
 cbProject* TemplateManager::New(TemplateOutputType initial, wxString* pFilename)
@@ -160,7 +160,7 @@ cbProject* TemplateManager::NewProjectFromUserTemplate(NewFromTemplateDlg& dlg, 
     templ << sep << dlg.GetSelectedUserTemplate();
     if (!wxDirExists(templ))
     {
-        Manager::Get()->GetLogManager()->DebugLog(F(_T("Cannot open user-template source path '%s'!"), templ.wx_str()));
+        Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Cannot open user-template source path '%s'!", templ));
         return nullptr;
     }
 
@@ -186,7 +186,7 @@ cbProject* TemplateManager::NewProjectFromUserTemplate(NewFromTemplateDlg& dlg, 
             ++count;
         }
         else
-            Manager::Get()->GetLogManager()->DebugLog(F(_T("Failed copying %s to %s"), src.wx_str(), dst.wx_str()));
+            Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Failed copying %s to %s", src, dst));
     }
     if (count != total_count)
         cbMessageBox(_("Some files could not be loaded with the template..."), _("Error"), wxICON_ERROR);
@@ -299,13 +299,13 @@ void TemplateManager::SaveUserTemplate(cbProject* prj)
     {
         wxString src = (*it)->file.GetFullPath();
         wxString dst = templ + (*it)->relativeToCommonTopLevelPath;
-        Manager::Get()->GetLogManager()->DebugLog(F(_T("Copying %s to %s"), src.wx_str(), dst.wx_str()));
+        Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Copying %s to %s", src, dst));
         if (!CreateDirRecursively(dst))
             Manager::Get()->GetLogManager()->DebugLog(_T("Failed creating directory for ") + dst);
         if (wxCopyFile(src, dst, true))
             ++count;
         else
-            Manager::Get()->GetLogManager()->DebugLog(F(_T("Failed copying %s to %s"), src.wx_str(), dst.wx_str()));
+            Manager::Get()->GetLogManager()->DebugLog(wxString::Format("Failed copying %s to %s", src, dst));
     }
 
     // cbProject doesn't have a GetRelativeToCommonTopLevelPath() function, so we simulate it here

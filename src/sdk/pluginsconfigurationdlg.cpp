@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12704 $
- * $Id: pluginsconfigurationdlg.cpp 12704 2022-02-05 12:24:59Z wh11204 $
+ * $Revision: 13097 $
+ * $Id: pluginsconfigurationdlg.cpp 13097 2022-12-06 09:25:14Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/pluginsconfigurationdlg.cpp $
  */
 
@@ -44,21 +44,19 @@ static wxString GetInitialInfo()
     initialInfo << _T("</font><br /><br /><b><font color=\"red\">");
     initialInfo << _("Have you saved your work first?");
     initialInfo << _T("</font></b><br /><i><font color=\"black\">\n");
-    initialInfo << _("If a plugin is not well-written, it could cause Code::Blocks to crash ");
-    initialInfo << _("when performing any operation on it...");
+    initialInfo << _("If a plugin is not well-written, it could cause Code::Blocks to crash when performing any operation on it...");
     initialInfo << _T("<br></font></b><br /><i><font color=\"green\">\n");
     initialInfo << _("Some additional plugins can be found here:");
     initialInfo << _T("</font></b><br /><i><font color=\"black\">\n");
-    initialInfo << _T("<A href=\"http://wiki.codeblocks.org/index.php?title=Announcement_for_plugins/patches\">");
-    initialInfo << _T("http://wiki.codeblocks.org/index.php?title=Announcement_for_plugins/patches\n </A>");
+    initialInfo << _T("<A href=\"https://wiki.codeblocks.org/index.php?title=Announcement_for_plugins/patches\">");
+    initialInfo << _T("https://wiki.codeblocks.org/index.php?title=Announcement_for_plugins/patches\n </A>");
 
     if (PluginManager::GetSafeMode())
     {
         initialInfo << _T("</font></i><br /><br /><b><font color=\"red\">");
         initialInfo << _("Code::Blocks started up in \"safe-mode\"");
         initialInfo << _T("</font></b><br /><i><font color=\"black\">\n");
-        initialInfo << _("All plugins were disabled on startup so that you can troubleshoot ");
-        initialInfo << _("problematic plugins. Enable plugins at will now...");
+        initialInfo << _("All plugins were disabled on startup so that you can troubleshoot problematic plugins. Enable plugins at will now...");
     }
 
     initialInfo << _T("</font></i><br /></body></html>\n");
@@ -133,10 +131,10 @@ void PluginsConfigurationDlg::FillList()
     wxListCtrl* list = XRCCTRL(*this, "lstPlugins", wxListCtrl);
     if (list->GetColumnCount() == 0)
     {
-        list->InsertColumn(0, _T("Title"));
-        list->InsertColumn(1, _T("Version"));
-        list->InsertColumn(2, _T("Enabled"), wxLIST_FORMAT_CENTER);
-        list->InsertColumn(3, _T("Filename"));
+        list->InsertColumn(0, _("Title"));
+        list->InsertColumn(1, _("Version"));
+        list->InsertColumn(2, _("Enabled"), wxLIST_FORMAT_CENTER);
+        list->InsertColumn(3, _("Filename"));
     }
 
     PluginManager* man = Manager::Get()->GetPluginManager();
@@ -211,7 +209,7 @@ void PluginsConfigurationDlg::OnToggle(wxCommandEvent& event)
 
             if (elem->plugin->IsAttached() and (not elem->plugin->CanDetach()))
             {
-                failure << elem->info.title << _T('\n');
+                failure << elem->info.title << '\n';
                 continue;
             }
 
@@ -249,7 +247,7 @@ void PluginsConfigurationDlg::OnInstall(cb_unused wxCommandEvent& event)
     wxFileDialog fd(this,
                         _("Select plugin to install"),
                         wxEmptyString, wxEmptyString,
-                        _T("Code::Blocks Plugins (*.cbplugin)|*.cbplugin"),
+                        _("Code::Blocks Plugins") + " (*.cbplugin)|*.cbplugin",
                         wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE | compatibility::wxHideReadonly);
     PlaceWindow(&fd);
     if (fd.ShowModal() != wxID_OK)
@@ -297,7 +295,7 @@ void PluginsConfigurationDlg::OnUninstall(cb_unused wxCommandEvent& event)
         {
             wxString title = elem->info.title; //fetch info before uninstalling
             if (!Manager::Get()->GetPluginManager()->UninstallPlugin(elem->plugin))
-                failure << title << _T('\n');
+                failure << title << '\n';
         }
     }
 
@@ -354,7 +352,7 @@ void PluginsConfigurationDlg::OnExport(cb_unused wxCommandEvent& event)
         files.Add(elem->fileName);
 
         // normalize version
-        wxString version = elem->info.version;
+        wxString version = _(elem->info.version);
         version.Replace("/",  "_", true);
         version.Replace("\\", "_", true);
         version.Replace("?",  "_", true);
@@ -382,7 +380,7 @@ void PluginsConfigurationDlg::OnExport(cb_unused wxCommandEvent& event)
         {
             AnnoyingDialog dlg(_("Overwrite confirmation"),
                                 wxString::Format(_("%s already exists.\n"
-                                "Are you sure you want to overwrite it?"), filename.c_str()),
+                                "Are you sure you want to overwrite it?"), filename),
                                 wxART_QUESTION,
                                 AnnoyingDialog::THREE_BUTTONS,
                                 AnnoyingDialog::rtONE,
@@ -403,7 +401,7 @@ void PluginsConfigurationDlg::OnExport(cb_unused wxCommandEvent& event)
         }
 
         if (!Manager::Get()->GetPluginManager()->ExportPlugin(elem->plugin, filename))
-            failure << list->GetItemText(sel) << _T('\n');
+            failure << list->GetItemText(sel) << '\n';
     }
 
     if (!failure.IsEmpty())
@@ -426,7 +424,7 @@ void PluginsConfigurationDlg::OnSelect(cb_unused wxListEvent& event)
 
     wxString info;
     info << _T("<html><body>\n");
-    info << _T("<h3>") << elem->info.title << _T(" ");
+    info << _T("<h3>") << elem->info.title << " ";
     info << _T("<font color=\"#0000AA\">") << elem->info.version << _T("</font></h3>");
     info << _T("<i><font color=\"#808080\" size=\"-1\">") << UnixFilename(elem->fileName) << _T("</font></i><br />\n");
     info << _T("<br />\n");

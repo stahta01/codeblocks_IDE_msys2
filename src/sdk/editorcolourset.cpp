@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12606 $
- * $Id: editorcolourset.cpp 12606 2021-12-22 09:25:39Z wh11204 $
+ * $Revision: 12995 $
+ * $Id: editorcolourset.cpp 12995 2022-10-28 07:22:31Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/editorcolourset.cpp $
  */
 
@@ -111,7 +111,7 @@ void EditorColourSet::LoadAvailableSets()
     wxString path = ConfigManager::GetFolder(sdDataUser) + _T("/lexers/");
     if (wxDirExists(path) && dir.Open(path))
     {
-        Manager::Get()->GetLogManager()->Log(F(_("Scanning for lexers in %s..."), path.wx_str()));
+        Manager::Get()->GetLogManager()->Log(wxString::Format(_("Scanning for lexers in %s..."), path));
         bool ok = dir.GetFirst(&filename, _T("lexer_*.xml"), wxDIR_FILES);
         while (ok)
         {
@@ -119,7 +119,7 @@ void EditorColourSet::LoadAvailableSets()
             ok = dir.GetNext(&filename);
             ++count;
         }
-        Manager::Get()->GetLogManager()->Log(F(_("Found %d lexers"), count));
+        Manager::Get()->GetLogManager()->Log(wxString::Format(_("Found %d lexers"), count));
         count = 0;
     }
 
@@ -127,7 +127,7 @@ void EditorColourSet::LoadAvailableSets()
     path = ConfigManager::GetFolder(sdDataGlobal) + _T("/lexers/");
     if (wxDirExists(path) && dir.Open(path))
     {
-        Manager::Get()->GetLogManager()->Log(F(_("Scanning for lexers in %s..."), path.wx_str()));
+        Manager::Get()->GetLogManager()->Log(wxString::Format(_("Scanning for lexers in %s..."), path));
         bool ok = dir.GetFirst(&filename, _T("lexer_*.xml"), wxDIR_FILES);
         while (ok)
         {
@@ -135,7 +135,7 @@ void EditorColourSet::LoadAvailableSets()
             ok = dir.GetNext(&filename);
             ++count;
         }
-        Manager::Get()->GetLogManager()->Log(F(_("Found %d lexers"), count));
+        Manager::Get()->GetLogManager()->Log(wxString::Format(_("Found %d lexers"), count));
     }
 
     EditorLexerLoader lex(this);

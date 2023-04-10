@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12578 $
- * $Id: cbauibook.cpp 12578 2021-12-14 08:57:56Z wh11204 $
+ * $Revision: 13106 $
+ * $Id: cbauibook.cpp 13106 2022-12-10 08:21:40Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/cbauibook.cpp $
  */
 
@@ -500,7 +500,11 @@ bool cbAuiNotebook::MovePage(wxWindow* page, size_t new_idx)
 bool cbAuiNotebook::AddPage(wxWindow* page,
                             const wxString& caption,
                             bool select,
+#if wxCHECK_VERSION(3, 1, 6)
+                            const wxBitmapBundle& bitmap)
+#else
                             const wxBitmap& bitmap)
+#endif
 {
     bool result = wxAuiNotebook::AddPage(page, caption, select, bitmap);
     MinimizeFreeSpace();
@@ -511,7 +515,11 @@ bool cbAuiNotebook::InsertPage(size_t page_idx,
                                wxWindow* page,
                                const wxString& caption,
                                bool select,
+#if wxCHECK_VERSION(3, 1, 6)
+                               const wxBitmapBundle& bitmap)
+#else
                                const wxBitmap& bitmap)
+#endif
 {
     bool result = wxAuiNotebook::InsertPage(page_idx, page, caption, select, bitmap);
     MinimizeFreeSpace();
@@ -654,30 +662,30 @@ wxString cbAuiNotebook::SavePerspective(const wxString projectTitle)
                     continue;
 
                 if (!tabsTmp.empty())
-                    tabsTmp += wxT(",");
+                    tabsTmp += ",";
 
                 if ((int)page_idx == m_curPage)
-                    tabsTmp += wxT("*");
+                    tabsTmp += "*";
                 else if ((int)p == tabCtrl->GetActivePage())
-                    tabsTmp += wxT("+");
+                    tabsTmp += "+";
 
-                tabsTmp += wxString::Format(wxT("%lu"), static_cast<unsigned long>(page_idx));
-                tabsTmp += wxT(";");
+                tabsTmp += wxString::Format("%zu", page_idx);
+                tabsTmp += ";";
                 tabsTmp += id;
             }
             if (!tabsTmp.empty())
             {
                 if (!tabs.empty())
-                    tabs += wxT("|");
+                    tabs += "|";
 
                 panes.Add(pane.name);
                 tabs += pane.name;
-                tabs += wxT("=");
+                tabs += "=";
                 tabs += tabsTmp;
             }
         }
     }
-    tabs += wxT("@");
+    tabs += "@";
 
     tabsTmp = m_mgr.SavePerspective();
 
@@ -795,7 +803,7 @@ bool cbAuiNotebook::LoadPerspective(const wxString& layout, bool mergeLayouts)
 
     wxString frames = layout.AfterFirst (wxT ('@') );
     // if we load an additional project to an exiting layout, the first new tab always goes into a new frame
-    bool firstTabInCtrl =! currentLayout.empty();
+    bool firstTabInCtrl = !currentLayout.empty();
     // This creates a new tabframe if none exists; a workaround, because we can not directly access
     // the needed wxTabFrame class, because it is not exported.
     // This also takes care of all needed pane-info

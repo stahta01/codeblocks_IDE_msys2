@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12767 $
- * $Id: classwizarddlg.cpp 12767 2022-03-28 20:17:20Z wh11204 $
+ * $Revision: 13110 $
+ * $Id: classwizarddlg.cpp 13110 2022-12-11 12:37:19Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/plugins/classwizard/classwizarddlg.cpp $
  */
 
@@ -480,7 +480,7 @@ bool ClassWizardDlg::DoHeader()
             buffer << m_TabStr << m_TabStr
                    << _("/** Copy constructor") << m_EolStr;
             buffer << m_TabStr << m_TabStr
-                   << _(" *  \\param other Object to copy from") << m_EolStr;
+                   << " *  \\param other " << _("Object to copy from") << m_EolStr;
             buffer << m_TabStr << m_TabStr
                    << _T(" */") << m_EolStr;
         }
@@ -496,9 +496,9 @@ bool ClassWizardDlg::DoHeader()
             buffer << m_TabStr << m_TabStr
                    << _("/** Assignment operator") << m_EolStr;
             buffer << m_TabStr << m_TabStr
-                   << _(" *  \\param other Object to assign from") << m_EolStr;
+                   << " *  \\param other " << _("Object to assign from") << m_EolStr;
             buffer << m_TabStr << m_TabStr
-                   << _(" *  \\return A reference to this") << m_EolStr;
+                   << " *  \\return " << _("A reference to 'this'") << m_EolStr;
             buffer << m_TabStr << m_TabStr
                    << _T(" */") << m_EolStr;
         }
@@ -520,7 +520,7 @@ bool ClassWizardDlg::DoHeader()
                 buffer << m_TabStr << m_TabStr
                        << _("/** Access ") << (*it).Var << m_EolStr;
                 buffer << m_TabStr << m_TabStr
-                       << _(" * \\return The current value of ") << (*it).Var << m_EolStr;
+                       << " * \\return " << _("The current value of ") << (*it).Var << m_EolStr;
                 buffer << m_TabStr << m_TabStr
                        << _T(" */") << m_EolStr;
             }
@@ -535,7 +535,7 @@ bool ClassWizardDlg::DoHeader()
                 buffer << m_TabStr << m_TabStr
                        << _("/** Set ") << (*it).Var << m_EolStr;
                 buffer << m_TabStr << m_TabStr
-                       << _(" * \\param val New value to set") << m_EolStr;
+                       << " * \\param val " << _("New value to set") << m_EolStr;
                 buffer << m_TabStr << m_TabStr
                        << " */" << m_EolStr;
             }
@@ -715,7 +715,7 @@ bool ClassWizardDlg::DoImpl()
     if (!new_ed->Save())
     {
         wxString msg;
-        msg.Printf(_("Could not save implementation file %s.\nAborting..."), implementationFname.GetFullPath().c_str());
+        msg.Printf(_("Could not save implementation file %s.\nAborting..."), implementationFname.GetFullPath());
         cbMessageBox(msg, _("Error"), wxICON_ERROR, this);
         return false;
     }

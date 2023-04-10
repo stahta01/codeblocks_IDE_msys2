@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12579 $
- * $Id: newfromtemplatedlg.cpp 12579 2021-12-14 09:27:57Z wh11204 $
+ * $Revision: 13043 $
+ * $Id: newfromtemplatedlg.cpp 13043 2022-11-17 08:05:48Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/newfromtemplatedlg.cpp $
  */
 
@@ -87,8 +87,19 @@ NewFromTemplateDlg::NewFromTemplateDlg(TemplateOutputType initial, const wxArray
     m_WizardIndex(-1)
 {
     //ctor
-    wxXmlResource::Get()->LoadObject(this, nullptr, _T("dlgNewFromTemplate"),_T("wxScrollingDialog"));
+    wxXmlResource::Get()->LoadObject(this, nullptr, "dlgNewFromTemplate", "wxScrollingDialog");
     m_Wizards = Manager::Get()->GetPluginManager()->GetOffersFor(ptWizard);
+
+    if (initial == totProject)
+        SetTitle(_("New project"));
+    else if (initial == totTarget)
+        SetTitle(_("New build target"));
+    else if (initial == totFiles)
+        SetTitle(_("New file"));
+    else if (initial == totCustom)
+        SetTitle(_("New custom"));
+    else if (initial == totUser)
+        SetTitle(_("New from template"));
 
     wxListbook* lb = XRCCTRL(*this, "nbMain", wxListbook);
     SetSettingsIconsStyle(lb->GetListView(), sisNoIcons);
@@ -104,7 +115,7 @@ NewFromTemplateDlg::NewFromTemplateDlg(TemplateOutputType initial, const wxArray
     XRCCTRL(*this, "listCustoms", wxListCtrl)->SetImageList(new wxImageList(32, 32), wxIMAGE_LIST_SMALL);
 
     // load view prefs
-    XRCCTRL(*this, "rbView", wxRadioBox)->SetSelection(Manager::Get()->GetConfigManager(_T("new_from_template"))->ReadInt(_T("/view"), 0));
+    XRCCTRL(*this, "rbView", wxRadioBox)->SetSelection(Manager::Get()->GetConfigManager("new_from_template")->ReadInt("/view", 0));
     ChangeView();
 
     BuildCategories();

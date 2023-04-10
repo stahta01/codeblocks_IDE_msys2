@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12643 $
- * $Id: searchresultslog.cpp 12643 2022-01-12 19:40:38Z wh11204 $
+ * $Revision: 12822 $
+ * $Id: searchresultslog.cpp 12822 2022-05-29 19:10:32Z bluehazzard $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/searchresultslog.cpp $
  */
 
@@ -103,3 +103,8 @@ void cbSearchResultsLog::OnDoubleClick(cb_unused wxCommandEvent& event)
 
     SyncEditor(index);
 } // end of OnDoubleClick
+
+bool cbSearchResultsLog::IsVisible()
+{
+    return control->IsShownOnScreen();
+}

@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12793 $
- * $Id: scriptbindings.cpp 12793 2022-04-14 22:33:39Z bluehazzard $
+ * $Revision: 13193 $
+ * $Id: scriptbindings.cpp 13193 2023-02-04 06:50:14Z mortenmacfly $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/scripting/bindings/scriptbindings.cpp $
  */
 
@@ -736,6 +736,19 @@ namespace ScriptBindings
 
         sq_pushinteger(v, extractor.p0->GetBuildTargetsCount());
         return 1;
+    }
+
+    SQInteger cbProject_AddGlob(HSQUIRRELVM v)
+    {
+
+        ExtractParams4<cbProject*, const wxString*, const wxString*, bool>  extractor(v);
+        if (!extractor.Process("cbProject::AddGlob"))
+            return extractor.ErrorMessage();
+
+        ProjectGlob gl = ProjectGlob(*extractor.p1, *extractor.p2, extractor.p3);
+        extractor.p0->AddGlob(gl);
+
+        return SQ_OK;
     }
 
     SQInteger cbProject_GetBuildTarget(HSQUIRRELVM v)
@@ -1473,12 +1486,27 @@ namespace ScriptBindings
 
     SQInteger ProjectManager_SetProject(HSQUIRRELVM v)
     {
-        // this, project, refresh
-        ExtractParams3<ProjectManager*, cbProject*, bool> extractor(v);
-        if (!extractor.Process("ProjectManager::SetProject"))
-            return extractor.ErrorMessage();
-        extractor.p0->SetProject(extractor.p1, extractor.p2);
-        return 0;
+        const int numArgs = sq_gettop(v);
+        if (numArgs == 2)
+        {
+            // this, Project
+            ExtractParams2<ProjectManager*, cbProject*> extractor(v);
+            if (!extractor.Process("ProjectManager::SetProject"))
+                return extractor.ErrorMessage();
+            extractor.p0->SetProject(extractor.p1, true);
+            return 0;
+        }
+        else if (numArgs == 3)
+        {
+            // this, Project, refresh
+            ExtractParams3<ProjectManager*, cbProject*, bool> extractor(v);
+            if (!extractor.Process("ProjectManager::SetProject"))
+                return extractor.ErrorMessage();
+            extractor.p0->SetProject(extractor.p1, extractor.p2);
+            return 0;
+        }
+
+        return sq_throwerror(v, _SC("ProjectManager::SetProject: Wrong parameter count!"));
     }
 
     SQInteger ProjectManager_LoadWorkspace(HSQUIRRELVM v)

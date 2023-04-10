@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12605 $
- * $Id: manager.cpp 12605 2021-12-22 08:53:19Z wh11204 $
+ * $Revision: 13003 $
+ * $Id: manager.cpp 13003 2022-11-08 08:50:45Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/manager.cpp $
  */
 
@@ -288,7 +288,7 @@ bool Manager::ProcessEvent(CodeBlocksEvent& event)
 
                 wxEventType type=event.GetEventType();
                 msg << GetCodeblocksEventName(type);
-                Manager::Get()->GetLogManager()->DebugLog(F(_("%s take %ld ms"), msg.wx_str(), sw.Time()));
+                Manager::Get()->GetLogManager()->DebugLog(wxString::Format(_("%s took %ld ms"), msg, sw.Time()));
             }
 #endif // PPRCESS_EVENT_PERFORMANCE_MEASURE
         }
@@ -520,8 +520,8 @@ bool Manager::LoadResource(const wxString& file)
 
     if (wxFile::Access(resourceFile, wxFile::read) == false)
     {
-        Get()->GetLogManager()->LogError(wxString::Format(_("Manager failed to access XRC resource '%s'."),
-                                                          resourceFile.wx_str()));
+        Get()->GetLogManager()->LogError(wxString::Format(_("Manager failed to access XRC resource '%s'. Load from file '%s'"),
+                                                          resourceFile, file));
         return false;
     }
 

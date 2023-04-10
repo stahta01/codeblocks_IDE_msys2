@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12699 $
- * $Id: environmentsettingsdlg.cpp 12699 2022-02-03 19:20:37Z wh11204 $
+ * $Revision: 12999 $
+ * $Id: environmentsettingsdlg.cpp 12999 2022-11-01 13:12:28Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/environmentsettingsdlg.cpp $
  */
 
@@ -309,10 +309,10 @@ EnvironmentSettingsDlg::EnvironmentSettingsDlg(wxWindow* parent, wxAuiDockArt* a
     wxCheckListBox* clb = XRCCTRL(*this, "chkDialogs", wxCheckListBox);
     clb->Clear();
 
-    m_AnnoyingDlgReturnMap[F(wxT("%d"), AnnoyingDialog::rtOK)]     = _("OK");
-    m_AnnoyingDlgReturnMap[F(wxT("%d"), AnnoyingDialog::rtCANCEL)] = _("Cancel");
-    m_AnnoyingDlgReturnMap[F(wxT("%d"), AnnoyingDialog::rtYES)]    = _("Yes");
-    m_AnnoyingDlgReturnMap[F(wxT("%d"), AnnoyingDialog::rtNO)]     = _("No");
+    m_AnnoyingDlgReturnMap[wxString::Format("%d", AnnoyingDialog::rtOK)]     = _("OK");
+    m_AnnoyingDlgReturnMap[wxString::Format("%d", AnnoyingDialog::rtCANCEL)] = _("Cancel");
+    m_AnnoyingDlgReturnMap[wxString::Format("%d", AnnoyingDialog::rtYES)]    = _("Yes");
+    m_AnnoyingDlgReturnMap[wxString::Format("%d", AnnoyingDialog::rtNO)]     = _("No");
     ConfigManagerContainer::StringSet dialogs;
     if (acfg->Exists(wxT("/disabled_ret")))
     {

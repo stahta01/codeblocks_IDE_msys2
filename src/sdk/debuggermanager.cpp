@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 12605 $
- * $Id: debuggermanager.cpp 12605 2021-12-22 08:53:19Z wh11204 $
+ * $Revision: 12935 $
+ * $Id: debuggermanager.cpp 12935 2022-10-02 10:40:25Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/debuggermanager.cpp $
  */
 
@@ -577,11 +577,15 @@ public:
                                          wxDefaultPosition, wxDefaultSize, 0, nullptr,
                                          wxCB_DROPDOWN | wxTE_PROCESS_ENTER);
 
-        wxBitmap execute_bitmap = wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_EXECUTABLE_FILE")),
-                                                           wxART_BUTTON);
-        wxBitmap clear_bitmap = wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_DELETE")),wxART_BUTTON);
-        wxBitmap file_open_bitmap =wxArtProvider::GetBitmap(wxART_MAKE_ART_ID_FROM_STR(_T("wxART_FILE_OPEN")),
-                                                            wxART_BUTTON);
+#if wxCHECK_VERSION(3, 1, 6)
+        wxBitmapBundle execute_bitmap = wxArtProvider::GetBitmapBundle(wxART_EXECUTABLE_FILE, wxART_BUTTON, wxSize(16, 16));
+        wxBitmapBundle clear_bitmap = wxArtProvider::GetBitmapBundle(wxART_DELETE, wxART_BUTTON, wxSize(16, 16));
+        wxBitmapBundle file_open_bitmap =wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON, wxSize(16, 16));
+#else
+        wxBitmap execute_bitmap = wxArtProvider::GetBitmap(wxART_EXECUTABLE_FILE, wxART_BUTTON);
+        wxBitmap clear_bitmap = wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON);
+        wxBitmap file_open_bitmap =wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_BUTTON);
+#endif
 
         wxBitmapButton *button_execute;
         button_execute = new wxBitmapButton(this, idDebug_ExecuteButton, execute_bitmap, wxDefaultPosition,
@@ -856,7 +860,7 @@ bool DebuggerManager::UnregisterDebugger(cbDebuggerPlugin *plugin)
 
     if (m_registered.empty())
     {
-        DestoryWindows();
+        DestroyWindows();
 
         if (Manager::Get()->GetLogManager())
             Manager::Get()->GetDebuggerManager()->HideLogger();
@@ -995,14 +999,14 @@ TextCtrlLogger* DebuggerManager::GetLogger(int &index)
         LogSlot &slot = msgMan->Slot(m_loggerIndex);
         slot.title = _("Debugger");
         // set log image
+        wxString prefix(ConfigManager::GetDataFolder()+"/resources.zip#zip:/images/infopane/");
+#if wxCHECK_VERSION(3, 1, 6)
+        slot.icon = new wxBitmapBundle(cbLoadBitmapBundleFromSVG(prefix+"svg/misc.svg", wxSize(16, 16)));
+#else
         const int uiSize = Manager::Get()->GetImageSize(Manager::UIComponent::InfoPaneNotebooks);
-        const int uiScaleFactor = Manager::Get()->GetUIScaleFactor(Manager::UIComponent::InfoPaneNotebooks);
-        const wxString prefix = ConfigManager::GetDataFolder()
-                              + wxString::Format(_T("/resources.zip#zip:/images/infopane/%dx%d/"),
-                                                 uiSize, uiSize);
-        wxBitmap* bmp = new wxBitmap(cbLoadBitmapScaled(prefix + _T("misc.png"), wxBITMAP_TYPE_PNG,
-                                                        uiScaleFactor));
-        slot.icon = bmp;
+        prefix << wxString::Format("%dx%d/", uiSize, uiSize);
+        slot.icon = new wxBitmap(cbLoadBitmap(prefix+"misc.png", wxBITMAP_TYPE_PNG));
+#endif
 
         CodeBlocksLogEvent evtAdd(cbEVT_ADD_LOG_WINDOW, m_logger, slot.title, slot.icon);
         Manager::Get()->ProcessEvent(evtAdd);
@@ -1067,7 +1071,7 @@ void DebuggerManager::CreateWindows()
         m_watchesDialog = m_interfaceFactory->CreateWatches();
 }
 
-void DebuggerManager::DestoryWindows()
+void DebuggerManager::DestroyWindows()
 {
     m_interfaceFactory->DeleteBacktrace(m_backtraceDialog);
     m_backtraceDialog = nullptr;
@@ -1370,10 +1374,17 @@ void DebuggerManager::FindTargetsDebugger()
         }
     }
 
-    wxString targetTitle(target ? target->GetTitle() : wxT("<nullptr>"));
-    log->LogError(wxString::Format(_("Can't find the debugger config: '%s:%s' for the current target '%s'!"),
-                                   name.c_str(), config.c_str(),
-                                   targetTitle.c_str()));
+    if (target)
+    {
+        log->LogError(wxString::Format(_("Can't find the debugger config: '%s' for the current target '%s'!"),
+                                       dbgString, target->GetTitle()));
+    }
+    else
+    {
+        log->LogError(wxString::Format(_("Can't find the debugger config: '%s' for the compiler '%s'!"),
+                                       dbgString, compiler->GetName()));
+    }
+
     m_menuHandler->MarkActiveTargetAsValid(false);
 }
 

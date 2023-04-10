@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU General Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
- * $Revision: 12785 $
- * $Id: app.cpp 12785 2022-04-09 10:17:38Z wh11204 $
+ * $Revision: 13245 $
+ * $Id: app.cpp 13245 2023-03-28 22:52:22Z bluehazzard $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/src/app.cpp $
  */
 
@@ -51,6 +51,7 @@
 #include "sdk_events.h"
 #include "splashscreen.h"
 #include "uservarmanager.h"
+#include "uservardlgs.h"
 
 #if defined(__APPLE__) && defined(__MACH__)
     #include <sys/param.h>
@@ -255,6 +256,12 @@ const wxCmdLineEntryDesc cmdLineDesc[] =
       wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL },
     { wxCMD_LINE_OPTION, CMD_ENTRY(""),   CMD_ENTRY("profile"),               CMD_ENTRY("synonym to personality"),
       wxCMD_LINE_VAL_STRING, wxCMD_LINE_NEEDS_SEPARATOR },
+    // Command line for global user variables
+    { wxCMD_LINE_SWITCH, CMD_ENTRY("S"),  CMD_ENTRY("set"),                   CMD_ENTRY("specify the active global user variable set"),
+      wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL },
+    { wxCMD_LINE_SWITCH, CMD_ENTRY("D"),  CMD_ENTRY(""),                      CMD_ENTRY("set value for global variable. For example: -D [set.]name[.member]=value to set the optional \"member\" value of variable \"name\" in the optional \"set\" to \"value\""),
+      wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL },
+    // Build command lines
     { wxCMD_LINE_SWITCH, CMD_ENTRY(""),   CMD_ENTRY("rebuild"),               CMD_ENTRY("clean and then build the project/workspace"),
       wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL },
     { wxCMD_LINE_SWITCH, CMD_ENTRY(""),   CMD_ENTRY("build"),                 CMD_ENTRY("just build the project/workspace"),
@@ -602,7 +609,8 @@ bool CodeBlocksApp::OnInit()
     m_BatchWindowAutoClose = true;
     m_pSingleInstance      = nullptr;
 
-    wxTheClipboard->Flush();
+    if (wxTheClipboard->IsOpened())
+        wxTheClipboard->Flush();
 
     wxCmdLineParser& parser = *Manager::GetCmdLineParser();
     parser.SetDesc(cmdLineDesc);
@@ -624,7 +632,8 @@ bool CodeBlocksApp::OnInit()
     Manager::SetToolbarHandler(toolbarAddonHandler);
 
     LogManager *log = Manager::Get()->GetLogManager();
-    log->Log(wxString::Format(_("Starting %s %s %s"), appglobals::AppName,
+    // Translating this string is futile, the locale has not been initialized yet
+    log->Log(wxString::Format("Starting %s %s %s", appglobals::AppName,
                               appglobals::AppActualVersionVerb, appglobals::AppBuildTimestamp));
 
     try
@@ -726,6 +735,10 @@ bool CodeBlocksApp::OnInit()
             g_DDEServer->Create(wxString::Format(DDE_SERVICE, wxGetUserId()));
         }
 
+        if (!m_Batch)
+            Manager::Get()->GetUserVariableManager()->SetUI(std::unique_ptr<UserVarManagerUI>(new UserVarManagerGUI()));
+
+
         // Splash screen moved to this place, otherwise it would be short visible, even if we only pass filenames via DDE/IPC
         // we also don't need it, if only a single instance is allowed
         Splash splash(!m_Batch && m_Script.IsEmpty() && m_Splash &&
@@ -741,7 +754,7 @@ bool CodeBlocksApp::OnInit()
         {
             const double scalingFactor = cbGetContentScaleFactor(*frame);
             const double actualScalingFactor = cbGetActualContentScaleFactor(*frame);
-            log->Log(wxString::Format("Initial scaling factor is %.3f (actual: %.3f)",
+            log->Log(wxString::Format(_("Initial scaling factor is %.3f (actual: %.3f)"),
                                       scalingFactor, actualScalingFactor));
         }
 
@@ -829,7 +842,7 @@ bool CodeBlocksApp::OnInit()
         Manager::Get()->ProcessEvent(event);
 
         if (!m_crashReportName.empty())
-            Manager::Get()->GetLogManager()->Log(wxString::Format("Setting the crash report file to: %s", m_crashReportName));
+            Manager::Get()->GetLogManager()->Log(wxString::Format(_("Setting the crash report file to: %s"), m_crashReportName));
 
         return true;
     }
@@ -851,7 +864,11 @@ bool CodeBlocksApp::OnInit()
 
 int CodeBlocksApp::OnExit()
 {
-    wxTheClipboard->Flush();
+    if (wxTheClipboard->IsOpened())
+    {
+        wxTheClipboard->Flush();
+        wxTheClipboard->Close();
+    }
 
     if (g_DDEServer) delete g_DDEServer;
 
@@ -928,14 +945,22 @@ void CodeBlocksApp::OnFatalException()
 {
 #if wxUSE_DEBUGREPORT && wxUSE_XML && wxUSE_ON_FATAL_EXCEPTION
     wxDebugReport report;
-    wxDebugReportPreviewStd preview;
+    if (report.IsOk())
+    {
+        wxDebugReportPreviewStd preview;
 
-    report.AddAll();
-    if ( preview.Show(report) )
-        report.Process();
+        report.AddAll();
+        if ( preview.Show(report) )
+            report.Process();
+    }
+    else
+    {
+        cbMessageBox(wxString::Format(_("Debug report initialization failed, %s will terminate immediately.\n"
+                                        "We are sorry for the inconvenience..."), appglobals::AppName));
+    }
 #else
     cbMessageBox(wxString::Format(_("Something has gone wrong inside %s and it will terminate immediately.\n"
-                                    "We are sorry for the inconvenience..."), appglobals::AppName.wx_str()));
+                                    "We are sorry for the inconvenience..."), appglobals::AppName));
 #endif
 }
 
@@ -978,7 +1003,7 @@ int CodeBlocksApp::BatchJob()
     m_pBatchBuildDialog = m_Frame->GetBatchBuildDialog();
     PlaceWindow(m_pBatchBuildDialog);
 
-    wxString title = _("Building '") + wxFileNameFromPath(wxString(argv[argc-1])) + _("' (target '")  + m_BatchTarget + _T("')");
+    const wxString title(wxString::Format(_("Building '%s' (target '%s')"), wxFileNameFromPath(wxString(argv[argc-1])), m_BatchTarget));
     wxTaskBarIcon* tbIcon = new wxTaskBarIcon();
     tbIcon->SetIcon(
             #ifdef __WXMSW__
@@ -988,8 +1013,8 @@ int CodeBlocksApp::BatchJob()
             #endif // __WXMSW__
                 title);
 
-    wxString bb_title = m_pBatchBuildDialog->GetTitle();
-    m_pBatchBuildDialog->SetTitle(bb_title + _T(" - ") + title);
+    const wxString bb_title(m_pBatchBuildDialog->GetTitle());
+    m_pBatchBuildDialog->SetTitle(bb_title+" - "+title);
     m_pBatchBuildDialog->Show();
     // Clean up after the window is closed
     m_pBatchBuildDialog->Bind(wxEVT_CLOSE_WINDOW, &CodeBlocksApp::OnCloseBatchBuildWindow, this);
@@ -1031,7 +1056,7 @@ void CodeBlocksApp::OnCloseBatchBuildWindow(wxCloseEvent& evt)
     cbCompilerPlugin *compiler = Manager::Get()->GetPluginManager()->GetFirstCompiler();
     if(compiler != nullptr && compiler->IsRunning())
     {
-        if( cbMessageBox(_T("Build still running. Do you want stop the build process?"), appglobals::AppName, wxICON_QUESTION | wxYES_NO, m_pBatchBuildDialog) == wxID_YES )
+        if( cbMessageBox(_("Build still running. Do you want stop the build process?"), appglobals::AppName, wxICON_QUESTION | wxYES_NO, m_pBatchBuildDialog) == wxID_YES )
         {
             evt.Veto();
             compiler->KillProcess();
@@ -1142,6 +1167,9 @@ int CodeBlocksApp::ParseCmdLine(MainFrame* handlerFrame, const wxString& CmdLine
         {
             m_HasProject = false;
             m_HasWorkSpace = false;
+
+            Manager::Get()->GetUserVariableManager()->ParseCommandLine(parser);
+
             int count = parser.GetParamCount();
 
             parser.Found(_T("file"), &m_AutoFile);
@@ -1340,8 +1368,7 @@ void CodeBlocksApp::AttachDebugger()
         return;
     }
 
-    logManager->Log(wxString::Format(_("Attach debugger '%s' to '%s'"), localConfig.wx_str(),
-                                     localAttach.wx_str()));
+    logManager->Log(wxString::Format(_("Attach debugger '%s' to '%s'"), localConfig, localAttach));
 
     // Split the dbg-config to plugin name and config name
     wxString::size_type pos = localConfig.find(wxT(':'));
@@ -1381,13 +1408,12 @@ void CodeBlocksApp::AttachDebugger()
     if (!plugin)
     {
         logManager->LogError(wxString::Format(_("Debugger plugin '%s' not found!"),
-                                              pluginName.wx_str()));
+                                              pluginName));
         logManager->Log(_("Available plugins:"));
         for (const auto &info : debuggers)
         {
             cbDebuggerPlugin *p = info.first;
-            logManager->Log(wxString::Format(_("    '%s' (%s)"), p->GetSettingsName().wx_str(),
-                                             p->GetGUIName().wx_str()));
+            logManager->Log(wxString::Format("    '%s' (%s)", p->GetSettingsName(), p->GetGUIName()));
         }
         return;
     }
@@ -1405,10 +1431,10 @@ void CodeBlocksApp::AttachDebugger()
     if (configIndex == -1)
     {
         logManager->LogError(wxString::Format(_("Debugger configuration '%s' not found!"),
-                                              configName.wx_str()));
+                                              configName));
         logManager->Log(_("Available configurations:"));
         for (const cbDebuggerConfiguration *config : configs)
-            logManager->Log(wxString::Format(_("    '%s'"), config->GetName().wx_str()));
+            logManager->Log(wxString::Format("    '%s'", config->GetName()));
         return;
     }
 
