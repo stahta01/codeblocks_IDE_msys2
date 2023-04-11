@@ -30,6 +30,7 @@ cd ~/devel/codeblocks-dev && svn update --ignore-externals . ;
 ###Record Results
 ```
 cd ~/devel/codeblocks-dev && \
+git config core.autocrlf input && \
 git checkout cb_source && git restore . && git pull && \
 svn cleanup && svn revert -R . && \
 svn update --ignore-externals . && \
