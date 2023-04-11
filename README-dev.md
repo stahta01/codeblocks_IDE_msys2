@@ -38,7 +38,8 @@ dos2unix src/sdk/cbart_provider.cpp && \
 svn update --ignore-externals . && \
 rm -fr src/templates/ && \
 mkdir -p src/templates/ && \
-svn status -q && git status -uno;
+svn status -q && \
+rm .git/index && git reset && git status -uno;
 ```
 ####Results
 ```
