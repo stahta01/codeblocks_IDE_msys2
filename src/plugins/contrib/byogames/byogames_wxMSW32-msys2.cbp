@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Games wx3.2.x (MSys2)" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="usePCH">
+				<Option output="../../../devel32_msys2/share/CodeBlocks/plugins/byogames.dll" prefix_auto="0" extension_auto="0" />
+				<Option object_output="../../../.objs32_msys2/plugins/contrib/byogames" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option parameters="--debug-log --multiple-instance -na -ns -nd -p debug" />
+				<Option host_application="../../../devel32_msys2/codeblocks.exe" />
+				<Option run_host_application_in_terminal="0" />
+				<Option projectIncludeDirsRelation="2" />
+				<Compiler>
+					<Add option="-Winvalid-pch" />
+					<Add option="-DCB_PRECOMP" />
+					<Add directory="../../../.objs32_msys2/include" />
+				</Compiler>
+			</Target>
+			<Target title="noPCH">
+				<Option output="../../../devel32_msys2/share/CodeBlocks/plugins/byogames.dll" prefix_auto="0" extension_auto="0" />
+				<Option object_output="../../../.objs32_msys2/plugins/contrib/byogames" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option parameters="--debug-log --multiple-instance -na -ns -nd -p debug" />
+				<Option host_application="../../../devel32_msys2/codeblocks.exe" />
+				<Option run_host_application_in_terminal="0" />
+				<Option projectIncludeDirsRelation="2" />
+				<Compiler>
+					<Add option="-DNOPCH" />
+				</Compiler>
+			</Target>
+			<Environment>
+				<Variable name="WX_SUFFIX" value="u" />
+				<Variable name="WX_TOOLKIT" value="msw" />
+				<Variable name="WX_VERSION" value="3.2" />
+			</Environment>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="usePCH;" />
+		</VirtualTargets>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="$(#CB_RELEASE_TYPE)" />
+			<Add option="-pipe" />
+			<Add option="-fmessage-length=0" />
+			<Add option="-fexceptions" />
+			<Add option="-mthreads" />
+			<Add option="-std=gnu++11" />
+			<Add option="-DcbDEBUG" />
+			<Add option="-DHAVE_W32API_H" />
+			<Add option="-D__WXMSW__" />
+			<Add option="-DWXUSINGDLL" />
+			<Add option="-DwxUSE_UNICODE" />
+			<Add option="-DBUILDING_PLUGIN" />
+			<Add directory="../../../include" />
+			<Add directory="../../../include/tinyxml" />
+			<Add directory="$(TARGET_COMPILER_DIR)lib/wx/include/$(WX_TOOLKIT)-unicode-$(WX_VERSION)" />
+			<Add directory="$(TARGET_COMPILER_DIR)include/wx-$(WX_VERSION)" />
+		</Compiler>
+		<Linker>
+			<Add option="-Wl,--enable-auto-import" />
+			<Add option="-mthreads" />
+			<Add library="codeblocks" />
+			<Add library="wx_$(WX_TOOLKIT)$(WX_SUFFIX)_core-$(WX_VERSION).dll" />
+			<Add library="wx_base$(WX_SUFFIX)-$(WX_VERSION).dll" />
+			<Add directory="../../../devel32_msys2" />
+		</Linker>
+		<ExtraCommands>
+			<Add after="zip -j9 ..\..\..\devel32_msys2\share\CodeBlocks\byogames.zip manifest.xml" />
+			<Mode after="always" />
+		</ExtraCommands>
+		<Unit filename="byocbtris.cpp" />
+		<Unit filename="byocbtris.h" />
+		<Unit filename="byoconf.cpp" />
+		<Unit filename="byoconf.h" />
+		<Unit filename="byogame.cpp" />
+		<Unit filename="byogame.h" />
+		<Unit filename="byogamebase.cpp" />
+		<Unit filename="byogamebase.h" />
+		<Unit filename="byogames.cpp" />
+		<Unit filename="byogames.h" />
+		<Unit filename="byogameselect.cpp" />
+		<Unit filename="byogameselect.h" />
+		<Unit filename="byosnake.cpp" />
+		<Unit filename="byosnake.h" />
+		<Unit filename="manifest.xml" />
+		<Extensions>
+			<wxsmith version="1">
+				<gui name="wxWidgets" src="" main="" init_handlers="necessary" language="CPP" />
+				<resources>
+					<wxScrollingDialog wxs="wxsmith/byoGameSelect.wxs" src="byogameselect.cpp" hdr="byogameselect.h" fwddecl="0" i18n="1" name="byoGameSelect" language="CPP" />
+					<wxPanel wxs="wxsmith/byoConf.wxs" src="byoconf.cpp" hdr="byoconf.h" fwddecl="0" i18n="1" name="byoConf" language="CPP" />
+				</resources>
+			</wxsmith>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
