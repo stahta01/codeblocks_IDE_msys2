@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_workspace_file>
+	<Workspace title="All contrib plugins Workspace wx3.2.x (MSys2)">
+		<Project filename="plugins/contrib/wxContribItems/wxContribItems_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/AutoVersioning/AutoVersioning_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/BrowseTracker/BrowseTracker_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/codesnippets/codesnippets_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/codestat/codestat_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/copystrings/copystrings_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/CppCheck/CppCheck_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/Cscope/Cscope_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/DoxyBlocks/DoxyBlocks_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/dragscroll/DragScroll_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/EditorConfig/EditorConfig_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/EditorTweaks/EditorTweaks_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/envvars/envvars_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/source_exporter/Exporter_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/FileManager/FileManager_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/byogames/byogames_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/headerfixup/headerfixup_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/help_plugin/help-plugin_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/HexEditor/HexEditor_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/IncrementalSearch/IncrementalSearch_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/keybinder/keybinder_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/lib_finder/lib_finder_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/MouseSap/MouseSap_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/NassiShneiderman/NassiShneiderman_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/profiler/cbprofiler_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/ProjectOptionsManipulator/ProjectOptionsManipulator_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/regex_testbed/RegExTestbed_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/ReopenEditor/ReopenEditor_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/rndgen/rndgen_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/SmartIndent/SmartIndent_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/SpellChecker/SpellChecker_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/symtab/symtab_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/ThreadSearch/ThreadSearch_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/ToolsPlus/ToolsPlus_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/wxSmith/wxSmith_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/wxSmithAui/wxSmithAui_wxMSW32-msys2.cbp" />
+		<Project filename="plugins/contrib/wxSmithContribItems/wxSmithContribItems_wxMSW32-msys2.cbp" />
+	</Workspace>
+</CodeBlocks_workspace_file>
