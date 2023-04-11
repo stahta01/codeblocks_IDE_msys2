@@ -67,11 +67,11 @@ git checkout cb_common && git rebase cb_source
 # Run from MSys2 *Mingw prompt*
 ```
 cd ~/devel/codeblocks-dev/src
-./update 31_msys2
+./update 32_msys2
 ```
 
 # Run from MSys2 *Mingw prompt*
 ```
-cd ~/devel/codeblocks-dev/src/output31_msys2
+cd ~/devel/codeblocks-dev/src/output32_msys2
 ./codeblocks.exe -p msys2_mgw
 ```
