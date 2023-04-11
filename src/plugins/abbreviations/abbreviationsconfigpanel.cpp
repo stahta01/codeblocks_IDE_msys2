@@ -14,6 +14,7 @@
     #include <wx/xrc/xmlres.h>
     #include <wx/fontutil.h>
     #include <wx/choicdlg.h>
+    #include <wx/combobox.h>
 
     #include <configmanager.h>
     #include <editorcolourset.h>
