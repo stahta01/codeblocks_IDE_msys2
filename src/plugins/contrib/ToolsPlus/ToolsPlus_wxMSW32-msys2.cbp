@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Tools Plus Plugin wx3.2.x (MSys2)" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="usePCH">
+				<Option output="../../../devel32_msys2/share/codeblocks/plugins/ToolsPlus" prefix_auto="1" extension_auto="1" />
+				<Option object_output="../../../.objs32_msys2/plugins/contrib/ToolsPlus" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option parameters="--debug-log --multiple-instance -na -ns -nd -p debug" />
+				<Option host_application="../../../devel32_msys2/codeblocks.exe" />
+				<Option run_host_application_in_terminal="0" />
+				<Option projectIncludeDirsRelation="2" />
+				<Compiler>
+					<Add option="$(#CB_RELEASE_TYPE)" />
+					<Add option="-Winvalid-pch" />
+					<Add option="-DCB_PRECOMP" />
+					<Add directory="../../../.objs32_msys2/include" />
+				</Compiler>
+				<Linker>
+					<Add library="codeblocks" />
+					<Add library="wx_$(WX_TOOLKIT)$(WX_SUFFIX)_aui-$(WX_VERSION).dll" />
+					<Add library="wx_$(WX_TOOLKIT)$(WX_SUFFIX)_core-$(WX_VERSION).dll" />
+					<Add library="wx_base$(WX_SUFFIX)-$(WX_VERSION).dll" />
+					<Add library="gdi32" />
+					<Add directory="../../../devel32_msys2" />
+				</Linker>
+				<ExtraCommands>
+					<Add after="zip -j9 ../../../devel32_msys2/share/codeblocks/ToolsPlus.zip manifest.xml" />
+					<Add after="sh.exe -c &apos;mkdir -p ../../../devel32_msys2/share/codeblocks/images/settings &gt; /dev/null 2&gt; /dev/null&apos;" />
+					<Add after="sh.exe -c &apos;cp ./Resources/*.png ../../../devel32_msys2/share/codeblocks/images/settings/ &gt; /dev/null 2&gt; /dev/null&apos;" />
+					<Mode after="always" />
+				</ExtraCommands>
+			</Target>
+			<Target title="noPCH">
+				<Option output="../../../devel32_msys2/share/codeblocks/plugins/ToolsPlus" prefix_auto="1" extension_auto="1" />
+				<Option object_output="../../../.objs32_msys2/plugins/contrib/ToolsPlus" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option parameters="--debug-log --multiple-instance -na -ns -nd -p debug" />
+				<Option host_application="../../../devel32_msys2/codeblocks.exe" />
+				<Option run_host_application_in_terminal="0" />
+				<Compiler>
+					<Add option="$(#CB_RELEASE_TYPE)" />
+					<Add option="-DNOPCH" />
+				</Compiler>
+				<Linker>
+					<Add library="codeblocks" />
+					<Add library="wx_$(WX_TOOLKIT)$(WX_SUFFIX)_aui-$(WX_VERSION).dll" />
+					<Add library="wx_$(WX_TOOLKIT)$(WX_SUFFIX)_core-$(WX_VERSION).dll" />
+					<Add library="wx_base$(WX_SUFFIX)-$(WX_VERSION).dll" />
+					<Add library="gdi32" />
+					<Add directory="../../../devel32_msys2" />
+				</Linker>
+				<ExtraCommands>
+					<Add after="zip -j9 ../../../devel32_msys2/share/codeblocks/ToolsPlus.zip manifest.xml" />
+					<Add after="sh.exe -c &apos;mkdir -p ../../../devel32_msys2/share/codeblocks/images/settings &gt; /dev/null 2&gt; /dev/null&apos;" />
+					<Add after="sh.exe -c &apos;cp ./Resources/*.png ../../../devel32_msys2/share/codeblocks/images/settings/ &gt; /dev/null 2&gt; /dev/null&apos;" />
+					<Mode after="always" />
+				</ExtraCommands>
+			</Target>
+			<Environment>
+				<Variable name="WX_SUFFIX" value="u" />
+				<Variable name="WX_TOOLKIT" value="msw" />
+				<Variable name="WX_VERSION" value="3.2" />
+			</Environment>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="usePCH;" />
+		</VirtualTargets>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-std=gnu++11" />
+			<Add option="-pipe" />
+			<Add option="-mthreads" />
+			<Add option="-fmessage-length=0" />
+			<Add option="-fexceptions" />
+			<Add option="-DWXUSINGDLL" />
+			<Add option="-DHAVE_W32API_H" />
+			<Add option="-D__WXMSW__" />
+			<Add option="-DcbDEBUG" />
+			<Add option="-DwxUSE_UNICODE" />
+			<Add option="-DBUILDING_PLUGIN" />
+			<Add directory="../../../include" />
+			<Add directory="../../../include/tinyxml" />
+			<Add directory="../../../sdk/wxscintilla/include" />
+			<Add directory="../../../include/mozilla_chardet" />
+			<Add directory="../../../include/mozilla_chardet/mfbt" />
+			<Add directory="../../../include/mozilla_chardet/nsprpub/pr/include" />
+			<Add directory="../../../include/mozilla_chardet/xpcom" />
+			<Add directory="../../../include/mozilla_chardet/xpcom/base" />
+			<Add directory="../../../include/mozilla_chardet/xpcom/glue" />
+			<Add directory="$(TARGET_COMPILER_DIR)lib/wx/include/$(WX_TOOLKIT)-unicode-$(WX_VERSION)" />
+			<Add directory="$(TARGET_COMPILER_DIR)include/wx-$(WX_VERSION)" />
+		</Compiler>
+		<Linker>
+			<Add option="-mthreads" />
+		</Linker>
+		<Unit filename="CmdConfigDialog.cpp" />
+		<Unit filename="CmdConfigDialog.h" />
+		<Unit filename="PipedProcessCtrl.cpp" />
+		<Unit filename="PipedProcessCtrl.h" />
+		<Unit filename="ShellCtrlBase.cpp" />
+		<Unit filename="ShellCtrlBase.h" />
+		<Unit filename="ToolsPlus.cpp" />
+		<Unit filename="ToolsPlus.h" />
+		<Unit filename="manifest.xml" />
+		<Unit filename="se_globals.cpp" />
+		<Unit filename="se_globals.h" />
+		<Unit filename="shellproperties.cpp" />
+		<Unit filename="shellproperties.h" />
+		<Extensions />
+	</Project>
+</CodeBlocks_project_file>
