@@ -33,6 +33,7 @@ cd ~/devel/codeblocks-dev && \
 git config core.autocrlf input && \
 git checkout cb_source && git restore . && git pull && \
 svn cleanup && svn revert -R . && \
+dos2unix src/sdk/cbart_provider.cpp && \
 svn update --ignore-externals . && \
 rm -fr src/templates/ && \
 mkdir -p src/templates/ && \
