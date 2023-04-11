@@ -2,8 +2,8 @@
  * This file is part of the Code::Blocks IDE and licensed under the GNU Lesser General Public License, version 3
  * http://www.gnu.org/licenses/lgpl-3.0.html
  *
- * $Revision: 13238 $
- * $Id: projectloader.cpp 13238 2023-03-19 14:03:37Z mortenmacfly $
+ * $Revision: 13255 $
+ * $Id: projectloader.cpp 13255 2023-04-11 15:05:39Z wh11204 $
  * $HeadURL: svn://svn.code.sf.net/p/codeblocks/code/trunk/src/sdk/projectloader.cpp $
  */
 
@@ -1773,9 +1773,9 @@ bool ProjectLoader::ExportTargetAsProject(const wxString& filename, const wxStri
     for (const ProjectGlob& glob : m_pProject->GetGlobs())
     {
         TiXmlElement *element = AddElement(prjnode, "UnitsGlob", "directory", glob.GetPath());
-        element->SetAttribute("wildcard", glob.GetWildCard());
+        element->SetAttribute("wildcard", glob.GetWildCard().c_str());
         element->SetAttribute("recursive", glob.GetRecursive() ? 1 : 0);
-        element->SetAttribute("id", wxString::Format("%lld", glob.GetId()));
+        element->SetAttribute("id", wxString::Format("%lld", glob.GetId()).c_str());
         element->SetAttribute("addToProject", glob.GetAddToProject() ? 1 : 0);
         const wxArrayString targets = glob.GetTargets();
         if (targets.size() > 0)
