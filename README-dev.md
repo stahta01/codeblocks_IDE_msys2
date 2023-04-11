@@ -31,6 +31,7 @@ cd ~/devel/codeblocks-dev && svn update --ignore-externals . ;
 ```
 cd ~/devel/codeblocks-dev && \
 git config core.autocrlf input && \
+git config core.eol lf && \
 git checkout cb_source && git restore . && git pull && \
 svn cleanup && svn revert -R . && \
 dos2unix src/sdk/cbart_provider.cpp && \
