@@ -91,6 +91,7 @@
 			<Add option="-DwxUSE_UNICODE" />
 			<Add directory="$(TARGET_COMPILER_DIR)lib/wx/include/$(WX_TOOLKIT)-unicode-$(WX_VERSION)" />
 			<Add directory="$(TARGET_COMPILER_DIR)include/wx-$(WX_VERSION)" />
+			<Add directory="$(TARGET_COMPILER_DIR)include/hunspell" />
 		</Compiler>
 		<Unit filename="DictionariesNeededDialog.cpp">
 			<Option target="plugin" />
