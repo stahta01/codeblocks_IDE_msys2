@@ -41,7 +41,7 @@ git config --bool pull.rebase true
 ```
 cd ~/devel/codeblocks-dev && \
 git checkout master && \
-git pull && git push && \
+git pull && \
 git checkout cb_source && git rebase master
 ```
 
