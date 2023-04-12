@@ -9,6 +9,8 @@ pacman -S --noconfirm --needed subversion;
 pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-gcc;
 pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-cppcheck;
 pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-boost;
+pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-hunspell-en;
+pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-hunspell;
 ```
 
 ##Run Time Requirements
