@@ -40,7 +40,7 @@
 			</Environment>
 		</Build>
 		<VirtualTargets>
-			<Add alias="All" targets="usePCH;" />
+			<Add alias="All" targets="noPCH;" />
 		</VirtualTargets>
 		<Compiler>
 			<Add option="-Wall" />
