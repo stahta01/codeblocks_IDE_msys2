@@ -55,6 +55,10 @@ svn cleanup && svn revert -R . && \
 svn update --ignore-externals . && \
 svn status -q && \
 dos2unix src/sdk/cbart_provider.cpp && \
+dos2unix src/include/cbart_provider.h && \
+dos2unix src/include/cygwin.h && \
+dos2unix src/include/editor_utils.h && \
+dos2unix src/include/wxstringhash.h && \
 git restore .gitignore && \
 git restore src/plugins/contrib/SpellChecker/update && \
 rm .git/index && git reset && git status -uno;
