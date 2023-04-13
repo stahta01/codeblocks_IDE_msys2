@@ -55,7 +55,6 @@ svn cleanup && svn revert -R . && \
 svn update --ignore-externals . && \
 svn status -q && \
 git restore .gitignore && \
-git restore src/plugins/contrib/SpellChecker/update && \
 rm .git/index && git reset && git status -uno;
 ```
 
