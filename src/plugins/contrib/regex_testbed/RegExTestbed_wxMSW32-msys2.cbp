@@ -68,6 +68,8 @@
 		<Unit filename="manifest.xml" />
 		<Unit filename="regexdlg.cpp" />
 		<Unit filename="regexdlg.h" />
+		<Unit filename="regexdlg.xrc" />
+		<Unit filename="wxsmith/RegExDlg.wxs" />
 		<Extensions>
 			<wxsmith version="1">
 				<gui name="wxWidgets" src="" main="" init_handlers="necessary" language="CPP" />
