@@ -86,6 +86,7 @@
 		<Unit filename="ExtractDocs.cpp" />
 		<Unit filename="manifest.xml" />
 		<Unit filename="version.h" />
+		<Unit filename="wxsmith/ConfigPanel.wxs" />
 		<Extensions>
 			<AutoVersioning>
 				<Scheme minor_max="10" build_max="0" rev_max="0" rev_rand_max="10" build_times_to_increment_minor="100" />
