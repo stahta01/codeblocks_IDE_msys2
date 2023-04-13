@@ -594,7 +594,7 @@
 			<Add option="-D__WXMSW__" />
 			<Add option="-DWXUSINGDLL" />
 			<Add option="-DcbDEBUG" />
-			<Add option="-DNOPCH" />
+			<Add option="-DCB_PRECOMP" />
 			<Add option="-DwxUSE_UNICODE" />
 			<Add directory="sdk/wxscintilla/include" />
 			<Add directory="include/tinyxml" />
