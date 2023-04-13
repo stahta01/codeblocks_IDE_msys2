@@ -47,27 +47,19 @@ git pull && \
 git checkout cb_source && git rebase master
 ```
 
-###Record git status Results
+# update from SVN
 # Run from MSys2 *Mingw prompt*
 ```
 cd ~/devel/codeblocks-dev && \
 git checkout cb_source && git restore . && git pull && \
 svn cleanup && svn revert -R . && \
-dos2unix src/sdk/cbart_provider.cpp && \
 svn update --ignore-externals . && \
+svn status -q && \
 rm -fr src/templates/ && \
 mkdir -p src/templates/ && \
-svn status -q && \
+git restore .gitignore && \
+git restore src/plugins/contrib/SpellChecker/update && \
 rm .git/index && git reset && git status -uno;
-```
-####Results the two below files are the ones normally left after
-#   commiting the ones that need commited
-# Run from MSys2 *Mingw prompt*
-```
-$ git status -uno
-...
-        modified:   .gitignore
-        modified:   src/plugins/contrib/SpellChecker/update
 ```
 
 # Run from MSys2 *Mingw prompt*
