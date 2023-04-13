@@ -1,3 +1,4 @@
+diff --ignore-space-change --unified CodeBlocks_wx32_64.cbp CodeBlocks_wxMSW32-msys2.cbp > CodeBlocks.diff
 diff --ignore-space-change --unified plugins/contrib/AutoVersioning/AutoVersioning_wx32_64.cbp plugins/contrib/AutoVersioning/AutoVersioning_wxMSW32-msys2.cbp > AutoVersioning.diff
 diff --ignore-space-change --unified plugins/contrib/BrowseTracker/BrowseTracker_wx32_64.cbp plugins/contrib/BrowseTracker/BrowseTracker_wxMSW32-msys2.cbp > BrowseTracker.diff
 diff --ignore-space-change --unified plugins/contrib/byogames/byogames_wx32_64.cbp plugins/contrib/byogames/byogames_wxMSW32-msys2.cbp > byogames.diff
