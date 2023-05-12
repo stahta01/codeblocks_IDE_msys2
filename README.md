@@ -3,9 +3,9 @@
 ##Build Time Requirements
 # Run from MSys2 *Mingw prompt*
 ```
-pacman -S --noconfirm --needed zip;
 pacman -S --noconfirm --needed rsync;
 pacman -S --noconfirm --needed subversion;
+pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-7zip;
 pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-gcc;
 pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-cppcheck;
 pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-boost;
