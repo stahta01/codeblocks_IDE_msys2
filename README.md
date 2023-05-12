@@ -24,7 +24,7 @@ pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-drmingw;
 ```
 mkdir -p ~/devel && cd ~/devel && \
 git clone https://github.com/stahta01/codeblocks_IDE_msys2.git codeblocks-dev && \
-( cd codeblocks-dev && git checkout cb_source ) && \
+( cd codeblocks-dev && git checkout wx_mono_build ) && \
 svn checkout --ignore-externals svn://svn.code.sf.net/p/codeblocks/code/trunk codeblocks-dev && \
 cd ~/devel/codeblocks-dev && svn update --ignore-externals . ;
 ```
@@ -40,15 +40,7 @@ git config --bool pull.rebase true
 # Run from MSys2 *Mingw prompt*
 ```
 cd ~/devel/codeblocks-dev && \
-git checkout master && \
-git pull && \
-git checkout cb_base && git rebase master
-```
-
-# Run from MSys2 *Mingw prompt*
-```
-cd ~/devel/codeblocks-dev && \
-git checkout cb_base && git restore . && git pull && \
+git checkout wx_mono_build && git restore . && git pull && \
 svn cleanup && svn revert -R . && \
 svn update --ignore-externals . && \
 svn status -q && \
@@ -58,7 +50,6 @@ dos2unix src/include/cygwin.h && \
 dos2unix src/include/editor_utils.h && \
 dos2unix src/include/wxstringhash.h && \
 git restore .gitignore && \
-git restore src/plugins/contrib/SpellChecker/update && \
 rm .git/index && git reset && git status -uno;
 ```
 
@@ -69,11 +60,11 @@ rm .git/index && git reset && git status -uno;
 # Run from MSys2 *Mingw prompt*
 ```
 cd ~/devel/codeblocks-dev/src
-./update 32_msys2
+#./update 32_msys2
 ```
 
 # Run from MSys2 *Mingw prompt*
 ```
 cd ~/devel/codeblocks-dev/src/output32_msys2
-./codeblocks.exe -p msys2_mgw
+#./codeblocks.exe -p msys2_mgw
 ```
