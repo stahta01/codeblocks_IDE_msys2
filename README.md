@@ -24,9 +24,9 @@ pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-drmingw;
 ```
 mkdir -p ~/devel && cd ~/devel && \
 git clone https://github.com/stahta01/codeblocks_IDE_msys2.git codeblocks-dev && \
-( cd codeblocks-dev && git checkout wx_mono_build ) && \
-svn checkout --ignore-externals svn://svn.code.sf.net/p/codeblocks/code/trunk codeblocks-dev && \
-cd ~/devel/codeblocks-dev && svn cleanup && svn revert -R . && \
+cd codeblocks-dev && git checkout wx_mono_build && \
+svn checkout --ignore-externals svn://svn.code.sf.net/p/codeblocks/code/trunk codeblocks-svn && \
+cd ~/devel/codeblocks-dev/codeblocks-svn && svn cleanup && svn revert -R . && \
 svn update --ignore-externals . ;
 ```
 
