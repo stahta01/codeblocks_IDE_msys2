@@ -26,7 +26,8 @@ mkdir -p ~/devel && cd ~/devel && \
 git clone https://github.com/stahta01/codeblocks_IDE_msys2.git codeblocks-dev && \
 ( cd codeblocks-dev && git checkout wx_mono_build ) && \
 svn checkout --ignore-externals svn://svn.code.sf.net/p/codeblocks/code/trunk codeblocks-dev && \
-cd ~/devel/codeblocks-dev && svn update --ignore-externals . ;
+cd ~/devel/codeblocks-dev && svn cleanup && svn revert -R . && \
+svn update --ignore-externals . ;
 ```
 
 # Run from MSys2 *Mingw prompt*
