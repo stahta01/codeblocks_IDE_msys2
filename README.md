@@ -17,8 +17,6 @@ pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-hunspell;
 # Run from MSys2 *Mingw prompt*
 ```
 pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-drmingw;
-pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-wxwidgets3.2-msw;
-pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-wxwidgets3.2-msw-cb_headers;
 ```
 
 ## Needs done only once to clone/checkout git and SVN repos
