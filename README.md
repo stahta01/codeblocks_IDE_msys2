@@ -42,6 +42,7 @@ git config --bool pull.rebase true
 ```
 cd ~/devel/codeblocks-dev && \
 git checkout wx_mono_build && git restore . && git pull && \
+cd ~/devel/codeblocks-dev/codeblocks-svn && \
 svn cleanup && svn revert -R . && \
 svn update --ignore-externals . && \
 svn status -q && \
@@ -49,9 +50,7 @@ dos2unix src/sdk/cbart_provider.cpp && \
 dos2unix src/include/cbart_provider.h && \
 dos2unix src/include/cygwin.h && \
 dos2unix src/include/editor_utils.h && \
-dos2unix src/include/wxstringhash.h && \
-git restore .gitignore && \
-rm .git/index && git reset && git status -uno;
+dos2unix src/include/wxstringhash.h
 ```
 
 # Build CB Projects using CB IDE
@@ -60,12 +59,12 @@ rm .git/index && git reset && git status -uno;
 
 # Run from MSys2 *Mingw prompt*
 ```
-cd ~/devel/codeblocks-dev/src
+cd ~/devel/codeblocks-dev/codeblocks-svn/src
 #./update 32_msys2
 ```
 
 # Run from MSys2 *Mingw prompt*
 ```
-cd ~/devel/codeblocks-dev/src/output32_msys2
-#./codeblocks.exe -p msys2_mgw
+cd ~/devel/codeblocks-dev/codeblocks-svn/src/output32_msys2
+#./codeblocks.exe -p msys2_wx_mono_build
 ```
